@@ -751,42 +751,75 @@ int main( int argc, char* args[] )
 
             switch (action) {
                 case InputAction::MoveLeft:
+                {
+                    //check collision
+                    bool canMoveLeft = true;
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
                             if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx;
+                                int boardX = currentPiece.x + sx - 1;
                                 int boardY = currentPiece.y + sy;
-                                if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
+                                if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                                    canMoveLeft = false;
+                                }
+                            }
+                        }
+                        if (!canMoveLeft) break;
+                    }
+
+                    if (canMoveLeft){
+                        //clear current position
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                if (currentPiece.shape[sy][sx] != 0) {
+                                    int boardX = currentPiece.x + sx - 1;
+                                    int boardY = currentPiece.y + sy;
                                     board.current[boardX][boardY] = 0;
                                 }
                             }
                         }
+
+                        //move left
+                        currentPiece.x -= 1;
                     }
-                    //board.current[currentPiece.x][currentPiece.y] = 0; // Clear the current position
-                    currentPiece.x -= 1;
-                    if (currentPiece.x < 0){
-                        currentPiece.x = 0;
-                    } 
-                    
+
                     break;
+                }
                 case InputAction::MoveRight:
+                {
+                    //check collision
+                    bool canMoveRight = true;
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
                             if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx;
+                                int boardX = currentPiece.x + sx + 1;
                                 int boardY = currentPiece.y + sy;
-                                if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
+                                if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                                    canMoveRight = false;
+                                }
+                            }
+                        }
+                        if (!canMoveRight) break;
+                    }
+
+                    if (canMoveRight){
+                        //clear current position
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                if (currentPiece.shape[sy][sx] != 0) {
+                                    int boardX = currentPiece.x + sx - 1;
+                                    int boardY = currentPiece.y + sy;
                                     board.current[boardX][boardY] = 0;
                                 }
                             }
                         }
+
+                        //move left
+                        currentPiece.x += 1;
                     }
-                    //board.current[currentPiece.x][currentPiece.y] = 0; // Clear the current position
-                    currentPiece.x += 1;
-                    if (currentPiece.x + currentPiece.width > boardWidth){
-                        currentPiece.x = boardWidth - currentPiece.width;
-                    }
+
                     break;
+                }
                 case InputAction::Rotate:
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
@@ -1042,7 +1075,7 @@ int main( int argc, char* args[] )
                 for (int sy = 0; sy < currentPiece.height; ++sy) {
                     if (currentPiece.shape[sy][sx] != 0) {
                         int boardX = currentPiece.x + sx;
-                        int boardY = currentPiece.y + 1 + sy;
+                        int boardY = currentPiece.y + sy + 1;
                         // Check bounds and collision
                         if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
                             canPlaceNext = false;
@@ -1218,7 +1251,7 @@ int main( int argc, char* args[] )
                 {
                     if (fullRows[i] == 1) {
                         clearedRows++;
-                        std::cout << "Row " << i << " is full!" << std::endl;
+                        //std::cout << "Row " << i << " is full!" << std::endl;
                         for (int y = i; y > 0; --y) {
                             for (int x = 0; x < boardWidth; ++x) {
                                 //board.current[x][0] = 0; // Clear the top row
@@ -1292,7 +1325,7 @@ int main( int argc, char* args[] )
                 //     }
                 // }
 
-                std::cout << "newPiece" << std::endl;
+                //std::cout << "newPiece" << std::endl;
                 currentPiece.y = 0; // Reset for next falling piece
                 currentPiece.x = boardWidth / 2; // Reset horizontal position to center
                 //pickPiece = std::rand() % 7; // Generates a random number between 0 and 6 inclusive
