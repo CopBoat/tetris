@@ -821,15 +821,35 @@ int main( int argc, char* args[] )
                     break;
                 }
                 case InputAction::Rotate:
+                {
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
                             newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
                         }
                     }
-                    currentPiece.shape = newShape;
-                    std::swap(currentPiece.width, currentPiece.height);
+
+                    bool canRotate = true;
+                    for (int sx = 0; sx < currentPiece.height; ++sx) {
+                        for (int sy = 0; sy < currentPiece.width; ++sy) {
+                            if (newShape[sy][sx] != 0) {
+                                int boardX = currentPiece.x + sx;
+                                int boardY = currentPiece.y + sy;
+                                if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                                    canRotate = false;
+                                }
+                            }
+                        }
+                        if (!canRotate) break;
+                    }
+
+                    if (canRotate){
+                        currentPiece.shape = newShape;
+                        std::swap(currentPiece.width, currentPiece.height);
+                    }
+                    
                     
                     break;
+                }
                 case InputAction::SoftDrop:
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
