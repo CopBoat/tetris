@@ -526,6 +526,23 @@ void close()
     SDL_Quit();
 }
 
+bool checkPlacement(Piece piece, Board board, int newX, int newY) {
+    bool placementValid = true;
+    for (int sx = 0; sx < piece.width; ++sx) {
+        for (int sy = 0; sy < piece.height; ++sy) {
+            if (piece.shape[sy][sx] != 0) {
+                int boardX = piece.x + sx + newX;
+                int boardY = piece.y + sy + newY;
+                if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                    placementValid = false;
+                }
+            }
+        }
+        if (!placementValid) break;
+    }
+    return placementValid; 
+}
+
 
 enum class InputAction {
     None,
@@ -753,26 +770,26 @@ int main( int argc, char* args[] )
                 case InputAction::MoveLeft:
                 {
                     //check collision
-                    bool canMoveLeft = true;
-                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                            if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx - 1;
-                                int boardY = currentPiece.y + sy;
-                                if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                                    canMoveLeft = false;
-                                }
-                            }
-                        }
-                        if (!canMoveLeft) break;
-                    }
+                    // bool canMoveLeft = true;
+                    // for (int sx = 0; sx < currentPiece.width; ++sx) {
+                    //     for (int sy = 0; sy < currentPiece.height; ++sy) {
+                    //         if (currentPiece.shape[sy][sx] != 0) {
+                    //             int boardX = currentPiece.x + sx - 1;
+                    //             int boardY = currentPiece.y + sy;
+                    //             if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                    //                 canMoveLeft = false;
+                    //             }
+                    //         }
+                    //     }
+                    //     if (!canMoveLeft) break;
+                    // }
 
-                    if (canMoveLeft){
+                    if (checkPlacement(currentPiece, board, -1, 0)){
                         //clear current position
                         for (int sx = 0; sx < currentPiece.width; ++sx) {
                             for (int sy = 0; sy < currentPiece.height; ++sy) {
                                 if (currentPiece.shape[sy][sx] != 0) {
-                                    int boardX = currentPiece.x + sx - 1;
+                                    int boardX = currentPiece.x + sx;
                                     int boardY = currentPiece.y + sy;
                                     board.current[boardX][boardY] = 0;
                                 }
@@ -788,26 +805,26 @@ int main( int argc, char* args[] )
                 case InputAction::MoveRight:
                 {
                     //check collision
-                    bool canMoveRight = true;
-                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                            if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx + 1;
-                                int boardY = currentPiece.y + sy;
-                                if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                                    canMoveRight = false;
-                                }
-                            }
-                        }
-                        if (!canMoveRight) break;
-                    }
+                    // bool canMoveRight = true;
+                    // for (int sx = 0; sx < currentPiece.width; ++sx) {
+                    //     for (int sy = 0; sy < currentPiece.height; ++sy) {
+                    //         if (currentPiece.shape[sy][sx] != 0) {
+                    //             int boardX = currentPiece.x + sx + 1;
+                    //             int boardY = currentPiece.y + sy;
+                    //             if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                    //                 canMoveRight = false;
+                    //             }
+                    //         }
+                    //     }
+                    //     if (!canMoveRight) break;
+                    // }
 
-                    if (canMoveRight){
+                    if (checkPlacement(currentPiece, board, 1, 0)){
                         //clear current position
                         for (int sx = 0; sx < currentPiece.width; ++sx) {
                             for (int sy = 0; sy < currentPiece.height; ++sy) {
                                 if (currentPiece.shape[sy][sx] != 0) {
-                                    int boardX = currentPiece.x + sx - 1;
+                                    int boardX = currentPiece.x + sx;
                                     int boardY = currentPiece.y + sy;
                                     board.current[boardX][boardY] = 0;
                                 }
@@ -1090,21 +1107,7 @@ int main( int argc, char* args[] )
 
             // Check if the piece can be placed at its next position
             //currentPiece.y += 1;
-            bool canPlaceNext = true;
-            for (int sx = 0; sx < currentPiece.width; ++sx) {
-                for (int sy = 0; sy < currentPiece.height; ++sy) {
-                    if (currentPiece.shape[sy][sx] != 0) {
-                        int boardX = currentPiece.x + sx;
-                        int boardY = currentPiece.y + sy + 1;
-                        // Check bounds and collision
-                        if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                            canPlaceNext = false;
-                            break;
-                        }
-                    }
-                }
-                if (!canPlaceNext) break;
-            }
+            bool canPlaceNext = checkPlacement(currentPiece, board, 0, 1);
             
 
             // Place the current piece's shape onto the board at its current position
