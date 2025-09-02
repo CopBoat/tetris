@@ -697,7 +697,11 @@ int main( int argc, char* args[] )
 
         int levelIncrease = 0; // To track level increase threshold
 
-        //int levelCount = 1;
+        bool hardDrop = false;
+
+        int lockDelayFrames = 30; // Number of frames to allow after landing (adjust as desired)
+        int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
+        bool pieceLanded = false; // True if just landed, false if still falling
 
         Board board;
 
@@ -868,22 +872,38 @@ int main( int argc, char* args[] )
                     break;
                 }
                 case InputAction::SoftDrop:
-                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                            if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx;
-                                int boardY = currentPiece.y + sy;
-                                if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
+                    // for (int sx = 0; sx < currentPiece.width; ++sx) {
+                    //     for (int sy = 0; sy < currentPiece.height; ++sy) {
+                    //         if (currentPiece.shape[sy][sx] != 0) {
+                    //             int boardX = currentPiece.x + sx;
+                    //             int boardY = currentPiece.y + sy;
+                    //             if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
+                    //                 board.current[boardX][boardY] = 0;
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                   
+                    // if (currentPiece.y + currentPiece.height < boardHeight && board.current[currentPiece.x][currentPiece.y + 1] == 0) {
+                    //     currentPiece.y += 1;
+                    // }
+
+                    if (checkPlacement(currentPiece, board, 0, 1)){
+                        //clear current position
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                if (currentPiece.shape[sy][sx] != 0) {
+                                    int boardX = currentPiece.x + sx;
+                                    int boardY = currentPiece.y + sy;
                                     board.current[boardX][boardY] = 0;
                                 }
                             }
                         }
-                    }
-                    //dropSpeed = 10; // Speed up drop
-                    //board.current[currentPiece.x][currentPiece.y] = 0; // Clear the current position
-                    if (currentPiece.y + currentPiece.height < boardHeight && board.current[currentPiece.x][currentPiece.y + 1] == 0) {
+
+                        //move down
                         currentPiece.y += 1;
                     }
+
                     break;
                 case InputAction::HardDrop:
                     {
@@ -933,6 +953,7 @@ int main( int argc, char* args[] )
                                 //         currentPiece.y += 1;
                                 //     } 
                                 // }
+                                hardDrop = true;
                                 break;
                             }
                 case InputAction::Hold:
@@ -982,6 +1003,10 @@ int main( int argc, char* args[] )
                     break;
             }
 
+
+            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::Rotate)) {
+                lockDelayCounter = 0;
+            }
 
             float spacing = 2.0f; // Amount of spacing between blocks
 
@@ -1127,11 +1152,7 @@ int main( int argc, char* args[] )
             
             
             
-            if (!canPlaceNext)
-            {
-                newPiece = true;
-            }
-
+            
             
             
             //&& (currentPiece.y + currentPiece.height < boardHeight) && board.current[currentPiece.x][currentPiece.y + 1 + currentPiece.height] == 0
@@ -1191,6 +1212,14 @@ int main( int argc, char* args[] )
             //update screen
             SDL_RenderPresent( gRenderer );
 
+            // if (!canPlaceNext)
+            // {
+            //     newPiece = true;
+            // }
+
+            
+
+
             
 
             if (!newPiece) {
@@ -1214,11 +1243,30 @@ int main( int argc, char* args[] )
                     
             }
             
-            if (myTickCount % kScreenFps == 0 && !newPiece) {
+            if (myTickCount % kScreenFps == 0 && canPlaceNext) {
                 currentPiece.y += 1;
             }
 
-            if (newPiece) {
+
+            if (!canPlaceNext && !hardDrop)
+            {
+                if (!pieceLanded) {
+                    pieceLanded = true;
+                    lockDelayCounter = 0;
+                } else {
+                    lockDelayCounter++;
+                    if (lockDelayCounter >= lockDelayFrames) {
+                        newPiece = true;
+                        pieceLanded = false;
+                        lockDelayCounter = 0;
+                    }
+                }
+            } else {
+                pieceLanded = false;
+                lockDelayCounter = 0;
+            }
+
+            if (newPiece || hardDrop) {
                     //currentPiece.y -= 1; // Move back up to last valid position
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
@@ -1357,6 +1405,7 @@ int main( int argc, char* args[] )
                 nextPickPiece = std::rand() % 7; // Randomly select the next piece
                 nextPiece = pieceTypes[nextPickPiece]; // Update next piece
                 newPiece = false;
+                hardDrop = false;
                 holdUsed = false; // Reset hold usage for the new piece
             }
 
