@@ -548,7 +548,7 @@ enum class InputAction {
     None,
     MoveLeft,
     MoveRight,
-    Rotate,
+    RotateClockwise,
     SoftDrop,
     HardDrop,
     Hold
@@ -736,7 +736,7 @@ int main( int argc, char* args[] )
                         {
                             case SDLK_LEFT: action = InputAction::MoveLeft;  break;
                             case SDLK_RIGHT: action = InputAction::MoveRight; break;
-                            case SDLK_UP: action = InputAction::Rotate; break;
+                            case SDLK_UP: action = InputAction::RotateClockwise; break;
                             case SDLK_DOWN: action = InputAction::SoftDrop;  break;
                                 
                             case SDLK_H: action = InputAction::Hold;      break;
@@ -756,7 +756,7 @@ int main( int argc, char* args[] )
                         switch (e.gbutton.button) {
                             case SDL_GAMEPAD_BUTTON_DPAD_LEFT:  action = InputAction::MoveLeft;  break;
                             case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: action = InputAction::MoveRight; break;
-                            case SDL_GAMEPAD_BUTTON_WEST:    action = InputAction::Rotate;    break;
+                            case SDL_GAMEPAD_BUTTON_WEST:    action = InputAction::RotateClockwise;    break;
                             case SDL_GAMEPAD_BUTTON_DPAD_DOWN:  action = InputAction::SoftDrop;  break;
                             case SDL_GAMEPAD_BUTTON_SOUTH:    action = InputAction::HardDrop;  break;
                             case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;   break;
@@ -769,6 +769,17 @@ int main( int argc, char* args[] )
 
             //rotate helper
             std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+
+            // List of offsets to try for wall kick
+            std::vector<std::pair<int, int>> wallKickOffsets = {
+                {0, 0},    // No offset
+                {-1, 0},   // Left
+                {1, 0},    // Right
+                {0, -1},   // Up
+                {-1, -1},  // Up-Left
+                {1, -1},   // Up-Right
+                // ... add more if you want (see below)
+            };
 
             switch (action) {
                 case InputAction::MoveLeft:
@@ -841,7 +852,7 @@ int main( int argc, char* args[] )
 
                     break;
                 }
-                case InputAction::Rotate:
+                case InputAction::RotateClockwise:
                 {
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
@@ -849,26 +860,50 @@ int main( int argc, char* args[] )
                         }
                     }
 
-                    bool canRotate = true;
-                    for (int sx = 0; sx < currentPiece.height; ++sx) {
-                        for (int sy = 0; sy < currentPiece.width; ++sy) {
-                            if (newShape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx;
-                                int boardY = currentPiece.y + sy;
-                                if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                                    canRotate = false;
-                                }
-                            }
-                        }
-                        if (!canRotate) break;
-                    }
+                    // bool canRotate = true;
+                    // for (int sx = 0; sx < currentPiece.height; ++sx) {
+                    //     for (int sy = 0; sy < currentPiece.width; ++sy) {
+                    //         if (newShape[sy][sx] != 0) {
+                    //             int boardX = currentPiece.x + sx;
+                    //             int boardY = currentPiece.y + sy;
+                    //             if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                    //                 canRotate = false;
+                    //             }
+                    //         }
+                    //     }
+                    //     if (!canRotate) break;
+                    // }
 
-                    if (canRotate){
+                    // if (canRotate){
+                    //     currentPiece.shape = newShape;
+                    //     std::swap(currentPiece.width, currentPiece.height);
+                    // }
+
+                    Piece rotatedPiece = currentPiece;
+                    rotatedPiece.shape = newShape;
+                    rotatedPiece.width = currentPiece.height;
+                    rotatedPiece.height = currentPiece.width;
+                    
+                    bool rotated = false;
+                    for (const auto& offset : wallKickOffsets) {
+                        int newX = currentPiece.x + offset.first;
+                        int newY = currentPiece.y + offset.second;
+
+                        // Check if rotated piece fits at (newX, newY)
+                        if (checkPlacement(rotatedPiece, board, newX - currentPiece.x, newY - currentPiece.y)) {
+                            // Apply rotation and offset
+                            currentPiece.shape = newShape;
+                            currentPiece.x = newX;
+                            currentPiece.y = newY;
+                            rotated = true;
+                            break;
+                        }
+                    }
+                    if (rotated){
                         currentPiece.shape = newShape;
                         std::swap(currentPiece.width, currentPiece.height);
                     }
-                    
-                    
+
                     break;
                 }
                 case InputAction::SoftDrop:
@@ -1004,7 +1039,7 @@ int main( int argc, char* args[] )
             }
 
 
-            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::Rotate)) {
+            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::RotateClockwise)) {
                 lockDelayCounter = 0;
             }
 
