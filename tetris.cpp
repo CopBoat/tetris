@@ -1266,6 +1266,8 @@ int main( int argc, char* args[] )
                 lockDelayCounter = 0;
             }
 
+
+            //use  if (newPiece) to test rotation after hard drop
             if (newPiece || hardDrop) {
                     //currentPiece.y -= 1; // Move back up to last valid position
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
