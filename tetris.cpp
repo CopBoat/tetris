@@ -675,6 +675,8 @@ int main( int argc, char* args[] )
         sPiece2.rotation = 0; // Initial rotation state
         sPiece2.color = 7; // Color identifier
 
+        
+
         Piece pieceTypes[7] = { bigPiece, squarePiece, tPiece, lPiece1, lPiece2, sPiece1, sPiece2 }; // Array of piece types
 
         int pickPiece = std::rand() % 7;  // Randomly select a piece from pieceTypes 
@@ -699,6 +701,8 @@ int main( int argc, char* args[] )
         int levelIncrease = 0; // To track level increase threshold
 
         bool hardDrop = false;
+
+        bool alternateIPieceRotationOffset = false;
 
         int lockDelayFrames = 30; // Number of frames to allow after landing (adjust as desired)
         int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
@@ -787,27 +791,29 @@ int main( int argc, char* args[] )
             //L->2
             std::vector<std::pair<int, int>> wallKickOffsetsL2 = {{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}};
             //L->0
-            std::vector<std::pair<int, int>> wallKickOffsetsL0 = {{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}};   
+            std::vector<std::pair<int, int>> wallKickOffsetsL0 = {{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}};
             //0->L
             std::vector<std::pair<int, int>> wallKickOffsets0L = {{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}};
 
+            std::vector<std::pair<int, int>> wallKickOffsets[8] = {wallKickOffsets0R, wallKickOffsetsR2, wallKickOffsets2L, wallKickOffsetsL0};
+
             // Wall kick offset vectors (I piece)
             //0->R
-            std::vector<std::pair<int, int>> wallKickOffsets0R = {{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}};
+            std::vector<std::pair<int, int>> wallKickOffsetsI0R = {{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}};
             //R->0
-            std::vector<std::pair<int, int>> wallKickOffsetsR0 = {{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}};
+            std::vector<std::pair<int, int>> wallKickOffsetsIR0 = {{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}};
             //R->2
-            std::vector<std::pair<int, int>> wallKickOffsetsR2 = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
+            std::vector<std::pair<int, int>> wallKickOffsetsIR2 = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
             //2->R
-            std::vector<std::pair<int, int>> wallKickOffsets2R = {{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}};
+            std::vector<std::pair<int, int>> wallKickOffsetsI2R = {{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}};
             //2->L
-            std::vector<std::pair<int, int>> wallKickOffsets2L = {{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}};
+            std::vector<std::pair<int, int>> wallKickOffsetsI2L = {{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}};
             //L->2
-            std::vector<std::pair<int, int>> wallKickOffsetsL2 = {{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}};
+            std::vector<std::pair<int, int>> wallKickOffsetsIL2 = {{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}};
             //L->0
-            std::vector<std::pair<int, int>> wallKickOffsetsL0 = {{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}};
+            std::vector<std::pair<int, int>> wallKickOffsetsIL0 = {{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}};
             //0->L
-            std::vector<std::pair<int, int>> wallKickOffsets0L = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
+            std::vector<std::pair<int, int>> wallKickOffsetsI0L = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
 
 
             switch (action) {
@@ -879,10 +885,22 @@ int main( int argc, char* args[] )
                             currentPiece.rotation = (currentPiece.rotation + 1) % 4;
                             if (currentPiece.rotation % 4 == 1 || currentPiece.rotation % 4 == 3) {
                                 // Shift right for vertical I piece
-                                currentPiece.x += 1;
+                                if (alternateIPieceRotationOffset) {
+                                    currentPiece.x += 2;
+                                    alternateIPieceRotationOffset = false;
+                                }
+                                else {
+                                    currentPiece.x += 1;
+                                    alternateIPieceRotationOffset = true;
+                                }
                             } 
                             else {
-                                currentPiece.x -= 1;
+                                if (alternateIPieceRotationOffset) {
+                                    currentPiece.x -= 1;
+                                }
+                                else {
+                                    currentPiece.x -= 2;
+                                }
                             }
                             
                             //currentPiece.y += 1;
@@ -950,10 +968,22 @@ int main( int argc, char* args[] )
                             currentPiece.rotation = (currentPiece.rotation + 3) % 4; // Equivalent to -1 mod 4
                             if (currentPiece.rotation % 4 == 1 || currentPiece.rotation % 4 == 3) {
                                 // Shift right for vertical I piece
-                                currentPiece.x += 1;
+                                if (alternateIPieceRotationOffset) {
+                                    currentPiece.x += 2;
+                                    alternateIPieceRotationOffset = false;
+                                }
+                                else {
+                                    currentPiece.x += 1;
+                                    alternateIPieceRotationOffset = true;
+                                }
                             } 
                             else {
-                                currentPiece.x -= 1;
+                                if (alternateIPieceRotationOffset) {
+                                    currentPiece.x -= 1;
+                                }
+                                else {
+                                    currentPiece.x -= 2;
+                                }
                             }
                             
                             //currentPiece.y += 1;
@@ -1149,7 +1179,17 @@ int main( int argc, char* args[] )
             //Set render color to white
             SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
 
+            // Draw grid lines
+            SDL_SetRenderDrawColor(gRenderer, 40, 40, 40, 255); // Dark gray for grid lines
+            for (int x = 0; x <= boardWidth; ++x) {
+                SDL_RenderLine(gRenderer, x * blockSize, 0, x * blockSize, boardHeight * blockSize);
+            }
+            for (int y = 0; y <= boardHeight; ++y) {
+                SDL_RenderLine(gRenderer, 0, y * blockSize, boardWidth * blockSize, y * blockSize);
+            }
+
             //draw line seperating the board and UI
+            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
             SDL_RenderLine( gRenderer, 480, 0, 480, kScreenHeight );
 
             //render the UI elements
