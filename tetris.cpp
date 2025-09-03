@@ -463,7 +463,7 @@ bool init()
     }
     else
     {
-        if( SDL_CreateWindowAndRenderer( "Bad Tetris", kScreenWidth, kScreenHeight, 0, &gWindow, &gRenderer ) == false )
+        if( SDL_CreateWindowAndRenderer( "FROM TACOMA WITH LOVE", kScreenWidth, kScreenHeight, 0, &gWindow, &gRenderer ) == false )
         {
             SDL_Log( "Window could not be created! SDL error: %s\n", SDL_GetError() );
             success = false;
@@ -626,9 +626,9 @@ int main( int argc, char* args[] )
 
         // Define Tetris pieces
         Piece bigPiece;
-        bigPiece.width = 1; // Width in blocks
-        bigPiece.height = 4; // Height in blocks
-        bigPiece.shape = { { 1 }, { 1 }, { 1 }, { 1 } }; 
+        bigPiece.width = 4; // Width in blocks
+        bigPiece.height = 1; // Height in blocks
+        bigPiece.shape = { { 1, 1, 1, 1 } }; // I shape
         bigPiece.rotation = 0; // Initial rotation state
         bigPiece.color = 4; // Color identifier for the piece
 
@@ -854,74 +854,40 @@ int main( int argc, char* args[] )
                 }
                 case InputAction::RotateClockwise:
                 {
+                    // Dont perform rotation if O piece
+                    if (currentPiece.width == currentPiece.height) {
+                        break;
+                    }
+
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
                             newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
                         }
                     }
 
-                    // bool canRotate = true;
-                    // for (int sx = 0; sx < currentPiece.height; ++sx) {
-                    //     for (int sy = 0; sy < currentPiece.width; ++sy) {
-                    //         if (newShape[sy][sx] != 0) {
-                    //             int boardX = currentPiece.x + sx;
-                    //             int boardY = currentPiece.y + sy;
-                    //             if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                    //                 canRotate = false;
-                    //             }
-                    //         }
-                    //     }
-                    //     if (!canRotate) break;
-                    // }
-
-                    // if (canRotate){
-                    //     currentPiece.shape = newShape;
-                    //     std::swap(currentPiece.width, currentPiece.height);
-                    // }
-
                     Piece rotatedPiece = currentPiece;
                     rotatedPiece.shape = newShape;
                     rotatedPiece.width = currentPiece.height;
                     rotatedPiece.height = currentPiece.width;
                     
-                    bool rotated = false;
                     for (const auto& offset : wallKickOffsets) {
-                        int newX = currentPiece.x + offset.first;
-                        int newY = currentPiece.y + offset.second;
-
+                        
                         // Check if rotated piece fits at (newX, newY)
-                        if (checkPlacement(rotatedPiece, board, newX - currentPiece.x, newY - currentPiece.y)) {
+                        if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
                             // Apply rotation and offset
                             currentPiece.shape = newShape;
-                            currentPiece.x = newX;
-                            currentPiece.y = newY;
-                            rotated = true;
+                            std::swap(currentPiece.width, currentPiece.height);
+                            
+                            currentPiece.x = currentPiece.x + offset.first;
+                            currentPiece.y = currentPiece.y + offset.second;
+                            currentPiece.rotation = (currentPiece.rotation + 1) % 4;
                             break;
                         }
-                    }
-                    if (rotated){
-                        currentPiece.shape = newShape;
-                        std::swap(currentPiece.width, currentPiece.height);
                     }
 
                     break;
                 }
                 case InputAction::SoftDrop:
-                    // for (int sx = 0; sx < currentPiece.width; ++sx) {
-                    //     for (int sy = 0; sy < currentPiece.height; ++sy) {
-                    //         if (currentPiece.shape[sy][sx] != 0) {
-                    //             int boardX = currentPiece.x + sx;
-                    //             int boardY = currentPiece.y + sy;
-                    //             if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                    //                 board.current[boardX][boardY] = 0;
-                    //             }
-                    //         }
-                    //     }
-                    // }
-                   
-                    // if (currentPiece.y + currentPiece.height < boardHeight && board.current[currentPiece.x][currentPiece.y + 1] == 0) {
-                    //     currentPiece.y += 1;
-                    // }
 
                     if (checkPlacement(currentPiece, board, 0, 1)){
                         //clear current position
@@ -1006,6 +972,22 @@ int main( int argc, char* args[] )
                     }
 
                     if (!holdUsed){
+
+                        //ensure rotation is reset
+                        while (currentPiece.rotation != 0) {
+                            // Rotate back to original orientation
+                            for (int sx = 0; sx < currentPiece.width; ++sx) {
+                                for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                    newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
+                                }
+                            }
+                            currentPiece.shape = newShape;
+                            std::swap(currentPiece.width, currentPiece.height);
+                            currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+                            //reset newShape for next potential rotation
+                            newShape = std::vector<std::vector<int>>(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+                        }
+
                         if (holdPiece.shape.empty()) {
                             holdPiece = currentPiece;
                             pickPiece = std::rand() % 7; // Generates a random number between 0 and 6 inclusive
