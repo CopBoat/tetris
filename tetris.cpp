@@ -771,15 +771,7 @@ int main( int argc, char* args[] )
             std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
 
             // List of offsets to try for wall kick
-            std::vector<std::pair<int, int>> wallKickOffsets = {
-                {0, 0},    // No offset
-                {-1, 0},   // Left
-                {1, 0},    // Right
-                {0, -1},   // Up
-                {-1, -1},  // Up-Left
-                {1, -1},   // Up-Right
-                // ... add more if you want (see below)
-            };
+            std::vector<std::pair<int, int>> wallKickOffsets = {{0, 0}, {-1, 0}, {1, 0}, {0, -1}, {-1, -1}, {1, -1}};
 
             switch (action) {
                 case InputAction::MoveLeft:
@@ -858,32 +850,68 @@ int main( int argc, char* args[] )
                     if (currentPiece.width == currentPiece.height) {
                         break;
                     }
-
-                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                            newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
+                    else if (currentPiece.height == 1 || currentPiece.width == 1) {
+                        // I piece rotation special case
+                        // Rotate 90 degrees clockwise
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
+                            }
                         }
-                    }
 
-                    Piece rotatedPiece = currentPiece;
-                    rotatedPiece.shape = newShape;
-                    rotatedPiece.width = currentPiece.height;
-                    rotatedPiece.height = currentPiece.width;
-                    
-                    for (const auto& offset : wallKickOffsets) {
-                        
+                        Piece rotatedPiece = currentPiece;
+                        rotatedPiece.shape = newShape;
+                        rotatedPiece.width = currentPiece.height;
+                        rotatedPiece.height = currentPiece.width;
+
                         // Check if rotated piece fits at (newX, newY)
-                        if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-                            // Apply rotation and offset
+                        if (checkPlacement(rotatedPiece, board, 0, 0)) {
+                            // Apply rotation
                             currentPiece.shape = newShape;
                             std::swap(currentPiece.width, currentPiece.height);
-                            
-                            currentPiece.x = currentPiece.x + offset.first;
-                            currentPiece.y = currentPiece.y + offset.second;
                             currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-                            break;
+                            if (currentPiece.rotation % 4 == 1 || currentPiece.rotation % 4 == 3) {
+                                // Shift right for vertical I piece
+                                currentPiece.x += 1;
+                            } 
+                            else {
+                                currentPiece.x -= 1;
+                            }
+                            
+                            //currentPiece.y += 1;
+                        }
+
+                        break;
+                    }
+                    else 
+                    {
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
+                            }
+                        }
+
+                        Piece rotatedPiece = currentPiece;
+                        rotatedPiece.shape = newShape;
+                        rotatedPiece.width = currentPiece.height;
+                        rotatedPiece.height = currentPiece.width;
+                        
+                        for (const auto& offset : wallKickOffsets) {
+                            
+                            // Check if rotated piece fits at (newX, newY)
+                            if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
+                                // Apply rotation and offset
+                                currentPiece.shape = newShape;
+                                std::swap(currentPiece.width, currentPiece.height);
+                                
+                                currentPiece.x = currentPiece.x + offset.first;
+                                currentPiece.y = currentPiece.y + offset.second;
+                                currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+                                break;
+                            }
                         }
                     }
+                    
 
                     break;
                 }
@@ -973,20 +1001,29 @@ int main( int argc, char* args[] )
 
                     if (!holdUsed){
 
-                        //ensure rotation is reset
-                        while (currentPiece.rotation != 0) {
-                            // Rotate back to original orientation
-                            for (int sx = 0; sx < currentPiece.width; ++sx) {
-                                for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                    newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
-                                }
-                            }
-                            currentPiece.shape = newShape;
-                            std::swap(currentPiece.width, currentPiece.height);
-                            currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-                            //reset newShape for next potential rotation
-                            newShape = std::vector<std::vector<int>>(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+                        //reset peice rotation
+
+                        // if I piece, reset to original horizontal position
+                        if (currentPiece.width == 1 || currentPiece.height == 1) {
+                            currentPiece = bigPiece; // Reset to I piece
                         }
+                        else
+                        {
+                            while (currentPiece.rotation != 0) {
+                                // Rotate back to original orientation
+                                for (int sx = 0; sx < currentPiece.width; ++sx) {
+                                    for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                        newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
+                                    }
+                                }
+                                currentPiece.shape = newShape;
+                                std::swap(currentPiece.width, currentPiece.height);
+                                currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+                                //reset newShape for next potential rotation
+                                newShape = std::vector<std::vector<int>>(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+                            }
+                        }
+                        
 
                         if (holdPiece.shape.empty()) {
                             holdPiece = currentPiece;
