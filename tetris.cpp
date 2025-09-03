@@ -549,6 +549,7 @@ enum class InputAction {
     MoveLeft,
     MoveRight,
     RotateClockwise,
+    RotateCounterClockwise,
     SoftDrop,
     HardDrop,
     Hold
@@ -754,12 +755,13 @@ int main( int argc, char* args[] )
 
                     if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
                         switch (e.gbutton.button) {
-                            case SDL_GAMEPAD_BUTTON_DPAD_LEFT:  action = InputAction::MoveLeft;  break;
-                            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: action = InputAction::MoveRight; break;
-                            case SDL_GAMEPAD_BUTTON_WEST:    action = InputAction::RotateClockwise;    break;
-                            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:  action = InputAction::SoftDrop;  break;
-                            case SDL_GAMEPAD_BUTTON_SOUTH:    action = InputAction::HardDrop;  break;
-                            case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;   break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_LEFT:     action = InputAction::MoveLeft;               break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:    action = InputAction::MoveRight;              break;
+                            case SDL_GAMEPAD_BUTTON_WEST:          action = InputAction::RotateClockwise;        break;
+                            case SDL_GAMEPAD_BUTTON_EAST:          action = InputAction::RotateCounterClockwise; break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:     action = InputAction::SoftDrop;               break;
+                            case SDL_GAMEPAD_BUTTON_SOUTH:         action = InputAction::HardDrop;               break;
+                            case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
                         }
                     }
                 }
@@ -776,21 +778,6 @@ int main( int argc, char* args[] )
             switch (action) {
                 case InputAction::MoveLeft:
                 {
-                    //check collision
-                    // bool canMoveLeft = true;
-                    // for (int sx = 0; sx < currentPiece.width; ++sx) {
-                    //     for (int sy = 0; sy < currentPiece.height; ++sy) {
-                    //         if (currentPiece.shape[sy][sx] != 0) {
-                    //             int boardX = currentPiece.x + sx - 1;
-                    //             int boardY = currentPiece.y + sy;
-                    //             if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                    //                 canMoveLeft = false;
-                    //             }
-                    //         }
-                    //     }
-                    //     if (!canMoveLeft) break;
-                    // }
-
                     if (checkPlacement(currentPiece, board, -1, 0)){
                         //clear current position
                         for (int sx = 0; sx < currentPiece.width; ++sx) {
@@ -811,21 +798,6 @@ int main( int argc, char* args[] )
                 }
                 case InputAction::MoveRight:
                 {
-                    //check collision
-                    // bool canMoveRight = true;
-                    // for (int sx = 0; sx < currentPiece.width; ++sx) {
-                    //     for (int sy = 0; sy < currentPiece.height; ++sy) {
-                    //         if (currentPiece.shape[sy][sx] != 0) {
-                    //             int boardX = currentPiece.x + sx + 1;
-                    //             int boardY = currentPiece.y + sy;
-                    //             if (boardX < 0 || boardX >= boardWidth || boardY < 0 || boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                    //                 canMoveRight = false;
-                    //             }
-                    //         }
-                    //     }
-                    //     if (!canMoveRight) break;
-                    // }
-
                     if (checkPlacement(currentPiece, board, 1, 0)){
                         //clear current position
                         for (int sx = 0; sx < currentPiece.width; ++sx) {
@@ -907,6 +879,76 @@ int main( int argc, char* args[] )
                                 currentPiece.x = currentPiece.x + offset.first;
                                 currentPiece.y = currentPiece.y + offset.second;
                                 currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+                                break;
+                            }
+                        }
+                    }
+                    
+
+                    break;
+                }
+                case InputAction::RotateCounterClockwise:
+                {
+                    // Dont perform rotation if O piece
+                    if (currentPiece.width == currentPiece.height) {
+                        break;
+                    }
+                    else if (currentPiece.height == 1 || currentPiece.width == 1) {
+                        // I piece rotation special case
+                        // Rotate 90 degrees clockwise
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                newShape[currentPiece.width - 1 - sx][sy] = currentPiece.shape[sy][sx];
+                            }
+                        }
+
+                        Piece rotatedPiece = currentPiece;
+                        rotatedPiece.shape = newShape;
+                        rotatedPiece.width = currentPiece.height;
+                        rotatedPiece.height = currentPiece.width;
+
+                        // Check if rotated piece fits at (newX, newY)
+                        if (checkPlacement(rotatedPiece, board, 0, 0)) {
+                            // Apply rotation
+                            currentPiece.shape = newShape;
+                            std::swap(currentPiece.width, currentPiece.height);
+                            currentPiece.rotation = (currentPiece.rotation + 3) % 4; // Equivalent to -1 mod 4
+                            if (currentPiece.rotation % 4 == 1 || currentPiece.rotation % 4 == 3) {
+                                // Shift right for vertical I piece
+                                currentPiece.x += 1;
+                            } 
+                            else {
+                                currentPiece.x -= 1;
+                            }
+                            
+                            //currentPiece.y += 1;
+                        }
+
+                        break;
+                    }
+                    else 
+                    {
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                newShape[currentPiece.width - 1 - sx][sy] = currentPiece.shape[sy][sx];
+                            }
+                        }
+
+                        Piece rotatedPiece = currentPiece;
+                        rotatedPiece.shape = newShape;
+                        rotatedPiece.width = currentPiece.height;
+                        rotatedPiece.height = currentPiece.width;
+                        
+                        for (const auto& offset : wallKickOffsets) {
+                            
+                            // Check if rotated piece fits at (newX, newY)
+                            if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
+                                // Apply rotation and offset
+                                currentPiece.shape = newShape;
+                                std::swap(currentPiece.width, currentPiece.height);
+                                currentPiece.x = currentPiece.x + offset.first;
+                                currentPiece.y = currentPiece.y + offset.second;
+                                currentPiece.rotation = (currentPiece.rotation - 1) % 4; // Equivalent
                                 break;
                             }
                         }
