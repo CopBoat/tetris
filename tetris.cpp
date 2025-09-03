@@ -769,11 +769,46 @@ int main( int argc, char* args[] )
 
 
 
-            //rotate helper
+            //rotate helper (can I move this into the case?)
             std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
 
-            // List of offsets to try for wall kick
-            std::vector<std::pair<int, int>> wallKickOffsets = {{0, 0}, {-1, 0}, {1, 0}, {0, -1}, {-1, -1}, {1, -1}};
+            // Wall kick offset vectors (J, L, S, T, Z pieces)
+            //state names: 0 = spawn state, R = 1 clockwise rotation from spawn, L = 1 counterclockwise rotation from spawn, 2 = 2 rotations from spawn in either direction
+            //0->R
+            std::vector<std::pair<int, int>> wallKickOffsets0R = {{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}};
+            //R->0
+            std::vector<std::pair<int, int>> wallKickOffsetsR0 = {{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}};
+            //R->2
+            std::vector<std::pair<int, int>> wallKickOffsetsR2 = {{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}};
+            //2->R
+            std::vector<std::pair<int, int>> wallKickOffsets2R = {{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}};
+            //2->L
+            std::vector<std::pair<int, int>> wallKickOffsets2L = {{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}};
+            //L->2
+            std::vector<std::pair<int, int>> wallKickOffsetsL2 = {{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}};
+            //L->0
+            std::vector<std::pair<int, int>> wallKickOffsetsL0 = {{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}};   
+            //0->L
+            std::vector<std::pair<int, int>> wallKickOffsets0L = {{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}};
+
+            // Wall kick offset vectors (I piece)
+            //0->R
+            std::vector<std::pair<int, int>> wallKickOffsets0R = {{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}};
+            //R->0
+            std::vector<std::pair<int, int>> wallKickOffsetsR0 = {{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}};
+            //R->2
+            std::vector<std::pair<int, int>> wallKickOffsetsR2 = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
+            //2->R
+            std::vector<std::pair<int, int>> wallKickOffsets2R = {{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}};
+            //2->L
+            std::vector<std::pair<int, int>> wallKickOffsets2L = {{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}};
+            //L->2
+            std::vector<std::pair<int, int>> wallKickOffsetsL2 = {{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}};
+            //L->0
+            std::vector<std::pair<int, int>> wallKickOffsetsL0 = {{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}};
+            //0->L
+            std::vector<std::pair<int, int>> wallKickOffsets0L = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
+
 
             switch (action) {
                 case InputAction::MoveLeft:
@@ -868,7 +903,7 @@ int main( int argc, char* args[] )
                         rotatedPiece.width = currentPiece.height;
                         rotatedPiece.height = currentPiece.width;
                         
-                        for (const auto& offset : wallKickOffsets) {
+                        for (const auto& offset : wallKickOffsets0R) {
                             
                             // Check if rotated piece fits at (newX, newY)
                             if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
@@ -939,7 +974,7 @@ int main( int argc, char* args[] )
                         rotatedPiece.width = currentPiece.height;
                         rotatedPiece.height = currentPiece.width;
                         
-                        for (const auto& offset : wallKickOffsets) {
+                        for (const auto& offset : wallKickOffsets0R) {
                             
                             // Check if rotated piece fits at (newX, newY)
                             if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
