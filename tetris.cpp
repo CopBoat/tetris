@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <math.h>
 
 /* Constants */
 //Screen dimension constants
@@ -17,6 +18,16 @@ constexpr int kScreenFps{ 60 };
 constexpr int blockSize{ 32 }; // Size of each block in pixels
 constexpr int boardWidth{ 15 }; // Width of the board in blocks
 constexpr int boardHeight{ 20 }; // Height of the board in blocks
+
+struct Particle {
+    float x, y;
+    float vx, vy;
+    int lifetime;
+    SDL_Color color;
+    float alpha; // Add alpha for fading
+};
+
+std::vector<Particle> particles;
 
 class Board
 {
@@ -448,7 +459,7 @@ bool init()
     bool success{ true };
 
     // if (SDL_INIT_GAMEPAD == false) {
-    //     SDL_Log("SDL Gamepad subsystem could not initialize! SDL error: %s\n", SDL_GetError());
+    //     SDL_Log("SDL Gamepad subsystem could not initialize! SDL error: %s\n");
     //     success = false;
     // }
 
@@ -543,6 +554,35 @@ bool checkPlacement(Piece piece, Board board, int newX, int newY) {
     return placementValid; 
 }
 
+void spawnParticles(const Piece& piece) {
+    for (int sx = 0; sx < piece.width; ++sx) {
+        for (int sy = 0; sy < piece.height; ++sy) {
+            if (piece.shape[sy][sx] != 0) {
+                int numSparkles = 8 + std::rand() % 8; // More sparkles per block
+                for (int i = 0; i < numSparkles; ++i) {
+                    Particle p;
+                    p.x = (piece.x + sx) * blockSize + blockSize / 2;
+                    p.y = (piece.y + sy) * blockSize + blockSize / 2;
+                    float angle = (std::rand() % 360) * 3.14159f / 180.0f;
+                    float speed = 1.0f + (std::rand() % 100) / 100.0f;
+                    p.vx = cos(angle) * speed;
+                    p.vy = sin(angle) * speed;
+                    p.lifetime = 15 + std::rand() % 10;
+                    // Sparkle colors: white, yellow, cyan, light blue
+                    int c = std::rand() % 4;
+                    switch (c) {
+                        case 0: p.color = {255, 255, 255, 255}; break; // White
+                        case 1: p.color = {255, 255, 128, 255}; break; // Yellowish
+                        case 2: p.color = {128, 255, 255, 255}; break; // Cyan
+                        case 3: p.color = {200, 200, 255, 255}; break; // Light blue
+                    }
+                    p.alpha = 255.0f;
+                    particles.push_back(p);
+                }
+            }
+        }
+    }
+}
 
 enum class InputAction {
     None,
@@ -1093,12 +1133,7 @@ int main( int argc, char* args[] )
                                     }
                                 }
                                 
-
-                                // while (!newPiece){
-                                //     if (currentPiece.y + currentPiece.height < boardHeight && board.current[currentPiece.x][currentPiece.y + 1] == 0) {
-                                //         currentPiece.y += 1;
-                                //     } 
-                                // }
+                                spawnParticles(currentPiece);
                                 hardDrop = true;
                                 break;
                             }
@@ -1387,8 +1422,22 @@ int main( int argc, char* args[] )
                 }
             }
 
-            
-
+            // Update and render particles
+            for (auto it = particles.begin(); it != particles.end();) {
+                it->x += it->vx;
+                it->y += it->vy;
+                it->lifetime--;
+                if (it->alpha > 0) it->alpha -= 255.0f / (it->lifetime + 1); // Fade out
+                SDL_Color c = it->color;
+                c.a = static_cast<Uint8>(std::max(0.0f, it->alpha));
+                SDL_SetRenderDrawColor(gRenderer, c.r, c.g, c.b, c.a);
+                SDL_FRect rect{it->x, it->y, 2, 2}; // Small sparkle
+                SDL_RenderFillRect(gRenderer, &rect);
+                if (it->lifetime <= 0 || it->alpha <= 0)
+                    it = particles.erase(it);
+                else
+                    ++it;
+            }
 
             //update screen
             SDL_RenderPresent( gRenderer );
