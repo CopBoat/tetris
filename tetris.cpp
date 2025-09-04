@@ -795,7 +795,7 @@ int main( int argc, char* args[] )
             //0->L
             std::vector<std::pair<int, int>> wallKickOffsets0L = {{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}};
 
-            std::vector<std::pair<int, int>> wallKickOffsets[8] = {wallKickOffsets0R, wallKickOffsetsR2, wallKickOffsets2L, wallKickOffsetsL0};
+            std::vector<std::pair<int, int>> wallKickOffsets[8] = {wallKickOffsets0R, wallKickOffsetsR2, wallKickOffsets2L, wallKickOffsetsL0, wallKickOffsets0L, wallKickOffsetsL2, wallKickOffsets2R, wallKickOffsetsR0};
 
             // Wall kick offset vectors (I piece)
             //0->R
@@ -920,8 +920,9 @@ int main( int argc, char* args[] )
                         rotatedPiece.shape = newShape;
                         rotatedPiece.width = currentPiece.height;
                         rotatedPiece.height = currentPiece.width;
+                        rotatedPiece.rotation = (currentPiece.rotation + 1) % 4;
                         
-                        for (const auto& offset : wallKickOffsets0R) {
+                        for (const auto& offset : wallKickOffsets[rotatedPiece.rotation]) {
                             
                             // Check if rotated piece fits at (newX, newY)
                             if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
@@ -1003,8 +1004,17 @@ int main( int argc, char* args[] )
                         rotatedPiece.shape = newShape;
                         rotatedPiece.width = currentPiece.height;
                         rotatedPiece.height = currentPiece.width;
+                        rotatedPiece.rotation = (currentPiece.rotation - 1) % 4;
+
+                        int idk;
+                        switch(rotatedPiece.rotation) {
+                            case 0: idk = 4; break;
+                            case 1: idk = 7; break;
+                            case 2: idk = 6; break;
+                            case 3: idk = 5; break;
+                        };
                         
-                        for (const auto& offset : wallKickOffsets0R) {
+                        for (const auto& offset : wallKickOffsets[idk]) {
                             
                             // Check if rotated piece fits at (newX, newY)
                             if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
