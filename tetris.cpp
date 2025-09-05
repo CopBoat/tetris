@@ -592,7 +592,8 @@ enum class InputAction {
     RotateCounterClockwise,
     SoftDrop,
     HardDrop,
-    Hold
+    Hold,
+    Pause
 };
 
 int main( int argc, char* args[] )
@@ -745,6 +746,8 @@ int main( int argc, char* args[] )
 
         bool alternateIPieceRotationOffset = false;
 
+        bool paused = false;
+
         int lockDelayFrames = 30; // Number of frames to allow after landing (adjust as desired)
         int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
         bool pieceLanded = false; // True if just landed, false if still falling
@@ -788,7 +791,7 @@ int main( int argc, char* args[] )
                             case SDLK_H: action = InputAction::Hold;      break;
                                 
                             case SDLK_SPACE: action = InputAction::HardDrop;  break;
-                            // case SDLK_ESCAPE:
+                            case SDLK_ESCAPE: action = InputAction::Pause; break;
                             //     std::cout << "ESCAPE key pressed" << std::endl;
                             //     //capTimer.pause();
                             //     break;
@@ -807,6 +810,7 @@ int main( int argc, char* args[] )
                             case SDL_GAMEPAD_BUTTON_DPAD_DOWN:     action = InputAction::SoftDrop;               break;
                             case SDL_GAMEPAD_BUTTON_SOUTH:         action = InputAction::HardDrop;               break;
                             case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
+                            case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
                         }
                     }
                 }
@@ -1226,7 +1230,8 @@ int main( int argc, char* args[] )
                     // nextPiece = pieceTypes[nextPickPiece]; // Update next piece
                     
                     break;
-
+                case InputAction::Pause:
+                    paused = !paused;
                 default:
                     break;
             }
@@ -1311,6 +1316,23 @@ int main( int argc, char* args[] )
             //         }
             //         std::cout << "\n";
             //     }
+
+
+            if (paused) {
+                // Optionally render a "Paused" message
+                SDL_Color textColor{ 0xFF, 0xFF, 0xFF, 0xFF };
+                gameOverLabel.loadFromRenderedText("PAUSED", textColor);
+                gameOverLabel.render(200, 300);
+                SDL_RenderPresent(gRenderer);
+
+                // Cap frame rate while paused
+                Uint64 nsPerFrame = 1000000000 / kScreenFps;
+                Uint64 frameNs{ capTimer.getTicksNS() };
+                if (frameNs < nsPerFrame) {
+                    SDL_DelayNS(nsPerFrame - frameNs);
+                }
+                continue; // Skip the rest of the loop
+            }
 
             //check game over
             if (currentPiece.y == 0) {
@@ -1697,7 +1719,8 @@ int main( int argc, char* args[] )
 
             //Cap frame rate
             //1,000,000,000
-            Uint64 nsPerFrame = dropSpeed / kScreenFps; 
+            //Uint64 nsPerFrame = dropSpeed / kScreenFps; 
+            Uint64 nsPerFrame = 1000000000 / kScreenFps;
             Uint64 frameNs{ capTimer.getTicksNS() };
             if( frameNs < nsPerFrame )
             {
