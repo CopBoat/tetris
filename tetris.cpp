@@ -643,7 +643,7 @@ int main( int argc, char* args[] )
             if (gamepad == NULL) {
                 gamepad = gamepd;
             }
-            std::cout << "Gamepad connected: " << SDL_GetGamepadName(gamepd) << "\n";
+            //std::cout << "Gamepad connected: " << SDL_GetGamepadName(gamepd) << "\n";
     
             // Close the other gamepads
             if(i > 0) {
@@ -653,7 +653,7 @@ int main( int argc, char* args[] )
 
         if (!gamepad) {
             //std::cerr << "Failed to open gamepad: " << SDL_GetError() << "\n";
-            std::cout << "No gamepad connected.\n";
+            //std::cout << "No gamepad connected.\n";
             // SDL_Quit();
             // return 1;
         }
@@ -661,7 +661,8 @@ int main( int argc, char* args[] )
         //float pos{ 0.0f };
         //float posX{ 320.f }; // Add this for horizontal position
 
-        int myTickCount( 0 );
+        //int myTickCount( 0 );
+        Uint64 lastDropTime = SDL_GetTicksNS();
         
         Uint64 dropSpeed{ 700000000 }; // Milliseconds between drops
 
@@ -1513,8 +1514,10 @@ int main( int argc, char* args[] )
                     
             }
             
-            if (myTickCount % kScreenFps == 0 && canPlaceNext) {
+            Uint64 now = SDL_GetTicksNS();
+            if (now - lastDropTime >= dropSpeed && canPlaceNext) {
                 currentPiece.y += 1;
+                lastDropTime = now;
             }
 
 
@@ -1689,7 +1692,7 @@ int main( int argc, char* args[] )
             //         std::cout << "\n";
             //     }
             
-            myTickCount++;
+            //myTickCount++;
 
 
             //Cap frame rate
