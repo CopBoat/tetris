@@ -856,6 +856,9 @@ int main( int argc, char* args[] )
             std::vector<std::pair<int, int>> wallKickOffsetsI0L = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
 
 
+            std::vector<std::pair<int, int>> wallKickOffsetsI[8] = {wallKickOffsetsI0R, wallKickOffsetsIR2, wallKickOffsetsI2L, wallKickOffsetsIL0, wallKickOffsetsI0L, wallKickOffsetsIL2, wallKickOffsetsI2R, wallKickOffsetsIR0};
+
+
             switch (action) {
                 case InputAction::MoveLeft:
                 {
@@ -916,37 +919,55 @@ int main( int argc, char* args[] )
                         rotatedPiece.shape = newShape;
                         rotatedPiece.width = currentPiece.height;
                         rotatedPiece.height = currentPiece.width;
+                        rotatedPiece.rotation = (currentPiece.rotation + 1) % 4;
 
-                        // Check if rotated piece fits at (newX, newY)
-                        if (checkPlacement(rotatedPiece, board, 0, 0)) {
-                            // Apply rotation
-                            currentPiece.shape = newShape;
-                            std::swap(currentPiece.width, currentPiece.height);
-                            currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-                            if (currentPiece.rotation % 4 == 1 || currentPiece.rotation % 4 == 3) {
-                                // Shift right for vertical I piece
-                                if (alternateIPieceRotationOffset) {
-                                    currentPiece.x += 2;
-                                    alternateIPieceRotationOffset = false;
-                                }
-                                else {
-                                    currentPiece.x += 1;
-                                    alternateIPieceRotationOffset = true;
-                                }
-                            } 
-                            else {
-                                if (alternateIPieceRotationOffset) {
-                                    currentPiece.x -= 1;
-                                }
-                                else {
-                                    currentPiece.x -= 2;
-                                }
+                        if (rotatedPiece.rotation % 4 == 1 || rotatedPiece.rotation % 4 == 3) 
+                        {
+                            // Shift right for vertical I piece
+                            if (alternateIPieceRotationOffset) {
+                                rotatedPiece.x += 2;
+                                //currentPiece.x = currentPiece.x + 2 + offset.first;
+                                alternateIPieceRotationOffset = false;
                             }
-                            
-                            //currentPiece.y += 1;
+                            else {
+                                rotatedPiece.x += 1;
+                                //currentPiece.x = currentPiece.x + 1 + offset.first;
+                                alternateIPieceRotationOffset = true;
+                            }
+                        } 
+                        else {
+                            if (alternateIPieceRotationOffset) {
+                                rotatedPiece.x -= 1;
+                                //currentPiece.x = currentPiece.x - 1 + offset.first;
+                            }
+                            else {
+                                rotatedPiece.x -= 2;
+                                //currentPiece.x = currentPiece.x - 2 + offset.first;
+                            }
                         }
 
-                        break;
+                        
+
+                        for (const auto& offset: wallKickOffsetsI[rotatedPiece.rotation]) {
+                            // Check if rotated piece fits at (newX, newY)
+                            if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
+                                // Apply rotation
+                                currentPiece.shape = newShape;
+                                std::swap(currentPiece.width, currentPiece.height);
+                                currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+
+                                currentPiece.x = rotatedPiece.x + offset.first;
+                                currentPiece.y = rotatedPiece.y + offset.second;
+
+                                
+                                
+                                break;
+                            }
+
+                            
+                        }
+
+                        
                     }
                     else 
                     {
@@ -1027,10 +1048,10 @@ int main( int argc, char* args[] )
                                 }
                             }
                             
-                            //currentPiece.y += 1;
+                            break;
                         }
 
-                        break;
+                        
                     }
                     else 
                     {
