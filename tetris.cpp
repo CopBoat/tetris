@@ -1412,6 +1412,25 @@ int main( int argc, char* args[] )
                                     case 7: color = {255, 128, 0, 255}; break; // Orange
                                     default: color = {128, 128, 128, 255}; break; // Gray
                                 }
+                                // Check if this block is part of the current falling piece
+                                bool isCurrentPieceBlock = false;
+                                for (int sx = 0; sx < currentPiece.width; ++sx) {
+                                    for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                        if (currentPiece.shape[sy][sx] != 0 &&
+                                            x == currentPiece.x + sx &&
+                                            y == currentPiece.y + sy) {
+                                            isCurrentPieceBlock = true;
+                                            break;
+                                        }
+                                    }
+                                    if (isCurrentPieceBlock) break;
+                                }
+                                // Only darken locked pieces
+                                if (!isCurrentPieceBlock) {
+                                    color.r = static_cast<Uint8>(color.r * 0.7f);
+                                    color.g = static_cast<Uint8>(color.g * 0.7f);
+                                    color.b = static_cast<Uint8>(color.b * 0.7f);
+                                }
                                 SDL_SetRenderDrawColor(gRenderer, color.r, color.g, color.b, color.a);
                                 SDL_RenderFillRect(gRenderer, &rect);
                             }
