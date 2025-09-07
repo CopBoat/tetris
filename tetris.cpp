@@ -702,58 +702,58 @@ int main( int argc, char* args[] )
         Uint64 dropSpeed{ 700000000 }; // Milliseconds between drops
 
         // Define Tetris pieces
-        Piece bigPiece;
-        bigPiece.width = 4; // Width in blocks
-        bigPiece.height = 1; // Height in blocks
-        bigPiece.shape = { { 1, 1, 1, 1 } }; // I shape
-        bigPiece.rotation = 0; // Initial rotation state
-        bigPiece.color = 4; // Color identifier for the piece
+        Piece iPiece;
+        iPiece.width = 4; // Width in blocks
+        iPiece.height = 1; // Height in blocks
+        iPiece.shape = { { 1, 1, 1, 1 } }; // I shape
+        iPiece.rotation = 0; // Initial rotation state
+        iPiece.color = 1; // Color identifier for the piece
 
-        Piece squarePiece;
-        squarePiece.width = 2; // Width in blocks
-        squarePiece.height = 2; // Height in blocks
-        squarePiece.shape = { { 1, 1 }, { 1, 1 } }; // Square shape
-        squarePiece.rotation = 0; // Initial rotation state
-        squarePiece.color = 3; // Color identifier for the piece
+        Piece oPiece;
+        oPiece.width = 2; // Width in blocks
+        oPiece.height = 2; // Height in blocks
+        oPiece.shape = { { 1, 1 }, { 1, 1 } }; // Square shape
+        oPiece.rotation = 0; // Initial rotation state
+        oPiece.color = 2; // Color identifier for the piece
 
         Piece tPiece;
         tPiece.width = 3; // Width in blocks
         tPiece.height = 2; // Height in blocks
         tPiece.shape = { { 0, 1, 0 }, { 1, 1, 1 } }; // T shape
         tPiece.rotation = 0; // Initial rotation state
-        tPiece.color = 2; // Color identifier for the piece 
+        tPiece.color = 3; // Color identifier for the piece 
 
-        Piece lPiece1;
-        lPiece1.width = 2; // Width in blocks
-        lPiece1.height = 3; // Height in blocks
-        lPiece1.shape = { { 1, 1 }, { 0, 1 }, { 0, 1 } }; // L shape
-        lPiece1.rotation = 0; // Initial rotation state
-        lPiece1.color = 6; // Color identifier for the piece
+        Piece lPiece;
+        lPiece.width = 3; // Width in blocks
+        lPiece.height = 2; // Height in blocks
+        lPiece.shape = { { 0, 0, 1 }, { 1, 1 , 1} }; // L shape
+        lPiece.rotation = 0; // Initial rotation state
+        lPiece.color = 4; // Color identifier for the piece
 
-        Piece lPiece2;
-        lPiece2.width = 2; // Width in blocks
-        lPiece2.height = 3; // Height in blocks
-        lPiece2.shape = { { 1, 1 }, { 1, 0 }, { 1, 0 } }; // L shape
-        lPiece2.rotation = 0; // Initial rotation state
-        lPiece2.color = 5; // Color identifier for the piece
+        Piece jPiece;
+        jPiece.width = 3; // Width in blocks
+        jPiece.height = 2; // Height in blocks
+        jPiece.shape = { { 1, 0, 0 }, { 1, 1 , 1} }; // L shape
+        jPiece.rotation = 0; // Initial rotation state
+        jPiece.color = 5; // Color identifier for the piece
 
-        Piece sPiece1;
-        sPiece1.width = 3; // Width in blocks
-        sPiece1.height = 2; // Height in blocks
-        sPiece1.shape = { { 0, 1, 1 }, { 1, 1, 0 } }; // S shape
-        sPiece1.rotation = 0; // Initial rotation state
-        sPiece1.color = 1; // Color identifier for the piece
+        Piece sPiece;
+        sPiece.width = 3; // Width in blocks
+        sPiece.height = 2; // Height in blocks
+        sPiece.shape = { { 0, 1, 1 }, { 1, 1, 0 } }; // S shape
+        sPiece.rotation = 0; // Initial rotation state
+        sPiece.color = 6; // Color identifier for the piece
 
-        Piece sPiece2;
-        sPiece2.width = 3; // Width in blocks
-        sPiece2.height = 2; // Height in blocks
-        sPiece2.shape = { { 1, 1, 0 }, { 0, 1, 1 } }; // S shape
-        sPiece2.rotation = 0; // Initial rotation state
-        sPiece2.color = 7; // Color identifier
+        Piece zPiece;
+        zPiece.width = 3; // Width in blocks
+        zPiece.height = 2; // Height in blocks
+        zPiece.shape = { { 1, 1, 0 }, { 0, 1, 1 } }; // S shape
+        zPiece.rotation = 0; // Initial rotation state
+        zPiece.color = 7; // Color identifier
 
         
 
-        Piece pieceTypes[7] = { bigPiece, squarePiece, tPiece, lPiece1, lPiece2, sPiece1, sPiece2 }; // Array of piece types
+        Piece pieceTypes[7] = { iPiece, oPiece, tPiece, lPiece, jPiece, sPiece, zPiece }; // Array of piece types
 
         int pickPiece = std::rand() % 7;  // Randomly select a piece from pieceTypes 
         int nextPickPiece = std::rand() % 7; // Randomly select the next piece
@@ -1217,7 +1217,7 @@ int main( int argc, char* args[] )
 
                         // if I piece, reset to original horizontal position
                         if (currentPiece.width == 1 || currentPiece.height == 1) {
-                            currentPiece = bigPiece; // Reset to I piece
+                            currentPiece = iPiece; // Reset to I piece
                         }
                         else
                         {
@@ -1475,14 +1475,14 @@ int main( int argc, char* args[] )
                                         blockSize - spacing };
                         SDL_Color color;
                         switch (val) {
-                            case 1: color = {255, 0, 0, 255}; break;
-                            case 2: color = {0, 0, 255, 255}; break;
-                            case 3: color = {255, 255, 0, 255}; break;
-                            case 4: color = {0, 255, 255, 255}; break;
-                            case 5: color = {0, 255, 0, 255}; break;
-                            case 6: color = {255, 0, 255, 255}; break;
-                            case 7: color = {255, 128, 0, 255}; break;
-                            default: color = {128, 128, 128, 255}; break;
+                            case 1: color = {0, 255, 255, 255}; break; //cyan
+                            case 2: color = {255, 255, 0, 255}; break; //yellow
+                            case 3: color = {128, 0, 128, 255}; break; //purple
+                            case 4: color = {255, 0, 0, 255}; break; //blue
+                            case 5: color = {0, 0, 255, 255}; break; //orange
+                            case 6: color = {0, 255, 0, 255}; break; //green
+                            case 7: color = {255, 0, 0, 255}; break; //red
+                            default: color = {127, 127, 127, 255}; break; //grey
                         }
                         
                         color.r = static_cast<Uint8>(color.r * 0.7f);
@@ -1655,14 +1655,14 @@ int main( int argc, char* args[] )
                                                 blockSize - spacing };
                                 SDL_Color color;
                                 switch (val) {
-                                    case 1: color = {255, 0, 0, 255}; break; // Red
-                                    case 2: color = {0, 0, 255, 255}; break; // Blue
-                                    case 3: color = {255, 255, 0, 255}; break; // Yellow
-                                    case 4: color = {0, 255, 255, 255}; break; // Cyan
-                                    case 5: color = {0, 255, 0, 255}; break; // Green
-                                    case 6: color = {255, 0, 255, 255}; break; // Magenta
-                                    case 7: color = {255, 128, 0, 255}; break; // Orange
-                                    default: color = {128, 128, 128, 255}; break; // Gray
+                                    case 1: color = {0, 255, 255, 255}; break; //cyan
+                                    case 2: color = {255, 255, 0, 255}; break; //yellow
+                                    case 3: color = {128, 0, 128, 255}; break; //purple
+                                    case 4: color = {255, 0, 0, 255}; break; //blue
+                                    case 5: color = {0, 0, 255, 255}; break; //orange
+                                    case 6: color = {0, 255, 0, 255}; break; //green
+                                    case 7: color = {255, 0, 0, 255}; break; //red
+                                    default: color = {127, 127, 127, 255}; break; //grey
                                 }
                                 // Check if this block is part of the current falling piece
                                 bool isCurrentPieceBlock = false;
