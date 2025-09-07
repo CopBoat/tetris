@@ -584,6 +584,33 @@ void spawnParticles(const Piece& piece) {
     }
 }
 
+void spawnParticlesAt(int x, int y, int color) {
+    int numSparkles = 8 + std::rand() % 8;
+    for (int i = 0; i < numSparkles; ++i) {
+        Particle p;
+        p.x = x * blockSize + blockSize / 2;
+        p.y = y * blockSize + blockSize / 2;
+        float angle = (std::rand() % 360) * 3.14159f / 180.0f;
+        float speed = 1.0f + (std::rand() % 100) / 100.0f;
+        p.vx = cos(angle) * speed;
+        p.vy = sin(angle) * speed;
+        p.lifetime = 15 + std::rand() % 10;
+        // Set color based on block color if desired
+        switch (color) {
+            case 1: p.color = {255, 0, 0, 255}; break;
+            case 2: p.color = {0, 0, 255, 255}; break;
+            case 3: p.color = {255, 255, 0, 255}; break;
+            case 4: p.color = {0, 255, 255, 255}; break;
+            case 5: p.color = {0, 255, 0, 255}; break;
+            case 6: p.color = {255, 0, 255, 255}; break;
+            case 7: p.color = {255, 128, 0, 255}; break;
+            default: p.color = {255, 255, 255, 255}; break;
+        }
+        p.alpha = 255.0f;
+        particles.push_back(p);
+    }
+}
+
 enum class InputAction {
     None,
     MoveLeft,
@@ -595,6 +622,13 @@ enum class InputAction {
     Hold,
     Pause
 };
+
+bool clearingRows = false;
+std::vector<int> rowsToClear;
+Uint64 clearAnimStart = 0;
+int clearAnimStep = 0;
+const int clearAnimSteps = boardWidth / 2 + 1; // Number of steps for center-out
+const Uint64 clearAnimDuration = 500000000; // 0.5 seconds in ns
 
 int main( int argc, char* args[] )
 {
@@ -1236,6 +1270,7 @@ int main( int argc, char* args[] )
                     break;
             }
 
+            
 
             if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::RotateClockwise)) {
                 lockDelayCounter = 0;
@@ -1334,6 +1369,179 @@ int main( int argc, char* args[] )
                 continue; // Skip the rest of the loop
             }
 
+            // ...in your main loop, before normal rendering...
+            if (clearingRows) {
+            
+            
+            Uint64 now = SDL_GetTicksNS();
+            int animFrame = ((now - clearAnimStart) * clearAnimSteps) / clearAnimDuration;
+            if (animFrame > clearAnimStep) {
+                clearAnimStep = animFrame;
+                // For each row, clear blocks from center out
+                for (int row : rowsToClear) {
+                    int center = boardWidth / 2;
+                    for (int offset = 0; offset <= clearAnimStep; ++offset) {
+                        int left = center - offset;
+                        int right = center + offset;
+                        if (left >= 0 && board.current[left][row] != 0) {
+                            spawnParticlesAt(left, row, board.current[left][row]);
+                            board.current[left][row] = 0;
+                        }
+                        if (right < boardWidth && right != left && board.current[right][row] != 0) {
+                            spawnParticlesAt(right, row, board.current[right][row]);
+                            board.current[right][row] = 0;
+                        }
+                    }
+                }
+            }
+
+            // --- RENDER BOARD AND PARTICLES DURING ANIMATION ---
+            // Clear background
+            SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+            SDL_RenderClear(gRenderer);
+
+            //render the UI elements
+            scoreLabel.render( 520, 40);
+            score.render( 520, 80 );
+            levelLabel.render( 520, 120 );
+            level.render( 520, 160 );
+            nextLabel.render( 520, 200 );
+            holdLabel.render( 520, 380 );
+            highScoreLabel.render( 520, 560 );
+            highScore.render( 520, 600 );
+            
+            
+
+            //todo put next piece here
+            SDL_SetRenderDrawColor( gRenderer, 128, 128, 128, 255 ); // Gray color for pieces
+            for (int sx = 0; sx < nextPiece.width; ++sx) {
+                    for (int sy = 0; sy < nextPiece.height; ++sy) {
+                        if (nextPiece.shape[sy][sx] != 0) {
+                            int boardX = nextPiece.x + sx;
+                            int boardY = nextPiece.y + sy;
+                            // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
+                            //     board.current[boardX][boardY] = currentPiece.color;
+                            // }
+                            SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 265.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
+                            SDL_RenderFillRect(gRenderer, &rect);
+                        }
+                    }
+                }
+
+            //todo put hold piece here
+            for (int sx = 0; sx < holdPiece.width; ++sx) {
+                    for (int sy = 0; sy < holdPiece.height; ++sy) {
+                        if (holdPiece.shape[sy][sx] != 0) {
+                            int boardX = holdPiece.x + sx;
+                            int boardY = holdPiece.y + sy;
+                            // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
+                            //     board.current[boardX][boardY] = currentPiece.color;
+                            // }
+                            SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 445.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
+                            SDL_RenderFillRect(gRenderer, &rect);
+                        }
+                    }
+                }
+
+            
+            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
+            
+            SDL_FRect nextFRect{ 510, 240, 100, 100 };
+            SDL_RenderRect( gRenderer, &nextFRect ); // Render a rectangle for the next piece
+            SDL_FRect holdFRect{ 510.f, 420.f, 100.f, 100.f };
+            SDL_RenderRect( gRenderer, &holdFRect ); // Render a rectangle for the hold piece
+            
+
+            // Draw grid lines
+            SDL_SetRenderDrawColor(gRenderer, 40, 40, 40, 255);
+            for (int x = 0; x <= boardWidth; ++x)
+                SDL_RenderLine(gRenderer, x * blockSize, 0, x * blockSize, boardHeight * blockSize);
+            for (int y = 0; y <= boardHeight; ++y)
+                SDL_RenderLine(gRenderer, 0, y * blockSize, boardWidth * blockSize, y * blockSize);
+
+            //draw line seperating the board and UI
+            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
+            SDL_RenderLine( gRenderer, 480, 0, 480, kScreenHeight );
+
+            // Draw the blocks
+            float spacing = 2.0f;
+            for (int x = 0; x < boardWidth; ++x) {
+                for (int y = 0; y < boardHeight; ++y) {
+                    int val = board.current[x][y];
+                    if (val != 0) {
+                        SDL_FRect rect{ static_cast<float>(x * blockSize) + spacing / 2,
+                                        static_cast<float>(y * blockSize) + spacing / 2,
+                                        blockSize - spacing,
+                                        blockSize - spacing };
+                        SDL_Color color;
+                        switch (val) {
+                            case 1: color = {255, 0, 0, 255}; break;
+                            case 2: color = {0, 0, 255, 255}; break;
+                            case 3: color = {255, 255, 0, 255}; break;
+                            case 4: color = {0, 255, 255, 255}; break;
+                            case 5: color = {0, 255, 0, 255}; break;
+                            case 6: color = {255, 0, 255, 255}; break;
+                            case 7: color = {255, 128, 0, 255}; break;
+                            default: color = {128, 128, 128, 255}; break;
+                        }
+                        
+                        color.r = static_cast<Uint8>(color.r * 0.7f);
+                        color.g = static_cast<Uint8>(color.g * 0.7f);
+                        color.b = static_cast<Uint8>(color.b * 0.7f);
+                                
+                        SDL_SetRenderDrawColor(gRenderer, color.r, color.g, color.b, color.a);
+                        SDL_RenderFillRect(gRenderer, &rect);
+                        
+                    }
+                }
+            }
+
+            // Render particles
+            for (auto it = particles.begin(); it != particles.end();) {
+                it->x += it->vx;
+                it->y += it->vy;
+                it->lifetime--;
+                if (it->alpha > 0) it->alpha -= 255.0f / (it->lifetime + 1);
+                SDL_Color c = it->color;
+                c.a = static_cast<Uint8>(std::max(0.0f, it->alpha));
+                SDL_SetRenderDrawColor(gRenderer, c.r, c.g, c.b, c.a);
+                SDL_FRect rect{it->x, it->y, 2, 2};
+                SDL_RenderFillRect(gRenderer, &rect);
+                if (it->lifetime <= 0 || it->alpha <= 0)
+                    it = particles.erase(it);
+                else
+                    ++it;
+            }
+
+            // Optionally, render UI elements here if you want them visible during animation
+
+            SDL_RenderPresent(gRenderer);
+
+            // Pause for animation duration
+            if (now - clearAnimStart >= clearAnimDuration) {
+                // Shift rows down
+                for (int row : rowsToClear) {
+                    for (int y = row; y > 0; --y) {
+                        for (int x = 0; x < boardWidth; ++x) {
+                            board.current[x][y] = board.current[x][y - 1];
+                        }
+                    }
+                    for (int x = 0; x < boardWidth; ++x) {
+                        board.current[x][0] = 0;
+                    }
+                }
+                clearingRows = false;
+                rowsToClear.clear();
+                // Resume normal game logic
+            }
+            // Cap frame rate
+            Uint64 nsPerFrame = 1000000000 / kScreenFps;
+            Uint64 frameNs{ capTimer.getTicksNS() };
+            if (frameNs < nsPerFrame) SDL_DelayNS(nsPerFrame - frameNs);
+            continue; // Skip rest of loop while animating
+        }
+
+
             //check game over
             if (currentPiece.y == 0) {
                 bool gameOver = false;
@@ -1360,7 +1568,7 @@ int main( int argc, char* args[] )
                     // Render "Game Over" message
                     SDL_Color textColor{ 0xFF, 0x00, 0x00, 0xFF }; // Red text
                     gameOverLabel.loadFromRenderedText( "GAME OVER", textColor );
-                    gameOverLabel.render( 150, 300 );
+                    gameOverLabel.render( 200, 300 );
                     SDL_RenderPresent( gRenderer );
                     SDL_Delay(4000); // Pause for 3 seconds to show the message
                     //quit = true; // Exit the main loop
@@ -1620,26 +1828,50 @@ int main( int argc, char* args[] )
                     if (fullRows[i] == 1) {
                         clearedRows++;
                         //std::cout << "Row " << i << " is full!" << std::endl;
-                        for (int y = i; y > 0; --y) {
-                            for (int x = 0; x < boardWidth; ++x) {
-                                //board.current[x][0] = 0; // Clear the top row
-                                board.current[x][y] = board.current[x][y - 1];
-                            }
-                        }
-                        for (int x = 0; x < boardWidth; ++x) {
-                            board.current[x][0] = 0; // Clear the top row
-                        }
-                        // for (int x = 0; x < boardWidth; ++x) {
-                        //     // for (int y = i; y > 0; --y) {
-                        //     //     board.current[x][y] = board.current[x][y - 1];
-                        //     // }
-                        //     // board.current[x][0] = 0; // Clear the top row
-                        //     board.current[x][i] = 0;
-                        // }
+                        
                         
                     }
 
                     
+                }
+
+                // for (int i = 0; i < boardHeight; ++i) 
+                // {
+                //     if (fullRows[i] == 1) {
+                //         clearedRows++;
+                //         //std::cout << "Row " << i << " is full!" << std::endl;
+                //         for (int y = i; y > 0; --y) {
+                //             for (int x = 0; x < boardWidth; ++x) {
+                //                 //board.current[x][0] = 0; // Clear the top row
+                //                 board.current[x][y] = board.current[x][y - 1];
+                //             }
+                //         }
+                //         for (int x = 0; x < boardWidth; ++x) {
+                //             board.current[x][0] = 0; // Clear the top row
+                //         }
+                //         // for (int x = 0; x < boardWidth; ++x) {
+                //         //     // for (int y = i; y > 0; --y) {
+                //         //     //     board.current[x][y] = board.current[x][y - 1];
+                //         //     // }
+                //         //     // board.current[x][0] = 0; // Clear the top row
+                //         //     board.current[x][i] = 0;
+                //         // }
+                        
+                //     }
+
+                    
+                // }
+
+                if (!clearingRows && clearedRows > 0) {
+                    clearingRows = true;
+                    clearAnimStart = SDL_GetTicksNS();
+                    clearAnimStep = 0;
+                    rowsToClear.clear();
+                    for (int i = 0; i < boardHeight; ++i) {
+                        if (fullRows[i] == 1) rowsToClear.push_back(i);
+                    }
+                    // Optionally: Play a sound here
+                    //continue; // Skip rest of loop to start animation
                 }
 
                 switch (clearedRows)
