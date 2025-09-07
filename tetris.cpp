@@ -399,7 +399,7 @@ bool loadMedia()
     bool success{ true };
 
     //Load scene font
-    std::string fontPath{ "Pixeboy-z8XGD.ttf" };
+    std::string fontPath{ "Pixeboy.ttf" };
     if( gFont = TTF_OpenFont( fontPath.c_str(), 24 ); gFont == nullptr )
     {
         SDL_Log( "Could not load %s! SDL_ttf Error: %s\n", fontPath.c_str(), SDL_GetError() );
@@ -474,14 +474,14 @@ bool init()
     }
     else
     {
-        if( SDL_CreateWindowAndRenderer( "FROM TACOMA WITH LOVE", kScreenWidth, kScreenHeight, 0, &gWindow, &gRenderer ) == false )
+        if( SDL_CreateWindowAndRenderer( "Tetris (CopBoat's Version)", kScreenWidth, kScreenHeight, 0, &gWindow, &gRenderer ) == false )
         {
             SDL_Log( "Window could not be created! SDL error: %s\n", SDL_GetError() );
             success = false;
         } else
         {
             // Add this block to set the window icon
-            SDL_Surface* iconSurface = IMG_Load("SquarePiece.png"); // Use your icon file path
+            SDL_Surface* iconSurface = IMG_Load("tPiece.png"); // Use your icon file path
             if (iconSurface != nullptr) {
                 SDL_SetWindowIcon(gWindow, iconSurface);
                 SDL_DestroySurface(iconSurface);
