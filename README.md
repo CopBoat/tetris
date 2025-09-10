@@ -10,21 +10,32 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
   (Other gamepads such as switch pro, daulshock, etc. will most likely work as well but are untested)
 
 ## Controls
-- Move Left: Left Arrow / Dpad Left
-- Move Right: Right Arrow / Dpad Right
-- Move Down / Soft Drop: Down Arrow / Dpad Down
-- Rotate: Up Arrow / X button (Button West)
-- Hard Drop: Space Bar / A button (Button South)
+### Keyboard
+- Move Left: Left Arrow
+- Move Right: Right Arrow
+- Soft Drop (Move Down): Down Arrow
+- Rotate Clockwise: Up Arrow
+- Rotate Counter Clockwise: 
+- Hard Drop: Spacebar
+- Pause: Escape
+### Controller
+- Move Left: Dpad Left
+- Move Right: Dpad Right
+- Soft Drop (Move Down): Dpad Down
+- Rotate Clockwise: X Button
+- Rotate Counter Clockwise: B Button
+- Hard Drop: A Button
+- Pause: Start Button
 
 ## Installation
 Grab one of the releases or compile it yourself with the instructions below!
 
 ### Build Instructions
-1. Clone the repo `git clone https://github.com/CopBoat/tetris.git`
-2. In the project root, create a build folder `mkdir build`
-3. Enter the build folder `cd build`
-4. Use CMake to generate a make file for your system (Windows, Linux, etc.) `cmake ..`
-5. Use the Makefile `cmake --build .`
+1. Clone the repo: `git clone https://github.com/CopBoat/tetris.git`
+2. In the project root, create a build folder: `mkdir build`
+3. Enter the build folder: `cd build`
+4. Use CMake to generate a make file for your system (Windows, Linux, etc.): `cmake ..`
+5. Use the Makefile: `cmake --build .`
 6. Enjoy your executable. Dependencies are embeded so you can move it wherever you like 😁
 
 ## Resources
