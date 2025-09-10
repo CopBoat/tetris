@@ -76,3 +76,12 @@ void spawnParticlesAt(int x, int y, int color) {
         particles.push_back(p);
     }
 }
+
+std::string chooseWindowTitle() {
+    int alternateIndex = std::rand() % 3;
+    if (alternateIndex == 0) {
+        int index = std::rand() % windowTitles.size();
+        return windowTitles[index];
+    }
+    return "Tetris (CopBoat's Version)";
+}

@@ -20,10 +20,12 @@ int main( int argc, char* args[] )
     //Final exit code
     int exitCode{ 0 };
 
-    //bool SDL_SetWindowIcon(SDL_Window *gWindow, SDL_Surface *icon);
+    //Seed random number generator
+    std::srand(static_cast<unsigned int>(time(0)));
+    std::srand(static_cast<unsigned int>(std::time(0)));
 
     //Initialize
-    if( init() == false )
+    if( init(chooseWindowTitle()) == false )
     {
         SDL_Log( "Unable to initialize program!\n" );
         exitCode = 1;
@@ -44,8 +46,7 @@ int main( int argc, char* args[] )
         SDL_zero( e );
         
         LTimer capTimer;
-        std::srand(static_cast<unsigned int>(time(0)));
-        std::srand(static_cast<unsigned int>(std::time(0)));
+        
 
         // SDL_Gamepad* gamepad = nullptr;
         // int numGamepads = SDL_GetGamepads(); // Get the number of connected gamepads

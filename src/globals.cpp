@@ -74,7 +74,7 @@ bool loadMedia()
     return success;
 }
 
-bool init()
+bool init(std::string title)
 {
     bool success{ true };
 
@@ -94,7 +94,7 @@ bool init()
     }
     else
     {
-        if( SDL_CreateWindowAndRenderer( "Tetris (CopBoat's Version)", kScreenWidth, kScreenHeight, 0, &gWindow, &gRenderer ) == false )
+        if( SDL_CreateWindowAndRenderer( title.c_str(), kScreenWidth, kScreenHeight, 0, &gWindow, &gRenderer ) == false )
         {
             SDL_Log( "Window could not be created! SDL error: %s\n", SDL_GetError() );
             success = false;
