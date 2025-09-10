@@ -15,3 +15,18 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
 - Move Down / Soft Drop: Down Arrow / Dpad Down
 - Rotate: Up Arrow / X button (Button West)
 - Hard Drop: Space Bar / A button (Button South)
+
+## Installation
+Grab one of the releases or compile it yourself with the instructions below!
+
+### Build Instructions
+1. Clone the repo 'git clone https://github.com/CopBoat/tetris.git'
+2. In the project root, create a build folder 'mkdir build'
+3. Enter the build folder 'cd build'
+4. Use CMake to generate a make file for your system (Windows, Linux, etc.) 'cmake ..'
+5. Use the Makefile 'cmake --build .'
+6. Enjoy your executable. Dependencies are embeded so you can move it wherever you like 😁
+
+## Resources
+- [The Tetris Wiki](https://tetris.wiki/Tetris.wiki): Guidlines and general information
+- [Lazy Foo' Productions SDL3 Tutorial Series](https://lazyfoo.net/tutorials/SDL3/index.php): A great series of lessons, to which he suggested creating tetris after completing. This project was built from the true type/animation lesson as a base. 
