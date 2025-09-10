@@ -3,9 +3,11 @@
 
 #include "ltexture.h"
 #include <SDL3/SDL.h>
+#include <string>
+#include <vector>
 
 
-bool init();
+bool init(std::string title = "Tetris (CopBoat's Version)");
 
 bool loadMedia();
 
@@ -40,5 +42,15 @@ extern int scoreValue;
 extern int levelValue;
 extern int highScoreValue;
 
+inline const std::vector<std::string> windowTitles = {
+    "Heck is a Tspin?",
+    "Kirkland SignatureTM Block Game",
+    "FROM TACOMA WITH LOVE",
+    "IPiece when?!",
+    "can I please get a longboi",
+    "VLC - HighScore_World-Record.mp4",
+    "Thou shalt make complete rows - Tetraviticus 2:15",
+    "bring the pieces back together (rediscover communication)"
+};
 
 #endif
