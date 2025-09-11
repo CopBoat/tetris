@@ -15,6 +15,8 @@ bool loadMedia();
 
 void close();
 
+void capFrameRate();
+
 constexpr int kScreenWidth{ 640 };
 constexpr int kScreenHeight{ 640 };
 constexpr int kScreenFps{ 60 };

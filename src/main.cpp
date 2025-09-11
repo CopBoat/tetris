@@ -194,12 +194,7 @@ int main( int argc, char* args[] )
 
                 //todo render board with hollow blocks
 
-                // Cap frame rate while paused
-                Uint64 nsPerFrame = 1000000000 / kScreenFps;
-                Uint64 frameNs{ capTimer.getTicksNS() };
-                if (frameNs < nsPerFrame) {
-                    SDL_DelayNS(nsPerFrame - frameNs);
-                }
+                capFrameRate();
                 continue; // Skip the rest of the loop
             }
 
@@ -347,8 +342,6 @@ int main( int argc, char* args[] )
                     ++it;
             }
 
-            // Optionally, render UI elements here if you want them visible during animation
-
             SDL_RenderPresent(gRenderer);
 
             // Pause for animation duration
@@ -368,10 +361,7 @@ int main( int argc, char* args[] )
                 rowsToClear.clear();
                 // Resume normal game logic
             }
-            // Cap frame rate
-            Uint64 nsPerFrame = 1000000000 / kScreenFps;
-            Uint64 frameNs{ capTimer.getTicksNS() };
-            if (frameNs < nsPerFrame) SDL_DelayNS(nsPerFrame - frameNs);
+            capFrameRate();
             continue; // Skip rest of loop while animating
         }
 
@@ -450,14 +440,6 @@ int main( int argc, char* args[] )
                     }
                 }
             }
-          
-            
-            
-            
-            
-            
-            
-            //&& (currentPiece.y + currentPiece.height < boardHeight) && board.current[currentPiece.x][currentPiece.y + 1 + currentPiece.height] == 0
              
 
             
@@ -771,36 +753,9 @@ int main( int argc, char* args[] )
                 hardDropFlag = false;
                 holdUsed = false; // Reset hold usage for the new piece
             }
-
-            // std::cout << "Board state:\n";
-            //     for (int y = 0; y < boardHeight; ++y) {
-            //         for (int x = 0; x < boardWidth; ++x) {
-            //             std::cout << board.current[x][y] << " ";
-            //         }
-            //         std::cout << "\n";
-            //     }
-            
-            //myTickCount++;
-
-
-            //Cap frame rate
-            //1,000,000,000
-            //Uint64 nsPerFrame = dropSpeed / kScreenFps; 
-            Uint64 nsPerFrame = 1000000000 / kScreenFps;
-            Uint64 frameNs{ capTimer.getTicksNS() };
-            if( frameNs < nsPerFrame )
-            {
-                SDL_DelayNS( nsPerFrame - frameNs );
-            }
+            capFrameRate();
         } 
-
-        
     }
-
-    
-
-    //Clean up
-    close();
-
-    return exitCode;
+    close(); //Clean up
+    return exitCode; //End program
 }
