@@ -51,8 +51,6 @@ extern Piece jPiece;
 extern Piece sPiece;
 extern Piece zPiece;
 
-
-
 inline const std::vector<std::string> windowTitles = {
     "Heck is a Tspin?",
     "Kirkland SignatureTM Block Game",
@@ -63,5 +61,25 @@ inline const std::vector<std::string> windowTitles = {
     "Thou shalt make complete rows - Tetraviticus 2:15",
     "bring the pieces back together (rediscover communication)"
 };
+
+extern std::vector<std::pair<int, int>> wallKickOffsets0R;
+extern std::vector<std::pair<int, int>> wallKickOffsetsR0;
+extern std::vector<std::pair<int, int>> wallKickOffsetsR2;
+extern std::vector<std::pair<int, int>> wallKickOffsets2R;
+extern std::vector<std::pair<int, int>> wallKickOffsets2L;
+extern std::vector<std::pair<int, int>> wallKickOffsetsL2;
+extern std::vector<std::pair<int, int>> wallKickOffsetsL0;
+extern std::vector<std::pair<int, int>> wallKickOffsets0L;
+extern std::vector<std::pair<int, int>> wallKickOffsets[8];
+
+extern std::vector<std::pair<int, int>> wallKickOffsetsI0R;
+extern std::vector<std::pair<int, int>> wallKickOffsetsIR0;
+extern std::vector<std::pair<int, int>> wallKickOffsetsIR2;
+extern std::vector<std::pair<int, int>> wallKickOffsetsI2R;
+extern std::vector<std::pair<int, int>> wallKickOffsetsI2L;
+extern std::vector<std::pair<int, int>> wallKickOffsetsIL2;
+extern std::vector<std::pair<int, int>> wallKickOffsetsIL0;
+extern std::vector<std::pair<int, int>> wallKickOffsetsI0L;
+extern std::vector<std::pair<int, int>> wallKickOffsetsI[8];
 
 #endif
