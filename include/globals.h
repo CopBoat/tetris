@@ -52,6 +52,8 @@ extern Piece jPiece;
 extern Piece sPiece;
 extern Piece zPiece;
 
+extern float spacing;
+
 inline const std::vector<std::string> windowTitles = {
     "Heck is a Tspin?",
     "Kirkland SignatureTM Block Game",
