@@ -159,42 +159,18 @@ int main( int argc, char* args[] )
             switch (action) {
                 case InputAction::MoveLeft:
                 {
-                    if (checkPlacement(currentPiece, board, -1, 0)){
-                        //clear current position
-                        for (int sx = 0; sx < currentPiece.width; ++sx) {
-                            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                if (currentPiece.shape[sy][sx] != 0) {
-                                    int boardX = currentPiece.x + sx;
-                                    int boardY = currentPiece.y + sy;
-                                    board.current[boardX][boardY] = 0;
-                                }
-                            }
-                        }
-
-                        //move left
-                        currentPiece.x -= 1;
+                    if (checkPlacement(currentPiece, board, -1, 0)){ //check if can move left
+                        pieceSet(currentPiece, board); //clear current position
+                        currentPiece.x -= 1; //move left
                     }
-
                     break;
                 }
                 case InputAction::MoveRight:
                 {
-                    if (checkPlacement(currentPiece, board, 1, 0)){
-                        //clear current position
-                        for (int sx = 0; sx < currentPiece.width; ++sx) {
-                            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                if (currentPiece.shape[sy][sx] != 0) {
-                                    int boardX = currentPiece.x + sx;
-                                    int boardY = currentPiece.y + sy;
-                                    board.current[boardX][boardY] = 0;
-                                }
-                            }
-                        }
-
-                        //move left
-                        currentPiece.x += 1;
+                    if (checkPlacement(currentPiece, board, 1, 0)){ //check if can move right
+                        pieceSet(currentPiece, board); //clear current position
+                        currentPiece.x += 1; //move right
                     }
-
                     break;
                 }
                 case InputAction::RotateClockwise:
@@ -391,23 +367,10 @@ int main( int argc, char* args[] )
                     break;
                 }
                 case InputAction::SoftDrop:
-
-                    if (checkPlacement(currentPiece, board, 0, 1)){
-                        //clear current position
-                        for (int sx = 0; sx < currentPiece.width; ++sx) {
-                            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                if (currentPiece.shape[sy][sx] != 0) {
-                                    int boardX = currentPiece.x + sx;
-                                    int boardY = currentPiece.y + sy;
-                                    board.current[boardX][boardY] = 0;
-                                }
-                            }
-                        }
-
-                        //move down
-                        currentPiece.y += 1;
+                    if (checkPlacement(currentPiece, board, 0, 1)){ //check if can move down
+                        pieceSet(currentPiece, board); //clear current position
+                        currentPiece.y += 1; //move down
                     }
-
                     break;
                 case InputAction::HardDrop:
                     {

@@ -20,6 +20,18 @@ bool checkPlacement(const Piece& piece, const Board& board, int newX, int newY) 
     return placementValid; 
 }
 
+void pieceSet(const Piece& piece, Board board, int color) {
+    for (int sx = 0; sx < piece.width; ++sx) {
+        for (int sy = 0; sy < piece.height; ++sy) {
+            if (piece.shape[sy][sx] != 0) {
+                int boardX = piece.x + sx;
+                int boardY = piece.y + sy;
+                board.current[boardX][boardY] = color;
+            }
+        }
+    }
+}
+
 void spawnParticles(const Piece& piece) {
     for (int sx = 0; sx < piece.width; ++sx) {
         for (int sy = 0; sy < piece.height; ++sy) {
