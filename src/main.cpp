@@ -25,17 +25,17 @@ int main( int argc, char* args[] )
     std::srand(static_cast<unsigned int>(std::time(0)));
 
     //Initialize
-    if( init(chooseWindowTitle()) == false )
+    if( init(chooseWindowTitle()) == false ) //initialize SDL Components
     {
         SDL_Log( "Unable to initialize program!\n" );
         exitCode = 1;
     }
-    else if( loadMedia() == false )
+    else if( loadMedia() == false ) //intialize font and font textures
     {
         SDL_Log( "Unable to load media!\n" );
         exitCode = 1;
     }
-    else
+    else //if everything initialized fine
     {
         
         //The quit flag
@@ -45,111 +45,22 @@ int main( int argc, char* args[] )
         SDL_Event e;
         SDL_zero( e );
         
+        //frames per second timer
         LTimer capTimer;
-        
 
-        // SDL_Gamepad* gamepad = nullptr;
-        // int numGamepads = SDL_GetGamepads(); // Get the number of connected gamepads
-        
-        // if (numGamepads > 0) {
-        //     gamepad = SDL_OpenGamepad(0);
-        //     std::cout << "Gamepad connected: " << SDL_GetGamepadName(gamepad) << "\n";
-        // }
-
-        int gamePadCount = 0;
-        SDL_JoystickID *ids = SDL_GetGamepads(&gamePadCount);
-        SDL_Gamepad* gamepad = nullptr;
-        for (int i = 0; i < gamePadCount; ++i) {
-            SDL_Gamepad* gamepd = SDL_OpenGamepad(ids[i]);
-            if (gamepad == NULL) {
-                gamepad = gamepd;
-            }
-            //std::cout << "Gamepad connected: " << SDL_GetGamepadName(gamepd) << "\n";
-    
-            // Close the other gamepads
-            if(i > 0) {
-                SDL_CloseGamepad(gamepd);
-            }
-        }
-
-        if (!gamepad) {
-            //std::cerr << "Failed to open gamepad: " << SDL_GetError() << "\n";
-            //std::cout << "No gamepad connected.\n";
-            // SDL_Quit();
-            // return 1;
-        }
-
-        //float pos{ 0.0f };
-        //float posX{ 320.f }; // Add this for horizontal position
-
-        //int myTickCount( 0 );
-        Uint64 lastDropTime = SDL_GetTicksNS();
+        Uint64 lastDropTime = SDL_GetTicksNS(); //
         
         Uint64 dropSpeed{ 700000000 }; // Milliseconds between drops
 
-        // Define Tetris pieces
-        Piece iPiece;
-        iPiece.width = 4; // Width in blocks
-        iPiece.height = 1; // Height in blocks
-        iPiece.shape = { { 1, 1, 1, 1 } }; // I shape
-        iPiece.rotation = 0; // Initial rotation state
-        iPiece.color = 1; // Color identifier for the piece
-
-        Piece oPiece;
-        oPiece.width = 2; // Width in blocks
-        oPiece.height = 2; // Height in blocks
-        oPiece.shape = { { 1, 1 }, { 1, 1 } }; // Square shape
-        oPiece.rotation = 0; // Initial rotation state
-        oPiece.color = 2; // Color identifier for the piece
-
-        Piece tPiece;
-        tPiece.width = 3; // Width in blocks
-        tPiece.height = 2; // Height in blocks
-        tPiece.shape = { { 0, 1, 0 }, { 1, 1, 1 } }; // T shape
-        tPiece.rotation = 0; // Initial rotation state
-        tPiece.color = 3; // Color identifier for the piece 
-
-        Piece lPiece;
-        lPiece.width = 3; // Width in blocks
-        lPiece.height = 2; // Height in blocks
-        lPiece.shape = { { 0, 0, 1 }, { 1, 1 , 1} }; // L shape
-        lPiece.rotation = 0; // Initial rotation state
-        lPiece.color = 4; // Color identifier for the piece
-
-        Piece jPiece;
-        jPiece.width = 3; // Width in blocks
-        jPiece.height = 2; // Height in blocks
-        jPiece.shape = { { 1, 0, 0 }, { 1, 1 , 1} }; // L shape
-        jPiece.rotation = 0; // Initial rotation state
-        jPiece.color = 5; // Color identifier for the piece
-
-        Piece sPiece;
-        sPiece.width = 3; // Width in blocks
-        sPiece.height = 2; // Height in blocks
-        sPiece.shape = { { 0, 1, 1 }, { 1, 1, 0 } }; // S shape
-        sPiece.rotation = 0; // Initial rotation state
-        sPiece.color = 6; // Color identifier for the piece
-
-        Piece zPiece;
-        zPiece.width = 3; // Width in blocks
-        zPiece.height = 2; // Height in blocks
-        zPiece.shape = { { 1, 1, 0 }, { 0, 1, 1 } }; // S shape
-        zPiece.rotation = 0; // Initial rotation state
-        zPiece.color = 7; // Color identifier
-
-        
-
+        // Array of piece types
         Piece pieceTypes[7] = { iPiece, oPiece, tPiece, lPiece, jPiece, sPiece, zPiece }; // Array of piece types
 
-        int pickPiece = std::rand() % 7;  // Randomly select a piece from pieceTypes 
-        int nextPickPiece = std::rand() % 7; // Randomly select the next piece
-
-        //std::cout << "Picked piece index: " << pickPiece << std::endl; // Debugging output
-
+        int pickPiece = std::rand() % 7;  // Randomly select the current piece from pieceTypes 
+        int nextPickPiece = std::rand() % 7; // Randomly select the next piece from pieceTypes
         Piece currentPiece = pieceTypes[pickPiece]; // Initialize current piece
-        //currentPiece.rotation = 0; // Initial rotation state
         Piece nextPiece = pieceTypes[nextPickPiece]; // Initialize next piece
 
+        //row clearing animation variables
         bool clearingRows = false;
         std::vector<int> rowsToClear;
         Uint64 clearAnimStart = 0;
@@ -159,7 +70,7 @@ int main( int argc, char* args[] )
 
         Piece holdPiece; // Piece to hold
         
-        bool newPiece{ false };
+        bool newPiece{ false }; // To track if a new piece is needed
 
         bool holdUsed{ false }; // To track if hold was used in the current turn
 
@@ -167,17 +78,18 @@ int main( int argc, char* args[] )
 
         int levelIncrease = 0; // To track level increase threshold
 
-        bool hardDrop = false;
+        bool hardDrop = false; // To track if hard drop was used
 
-        bool alternateIPieceRotationOffset = false;
+        bool alternateIPieceRotationOffset = false; // To alternate I piece rotation offsets
 
-        bool paused = false;
+        bool paused = false; // To track if the game is paused
 
+        //piece state variables for lock delay
         int lockDelayFrames = 30; // Number of frames to allow after landing (adjust as desired)
         int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
         bool pieceLanded = false; // True if just landed, false if still falling
 
-        Board board;
+        Board board; // The game board
 
         //The main loop
         while( quit == false )
@@ -185,26 +97,17 @@ int main( int argc, char* args[] )
 
             capTimer.start();
 
-            
             InputAction action = InputAction::None;
-
 
             while( SDL_PollEvent( &e ) == true )
                 {
-                    //If event is quit type
-                    if( e.type == SDL_EVENT_QUIT )
+                    if( e.type == SDL_EVENT_QUIT ) //If event is quit type
                     {
                         //End the main loop
                         quit = true;
                     }
 
-                    
-                    
-
-                    
-
-                    //Handle keyboard inputs
-                    if (e.type == SDL_EVENT_KEY_DOWN)
+                    if (e.type == SDL_EVENT_KEY_DOWN)//Handle keyboard inputs
                     {
                         switch (e.key.key)
                         {
@@ -212,21 +115,15 @@ int main( int argc, char* args[] )
                             case SDLK_RIGHT: action = InputAction::MoveRight; break;
                             case SDLK_UP: action = InputAction::RotateClockwise; break;
                             case SDLK_DOWN: action = InputAction::SoftDrop;  break;
-                                
                             case SDLK_H: action = InputAction::Hold;      break;
-                                
                             case SDLK_SPACE: action = InputAction::HardDrop;  break;
                             case SDLK_ESCAPE: action = InputAction::Pause; break;
-                            //     std::cout << "ESCAPE key pressed" << std::endl;
-                            //     //capTimer.pause();
-                            //     break;
-
-                            default:
-                                break;
+                            default: break;
                         }
                     }
 
-                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) //Handle gamepad inputs
+                    {
                         switch (e.gbutton.button) {
                             case SDL_GAMEPAD_BUTTON_DPAD_LEFT:     action = InputAction::MoveLeft;               break;
                             case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:    action = InputAction::MoveRight;              break;
@@ -236,6 +133,22 @@ int main( int argc, char* args[] )
                             case SDL_GAMEPAD_BUTTON_SOUTH:         action = InputAction::HardDrop;               break;
                             case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
                             case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
+                            default: break;
+                        }
+                    }
+
+                    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION)
+                    {
+                        if (e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
+                            if (e.gaxis.value < -8000) {
+                                action = InputAction::MoveLeft;
+                            } else if (e.gaxis.value > 8000) {
+                                action = InputAction::MoveRight;
+                            }
+                        } else if (e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
+                            if (e.gaxis.value > 8000) {
+                                action = InputAction::SoftDrop;
+                            }
                         }
                     }
                 }
@@ -1351,9 +1264,7 @@ int main( int argc, char* args[] )
             }
         } 
 
-        if (gamepad) {
-            SDL_CloseGamepad(gamepad);
-        }
+        
     }
 
     

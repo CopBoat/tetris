@@ -6,6 +6,7 @@
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <iostream>
+#include <vector>
 
 bool loadMedia()
 {
@@ -116,6 +117,23 @@ bool init(std::string title)
                 SDL_Log( "SDL_ttf could not initialize! SDL_ttf error: %s\n", SDL_GetError() );
                 success = false;
             }
+
+            //initialize gamepad
+            int gamePadCount = 0;
+            SDL_JoystickID *ids = SDL_GetGamepads(&gamePadCount);
+            SDL_Gamepad* gamepad = nullptr;
+            for (int i = 0; i < gamePadCount; ++i) {
+                SDL_Gamepad* gamepd = SDL_OpenGamepad(ids[i]);
+                if (gamepad == NULL) {
+                    gamepad = gamepd;
+                }
+                //std::cout << "Gamepad connected: " << SDL_GetGamepadName(gamepd) << "\n";
+                // Close the other gamepads
+                if(i > 0) {
+                    SDL_CloseGamepad(gamepd);
+                }
+            }
+
         }
     }
     return success;
@@ -148,6 +166,16 @@ void close()
     TTF_CloseFont( gFont );
     gFont = nullptr;
 
+    // Close gamepad if open
+    int gamePadCount = 0;
+    SDL_JoystickID *ids = SDL_GetGamepads(&gamePadCount);
+    for (int i = 0; i < gamePadCount; ++i) {
+        SDL_Gamepad* gamepad = SDL_OpenGamepad(ids[i]);
+        if (gamepad != nullptr) {
+            SDL_CloseGamepad(gamepad);
+        }
+    }
+
     //Destroy window
     SDL_DestroyRenderer( gRenderer );
     gRenderer = nullptr;
@@ -177,3 +205,60 @@ LTexture highScore;
 int scoreValue = 0;
 int levelValue = 0;
 int highScoreValue = 0;
+
+// Define Tetris pieces
+Piece iPiece = {
+    4, // width
+    1, // height
+    std::vector<std::vector<int>>{ { 1, 1, 1, 1 } }, // shape
+    0, // rotation
+    1  // color
+};
+
+Piece oPiece = {
+    2, // width
+    2, // height
+    std::vector<std::vector<int>>{ { 1, 1 }, { 1, 1 } }, // shape
+    0, // rotation
+    2  // color
+};
+
+Piece tPiece = {
+    3, // width
+    2, // height
+    std::vector<std::vector<int>>{ { 0, 1, 0 }, { 1, 1, 1 } }, // shape
+    0, // rotation
+    3  // color
+};
+
+Piece lPiece = {
+    3, // width
+    2, // height
+    std::vector<std::vector<int>>{ { 0, 0, 1 }, { 1, 1, 1 } }, // shape
+    0, // rotation
+    4  // color
+};
+
+Piece jPiece = {
+    3, // width
+    2, // height
+    std::vector<std::vector<int>>{ { 1, 0, 0 }, { 1, 1, 1 } }, // shape
+    0, // rotation
+    5  // color
+};
+
+Piece sPiece = {
+    3, // width
+    2, // height
+    std::vector<std::vector<int>>{ { 0, 1, 1 }, { 1, 1, 0 } }, // shape
+    0, // rotation
+    6  // color
+};
+
+Piece zPiece = {
+    3, // width
+    2, // height
+    std::vector<std::vector<int>>{ { 1, 1, 0 }, { 0, 1, 1 } }, // shape
+    0, // rotation
+    7  // color
+};

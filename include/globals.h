@@ -2,6 +2,7 @@
 #define GLOBALS_H
 
 #include "ltexture.h"
+#include "piece.h"
 #include <SDL3/SDL.h>
 #include <string>
 #include <vector>
@@ -41,6 +42,16 @@ extern LTexture highScore;
 extern int scoreValue;
 extern int levelValue;
 extern int highScoreValue;
+
+extern Piece iPiece;
+extern Piece oPiece;
+extern Piece tPiece;
+extern Piece lPiece;
+extern Piece jPiece;
+extern Piece sPiece;
+extern Piece zPiece;
+
+
 
 inline const std::vector<std::string> windowTitles = {
     "Heck is a Tspin?",
