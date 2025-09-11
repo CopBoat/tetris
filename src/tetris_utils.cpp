@@ -346,7 +346,7 @@ bool newPiece{ false }; // To track if a new piece is needed
 bool holdUsed{ false }; // To track if hold was used in the current turn
 int rowsCleared = 0; // To track number of cleared rows
 int levelIncrease = 0; // To track level increase threshold
-bool hardDrop = false; // To track if hard drop was used
+bool hardDropFlag = false; // To track if hard drop was used
 bool alternateIPieceRotationOffset = false; // To alternate I piece rotation offsets
 bool paused = false; // To track if the game is paused
 
@@ -356,3 +356,74 @@ int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
 bool pieceLanded = false; // True if just landed, false if still falling
 
 Board board; // The game board
+
+void moveLeft() {
+    if (checkPlacement(currentPiece, board, -1, 0)){ //check if can move left
+        pieceSet(currentPiece, board); //clear current position
+        currentPiece.x -= 1; //move left
+    }
+}
+
+void moveRight() {
+    if (checkPlacement(currentPiece, board, 1, 0)){ //check if can move right
+        pieceSet(currentPiece, board); //clear current position
+        currentPiece.x += 1; //move right
+    }
+}
+
+void rotateClockwise() {
+    if (currentPiece.width == currentPiece.height) { // Dont perform rotation if O piece
+        return;
+    }
+    else if (currentPiece.height == 1 || currentPiece.width == 1) {
+        rotateIPieceClockwise();
+    }
+    else 
+    {
+        rotatePieceClockwise();
+    }
+}
+
+void rotateCounterClockwise() {
+    if (currentPiece.width == currentPiece.height) { // Dont perform rotation if O piece
+        return;
+    }
+    else if (currentPiece.height == 1 || currentPiece.width == 1) {
+        rotateIPieceCounterClockwise();
+    }
+    else 
+    {
+        rotatePieceCounterClockwise();
+    }
+}
+
+void softDrop() {
+    if (checkPlacement(currentPiece, board, 0, 1)){ //check if can move down
+        pieceSet(currentPiece, board); //clear current position
+        currentPiece.y += 1; //move down
+    }
+}
+
+void hardDrop() {
+    pieceSet(currentPiece, board); //clear current position
+    currentPiece.y = maxDrop(currentPiece, board); //move down to max drop
+    spawnParticles(currentPiece); //spawn particles at hard drop location
+    hardDropFlag = true; //set hard drop flag
+}
+
+void hold() {
+    pieceSet(currentPiece, board); //clear current position
+    if (!holdUsed){ //if hold not used this turn
+        resetRotation();
+        if (holdPiece.shape.empty()) {
+            firstHold(); //first time holding a piece
+        } else {
+            pieceSwap(); //swap current and hold pieces
+        }
+        holdUsed = true; // Mark hold as used for this turn
+    }
+}
+
+void pauseGame() {
+    paused = !paused;
+}
