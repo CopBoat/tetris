@@ -374,50 +374,12 @@ int main( int argc, char* args[] )
                     break;
                 case InputAction::HardDrop:
                     {
-                                //hard drop
-                                for (int sx = 0; sx < currentPiece.width; ++sx) {
-                                    for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                        if (currentPiece.shape[sy][sx] != 0) {
-                                            int boardX = currentPiece.x + sx;
-                                            int boardY = currentPiece.y + sy;
-                                            if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                                                board.current[boardX][boardY] = 0;
-                                            }
-                                        }
-                                    }
-                                }
-                                //currentPiece.y = boardHeight - currentPiece.height;
-                                // Find the lowest y position where the piece can be placed without collision
-                                int maxDrop = boardHeight - currentPiece.height;
-                                for (int dropY = currentPiece.y; dropY <= maxDrop; ++dropY) {
-                                    bool collision = false;
-                                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                            if (currentPiece.shape[sy][sx] != 0) {
-                                                int boardX = currentPiece.x + sx;
-                                                int boardY = dropY + sy;
-                                                if (boardY >= boardHeight || board.current[boardX][boardY] != 0) {
-                                                    collision = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        if (collision) break;
-                                    }
-                                    if (collision) {
-                                        currentPiece.y = dropY - 1;
-                                        break;
-                                    }
-                                    // If we reached the last possible position, set y to maxDrop
-                                    if (dropY == maxDrop) {
-                                        currentPiece.y = maxDrop;
-                                    }
-                                }
-                                
-                                spawnParticles(currentPiece);
-                                hardDrop = true;
-                                break;
-                            }
+                        pieceSet(currentPiece, board); //clear current position
+                        currentPiece.y = maxDrop(currentPiece, board); //move down to max drop
+                        spawnParticles(currentPiece); //spawn particles at hard drop location
+                        hardDrop = true; //set hard drop flag
+                        break;
+                    }
                 case InputAction::Hold:
                     // Implement hold functionality here
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
