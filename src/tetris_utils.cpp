@@ -32,6 +32,34 @@ void pieceSet(const Piece& piece, Board board, int color) {
     }
 }
 
+int maxDrop(const Piece& piece, const Board& board) {
+    int maxDrop = boardHeight - piece.height;
+    for (int dropY = piece.y; dropY <= maxDrop; ++dropY) {
+        bool collision = false;
+        for (int sx = 0; sx < piece.width; ++sx) {
+            for (int sy = 0; sy < piece.height; ++sy) {
+                if (piece.shape[sy][sx] != 0) {
+                    int boardX = piece.x + sx;
+                    int boardY = dropY + sy;
+                    if (boardY >= boardHeight || board.current[boardX][boardY] != 0) {
+                        collision = true;
+                        break;
+                    }
+                }
+            }
+            if (collision) break;
+        }
+        if (collision) {
+            return dropY - 1;
+        }
+        // If we reached the last possible position, return maxDrop
+        if (dropY == maxDrop) {
+            return maxDrop;
+        }
+    }
+    return piece.y; // No drop possible
+}
+
 void spawnParticles(const Piece& piece) {
     for (int sx = 0; sx < piece.width; ++sx) {
         for (int sy = 0; sy < piece.height; ++sy) {
