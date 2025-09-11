@@ -16,6 +16,9 @@ int maxDrop(const Piece&, const Board&);
 void rotateIPieceClockwise();
 void rotatePieceClockwise();
 
+void rotateIPieceCounterClockwise();
+void rotatePieceCounterClockwise();
+
 void spawnParticles(const Piece&);
 
 void spawnParticlesAt(int, int, int);
