@@ -37,82 +37,75 @@ int main( int argc, char* args[] )
     }
     else //if everything initialized fine
     {
-        
-        //The quit flag
-        bool quit{ false };
+        bool quit{ false }; //The quit flag
 
         //The event data
         SDL_Event e;
         SDL_zero( e );
 
-        
-
-        //The main loop
-        while( quit == false )
+        while( quit == false ) //The main loop
         {
-
             capTimer.start();
 
             InputAction action = InputAction::None;
 
-            while( SDL_PollEvent( &e ) == true )
+            while( SDL_PollEvent( &e ) == true ) //While there are events to handle
+            {
+                if( e.type == SDL_EVENT_QUIT ) //If event is quit type
                 {
-                    if( e.type == SDL_EVENT_QUIT ) //If event is quit type
-                    {
-                        //End the main loop
-                        quit = true;
-                    }
+                    quit = true; //End the main loop
+                }
 
-                    if (e.type == SDL_EVENT_KEY_DOWN)//Handle keyboard inputs
+                if (e.type == SDL_EVENT_KEY_DOWN) //Handle keyboard inputs
+                {
+                    switch (e.key.key)
                     {
-                        switch (e.key.key)
-                        {
-                            case SDLK_LEFT: action = InputAction::MoveLeft;  break;
-                            case SDLK_RIGHT: action = InputAction::MoveRight; break;
-                            case SDLK_UP: action = InputAction::RotateClockwise; break;
-                            case SDLK_DOWN: action = InputAction::SoftDrop;  break;
-                            case SDLK_H: action = InputAction::Hold;      break;
-                            case SDLK_SPACE: action = InputAction::HardDrop;  break;
-                            case SDLK_ESCAPE: action = InputAction::Pause; break;
-                            default: break;
+                        case SDLK_LEFT: action = InputAction::MoveLeft;  break;
+                        case SDLK_RIGHT: action = InputAction::MoveRight; break;
+                        case SDLK_UP: action = InputAction::RotateClockwise; break;
+                        case SDLK_DOWN: action = InputAction::SoftDrop;  break;
+                        case SDLK_H: action = InputAction::Hold;      break;
+                        case SDLK_SPACE: action = InputAction::HardDrop;  break;
+                        case SDLK_ESCAPE: action = InputAction::Pause; break;
+                        default: break;
+                    }
+                }
+
+                if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) //Handle gamepad inputs
+                {
+                    switch (e.gbutton.button) {
+                        case SDL_GAMEPAD_BUTTON_DPAD_LEFT:     action = InputAction::MoveLeft;               break;
+                        case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:    action = InputAction::MoveRight;              break;
+                        case SDL_GAMEPAD_BUTTON_WEST:          action = InputAction::RotateClockwise;        break;
+                        case SDL_GAMEPAD_BUTTON_EAST:          action = InputAction::RotateCounterClockwise; break;
+                        case SDL_GAMEPAD_BUTTON_DPAD_DOWN:     action = InputAction::SoftDrop;               break;
+                        case SDL_GAMEPAD_BUTTON_SOUTH:         action = InputAction::HardDrop;               break;
+                        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
+                        case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
+                        default: break;
+                    }
+                }
+
+                if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION) //Handle gamepad axis motion
+                {
+                    if (e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
+                        if (e.gaxis.value < -8000) {
+                            action = InputAction::MoveLeft;
+                        } else if (e.gaxis.value > 8000) {
+                            action = InputAction::MoveRight;
                         }
-                    }
-
-                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) //Handle gamepad inputs
-                    {
-                        switch (e.gbutton.button) {
-                            case SDL_GAMEPAD_BUTTON_DPAD_LEFT:     action = InputAction::MoveLeft;               break;
-                            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:    action = InputAction::MoveRight;              break;
-                            case SDL_GAMEPAD_BUTTON_WEST:          action = InputAction::RotateClockwise;        break;
-                            case SDL_GAMEPAD_BUTTON_EAST:          action = InputAction::RotateCounterClockwise; break;
-                            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:     action = InputAction::SoftDrop;               break;
-                            case SDL_GAMEPAD_BUTTON_SOUTH:         action = InputAction::HardDrop;               break;
-                            case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
-                            case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
-                            default: break;
-                        }
-                    }
-
-                    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION)
-                    {
-                        if (e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
-                            if (e.gaxis.value < -8000) {
-                                action = InputAction::MoveLeft;
-                            } else if (e.gaxis.value > 8000) {
-                                action = InputAction::MoveRight;
-                            }
-                        } else if (e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
-                            if (e.gaxis.value > 8000) {
-                                action = InputAction::SoftDrop;
-                            }
+                    } else if (e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
+                        if (e.gaxis.value > 8000) {
+                            action = InputAction::SoftDrop;
                         }
                     }
                 }
+            }
 
             //rotate helper (can I move this into the case?)
             std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
 
-            switch (action) {
+            switch (action) { //handle input actions
                 case InputAction::MoveLeft:
                 {
                     if (checkPlacement(currentPiece, board, -1, 0)){ //check if can move left
@@ -131,104 +124,16 @@ int main( int argc, char* args[] )
                 }
                 case InputAction::RotateClockwise:
                 {
-                    // Dont perform rotation if O piece
-                    if (currentPiece.width == currentPiece.height) {
+                    if (currentPiece.width == currentPiece.height) { // Dont perform rotation if O piece
                         break;
                     }
                     else if (currentPiece.height == 1 || currentPiece.width == 1) {
-                        // I piece rotation special case
-                        // Rotate 90 degrees clockwise
-                        for (int sx = 0; sx < currentPiece.width; ++sx) {
-                            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
-                            }
-                        }
-
-                        Piece rotatedPiece = currentPiece;
-                        rotatedPiece.shape = newShape;
-                        rotatedPiece.width = currentPiece.height;
-                        rotatedPiece.height = currentPiece.width;
-                        rotatedPiece.rotation = (currentPiece.rotation + 1) % 4;
-
-                        if (rotatedPiece.rotation % 4 == 1 || rotatedPiece.rotation % 4 == 3) 
-                        {
-                            // Shift right for vertical I piece
-                            if (alternateIPieceRotationOffset) {
-                                rotatedPiece.x += 2;
-                                //currentPiece.x = currentPiece.x + 2 + offset.first;
-                                alternateIPieceRotationOffset = false;
-                            }
-                            else {
-                                rotatedPiece.x += 1;
-                                //currentPiece.x = currentPiece.x + 1 + offset.first;
-                                alternateIPieceRotationOffset = true;
-                            }
-                        } 
-                        else {
-                            if (alternateIPieceRotationOffset) {
-                                rotatedPiece.x -= 1;
-                                //currentPiece.x = currentPiece.x - 1 + offset.first;
-                            }
-                            else {
-                                rotatedPiece.x -= 2;
-                                //currentPiece.x = currentPiece.x - 2 + offset.first;
-                            }
-                        }
-
-                        
-
-                        for (const auto& offset: wallKickOffsetsI[rotatedPiece.rotation]) {
-                            // Check if rotated piece fits at (newX, newY)
-                            if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-                                // Apply rotation
-                                currentPiece.shape = newShape;
-                                std::swap(currentPiece.width, currentPiece.height);
-                                currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-
-                                currentPiece.x = rotatedPiece.x + offset.first;
-                                currentPiece.y = rotatedPiece.y + offset.second;
-
-                                
-                                
-                                break;
-                            }
-
-                            
-                        }
-
-                        
+                        rotateIPieceClockwise();
                     }
                     else 
                     {
-                        for (int sx = 0; sx < currentPiece.width; ++sx) {
-                            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
-                            }
-                        }
-
-                        Piece rotatedPiece = currentPiece;
-                        rotatedPiece.shape = newShape;
-                        rotatedPiece.width = currentPiece.height;
-                        rotatedPiece.height = currentPiece.width;
-                        rotatedPiece.rotation = (currentPiece.rotation + 1) % 4;
-                        
-                        for (const auto& offset : wallKickOffsets[rotatedPiece.rotation]) {
-                            
-                            // Check if rotated piece fits at (newX, newY)
-                            if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-                                // Apply rotation and offset
-                                currentPiece.shape = newShape;
-                                std::swap(currentPiece.width, currentPiece.height);
-                                
-                                currentPiece.x = currentPiece.x + offset.first;
-                                currentPiece.y = currentPiece.y + offset.second;
-                                currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-                                break;
-                            }
-                        }
+                        rotatePieceClockwise();
                     }
-                    
-
                     break;
                 }
                 case InputAction::RotateCounterClockwise:
