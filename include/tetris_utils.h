@@ -9,6 +9,8 @@
 
 bool checkPlacement(const Piece&, const Board&, int, int);
 
+void pieceSet(const Piece& piece, Board board, int color = 0);
+
 void spawnParticles(const Piece&);
 
 void spawnParticlesAt(int, int, int);
