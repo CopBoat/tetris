@@ -47,7 +47,7 @@ extern bool newPiece;
 extern bool holdUsed;
 extern int rowsCleared;
 extern int levelIncrease;
-extern bool hardDrop;
+extern bool hardDropFlag;
 extern bool alternateIPieceRotationOffset;
 extern bool paused;
 
@@ -68,5 +68,14 @@ enum class InputAction {
     Hold,
     Pause
 };
+
+void moveLeft();
+void moveRight();
+void rotateClockwise();
+void rotateCounterClockwise();
+void softDrop();
+void hardDrop();
+void hold();
+void pauseGame();
 
 #endif

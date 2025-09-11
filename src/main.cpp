@@ -102,90 +102,20 @@ int main( int argc, char* args[] )
                 }
             }
 
-            //rotate helper (can I move this into the case?)
-            //std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
-
             switch (action) { //handle input actions
-                case InputAction::MoveLeft:
-                {
-                    if (checkPlacement(currentPiece, board, -1, 0)){ //check if can move left
-                        pieceSet(currentPiece, board); //clear current position
-                        currentPiece.x -= 1; //move left
-                    }
-                    break;
-                }
-                case InputAction::MoveRight:
-                {
-                    if (checkPlacement(currentPiece, board, 1, 0)){ //check if can move right
-                        pieceSet(currentPiece, board); //clear current position
-                        currentPiece.x += 1; //move right
-                    }
-                    break;
-                }
-                case InputAction::RotateClockwise:
-                {
-                    if (currentPiece.width == currentPiece.height) { // Dont perform rotation if O piece
-                        break;
-                    }
-                    else if (currentPiece.height == 1 || currentPiece.width == 1) {
-                        rotateIPieceClockwise();
-                    }
-                    else 
-                    {
-                        rotatePieceClockwise();
-                    }
-                    break;
-                }
-                case InputAction::RotateCounterClockwise:
-                {
-                    // Dont perform rotation if O piece
-                    if (currentPiece.width == currentPiece.height) {
-                        break;
-                    }
-                    else if (currentPiece.height == 1 || currentPiece.width == 1) {
-                        rotateIPieceCounterClockwise();
-                    }
-                    else 
-                    {
-                        rotatePieceCounterClockwise();
-                    }
-                    break;
-                }
-                case InputAction::SoftDrop:
-                    if (checkPlacement(currentPiece, board, 0, 1)){ //check if can move down
-                        pieceSet(currentPiece, board); //clear current position
-                        currentPiece.y += 1; //move down
-                    }
-                    break;
-                case InputAction::HardDrop:
-                    {
-                        pieceSet(currentPiece, board); //clear current position
-                        currentPiece.y = maxDrop(currentPiece, board); //move down to max drop
-                        spawnParticles(currentPiece); //spawn particles at hard drop location
-                        hardDrop = true; //set hard drop flag
-                        break;
-                    }
-                case InputAction::Hold:
-                    pieceSet(currentPiece, board); //clear current position
-                    if (!holdUsed){ //if hold not used this turn
-                        resetRotation();
-                        if (holdPiece.shape.empty()) {
-                            firstHold(); //first time holding a piece
-                        } else {
-                            pieceSwap(); //swap current and hold pieces
-                        }
-                        holdUsed = true; // Mark hold as used for this turn
-                    }
-                    break;
-                case InputAction::Pause:
-                    paused = !paused;
-                default:
-                    break;
+                case InputAction::MoveLeft: { moveLeft(); break; }
+                case InputAction::MoveRight: { moveRight(); break; }
+                case InputAction::RotateClockwise: { rotateClockwise(); break; }
+                case InputAction::RotateCounterClockwise: { rotateCounterClockwise(); break; }
+                case InputAction::SoftDrop: { softDrop(); break; }
+                case InputAction::HardDrop: { hardDrop(); break; }
+                case InputAction::Hold: { hold(); break; }
+                case InputAction::Pause: { pauseGame(); break; }
+                default: break;
             }
 
-            
-
-            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::RotateClockwise)) {
+            //only allow rotation and x movement to reset lockDelayCounter
+            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::RotateClockwise || action == InputAction::RotateCounterClockwise)) {
                 lockDelayCounter = 0;
             }
 
@@ -667,7 +597,7 @@ int main( int argc, char* args[] )
             }
 
 
-            if (!canPlaceNext && !hardDrop)
+            if (!canPlaceNext && !hardDropFlag)
             {
                 if (!pieceLanded) {
                     pieceLanded = true;
@@ -687,7 +617,7 @@ int main( int argc, char* args[] )
 
 
             //use  if (newPiece) to test rotation after hard drop
-            if (newPiece || hardDrop) {
+            if (newPiece || hardDropFlag) {
                     //currentPiece.y -= 1; // Move back up to last valid position
                     for (int sx = 0; sx < currentPiece.width; ++sx) {
                         for (int sy = 0; sy < currentPiece.height; ++sy) {
@@ -850,7 +780,7 @@ int main( int argc, char* args[] )
                 nextPickPiece = std::rand() % 7; // Randomly select the next piece
                 nextPiece = pieceTypes[nextPickPiece]; // Update next piece
                 newPiece = false;
-                hardDrop = false;
+                hardDropFlag = false;
                 holdUsed = false; // Reset hold usage for the new piece
             }
 
