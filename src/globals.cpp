@@ -188,6 +188,15 @@ void close()
     SDL_Quit();
 }
 
+void capFrameRate(){
+    Uint64 nsPerFrame = 1000000000 / kScreenFps;
+    Uint64 frameNs{ capTimer.getTicksNS() };
+    if( frameNs < nsPerFrame )
+    {
+        SDL_DelayNS( nsPerFrame - frameNs );
+    }
+}
+
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 TTF_Font* gFont = nullptr;
