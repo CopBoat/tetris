@@ -143,6 +143,86 @@ void rotatePieceClockwise() {
     }
 }
 
+void rotateIPieceCounterClockwise() {
+    std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+    for (int sx = 0; sx < currentPiece.width; ++sx) {
+        for (int sy = 0; sy < currentPiece.height; ++sy) {
+            newShape[currentPiece.width - 1 - sx][sy] = currentPiece.shape[sy][sx];
+        }
+    }
+
+    Piece rotatedPiece = currentPiece;
+    rotatedPiece.shape = newShape;
+    rotatedPiece.width = currentPiece.height;
+    rotatedPiece.height = currentPiece.width;
+    rotatedPiece.rotation = (currentPiece.rotation + 3) % 4;
+
+    if (rotatedPiece.rotation % 4 == 1 || rotatedPiece.rotation % 4 == 3) 
+    {
+        // Shift right for vertical I piece
+        if (alternateIPieceRotationOffset) {
+            rotatedPiece.x += 2;
+            alternateIPieceRotationOffset = false;
+        }
+        else {
+            rotatedPiece.x += 1;
+            alternateIPieceRotationOffset = true;
+        }
+    } 
+    else {
+        if (alternateIPieceRotationOffset) {
+            rotatedPiece.x -= 1;
+        }
+        else {
+            rotatedPiece.x -= 2;
+        }
+    }
+
+    for (const auto& offset: wallKickOffsetsI[(rotatedPiece.rotation + 8) % 4]) {
+        // Check if rotated piece fits at (newX, newY)
+        if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
+            // Apply rotation
+            currentPiece.shape = newShape;
+            std::swap(currentPiece.width, currentPiece.height);
+            currentPiece.rotation = (currentPiece.rotation - 1) % 4;
+
+            currentPiece.x = rotatedPiece.x + offset.first;
+            currentPiece.y = rotatedPiece.y + offset.second;
+            break;
+        }
+    }
+}
+
+void rotatePieceCounterClockwise() {
+    std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+    for (int sx = 0; sx < currentPiece.width; ++sx) {
+        for (int sy = 0; sy < currentPiece.height; ++sy) {
+            newShape[currentPiece.width - 1 - sx][sy] = currentPiece.shape[sy][sx];
+        }
+    }
+
+    Piece rotatedPiece = currentPiece;
+    rotatedPiece.shape = newShape;
+    rotatedPiece.width = currentPiece.height;
+    rotatedPiece.height = currentPiece.width;
+    rotatedPiece.rotation = (currentPiece.rotation - 1) % 4;
+    
+    for (const auto& offset : wallKickOffsets[(rotatedPiece.rotation + 8) % 4]) {
+        
+        // Check if rotated piece fits at (newX, newY)
+        if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
+            // Apply rotation and offset
+            currentPiece.shape = newShape;
+            std::swap(currentPiece.width, currentPiece.height);
+            
+            currentPiece.x = currentPiece.x + offset.first;
+            currentPiece.y = currentPiece.y + offset.second;
+            currentPiece.rotation = (currentPiece.rotation - 1) % 4;
+            break;
+        }
+    }
+}
+
 void spawnParticles(const Piece& piece) {
     for (int sx = 0; sx < piece.width; ++sx) {
         for (int sy = 0; sy < piece.height; ++sy) {

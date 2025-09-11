@@ -143,88 +143,12 @@ int main( int argc, char* args[] )
                         break;
                     }
                     else if (currentPiece.height == 1 || currentPiece.width == 1) {
-                        // I piece rotation special case
-                        // Rotate 90 degrees clockwise
-                        for (int sx = 0; sx < currentPiece.width; ++sx) {
-                            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                newShape[currentPiece.width - 1 - sx][sy] = currentPiece.shape[sy][sx];
-                            }
-                        }
-
-                        Piece rotatedPiece = currentPiece;
-                        rotatedPiece.shape = newShape;
-                        rotatedPiece.width = currentPiece.height;
-                        rotatedPiece.height = currentPiece.width;
-
-                        // Check if rotated piece fits at (newX, newY)
-                        if (checkPlacement(rotatedPiece, board, 0, 0)) {
-                            // Apply rotation
-                            currentPiece.shape = newShape;
-                            std::swap(currentPiece.width, currentPiece.height);
-                            currentPiece.rotation = (currentPiece.rotation + 3) % 4; // Equivalent to -1 mod 4
-                            if (currentPiece.rotation % 4 == 1 || currentPiece.rotation % 4 == 3) {
-                                // Shift right for vertical I piece
-                                if (alternateIPieceRotationOffset) {
-                                    currentPiece.x += 2;
-                                    alternateIPieceRotationOffset = false;
-                                }
-                                else {
-                                    currentPiece.x += 1;
-                                    alternateIPieceRotationOffset = true;
-                                }
-                            } 
-                            else {
-                                if (alternateIPieceRotationOffset) {
-                                    currentPiece.x -= 1;
-                                }
-                                else {
-                                    currentPiece.x -= 2;
-                                }
-                            }
-                            
-                            break;
-                        }
-
-                        
+                        rotateIPieceCounterClockwise();
                     }
                     else 
                     {
-                        for (int sx = 0; sx < currentPiece.width; ++sx) {
-                            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                newShape[currentPiece.width - 1 - sx][sy] = currentPiece.shape[sy][sx];
-                            }
-                        }
-
-                        Piece rotatedPiece = currentPiece;
-                        rotatedPiece.shape = newShape;
-                        rotatedPiece.width = currentPiece.height;
-                        rotatedPiece.height = currentPiece.width;
-                        rotatedPiece.rotation = (currentPiece.rotation - 1) % 4;
-
-                        int idk;
-                        switch(rotatedPiece.rotation) {
-                            case 0: idk = 4; break;
-                            case 1: idk = 7; break;
-                            case 2: idk = 6; break;
-                            case 3: idk = 5; break;
-                        };
-                        
-                        for (const auto& offset : wallKickOffsets[idk]) {
-                            
-                            // Check if rotated piece fits at (newX, newY)
-                            if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-                                // Apply rotation and offset
-                                currentPiece.shape = newShape;
-                                std::swap(currentPiece.width, currentPiece.height);
-                                currentPiece.x = currentPiece.x + offset.first;
-                                currentPiece.y = currentPiece.y + offset.second;
-                                currentPiece.rotation = (currentPiece.rotation - 1) % 4; // Equivalent
-                                break;
-                            }
-                        }
+                        rotatePieceCounterClockwise();
                     }
-                    
-
                     break;
                 }
                 case InputAction::SoftDrop:
