@@ -125,3 +125,33 @@ std::string chooseWindowTitle() {
     }
     return "Tetris (CopBoat's Version)";
 }
+
+Piece pieceTypes[7] = { iPiece, oPiece, tPiece, lPiece, jPiece, sPiece, zPiece }; // Array of piece types
+int pickPiece = std::rand() % 7;  // Randomly select the current piece from pieceTypes 
+int nextPickPiece = std::rand() % 7; // Randomly select the next piece from pieceTypes
+Piece currentPiece = pieceTypes[pickPiece]; // Initialize current piece
+Piece nextPiece = pieceTypes[nextPickPiece]; // Initialize next piece
+
+//row clearing animation variables
+bool clearingRows = false;
+std::vector<int> rowsToClear;
+Uint64 clearAnimStart = 0;
+int clearAnimStep = 0;
+const int clearAnimSteps = boardWidth / 2 + 1; // Number of steps for center-out
+const Uint64 clearAnimDuration = 500000000; // 0.5 seconds in ns
+
+Piece holdPiece; // Piece to hold
+bool newPiece{ false }; // To track if a new piece is needed
+bool holdUsed{ false }; // To track if hold was used in the current turn
+int rowsCleared = 0; // To track number of cleared rows
+int levelIncrease = 0; // To track level increase threshold
+bool hardDrop = false; // To track if hard drop was used
+bool alternateIPieceRotationOffset = false; // To alternate I piece rotation offsets
+bool paused = false; // To track if the game is paused
+
+//piece state variables for lock delay
+int lockDelayFrames = 30; // Number of frames to allow after landing (adjust as desired)
+int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
+bool pieceLanded = false; // True if just landed, false if still falling
+
+Board board; // The game board

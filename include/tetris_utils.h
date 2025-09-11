@@ -19,6 +19,34 @@ void spawnParticlesAt(int, int, int);
 
 std::string chooseWindowTitle();
 
+extern Piece pieceTypes[7];
+extern int pickPiece;
+extern int nextPickPiece;
+extern Piece currentPiece;
+extern Piece nextPiece;
+
+extern bool clearingRows;
+extern std::vector<int> rowsToClear;
+extern Uint64 clearAnimStart;
+extern int clearAnimStep;
+extern const int clearAnimSteps;
+extern const Uint64 clearAnimDuration;
+
+extern Piece holdPiece;
+extern bool newPiece;
+extern bool holdUsed;
+extern int rowsCleared;
+extern int levelIncrease;
+extern bool hardDrop;
+extern bool alternateIPieceRotationOffset;
+extern bool paused;
+
+extern int lockDelayFrames;
+extern int lockDelayCounter;
+extern bool pieceLanded;
+
+extern Board board;
+
 enum class InputAction {
     None,
     MoveLeft,
