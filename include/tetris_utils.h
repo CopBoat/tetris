@@ -13,6 +13,9 @@ void pieceSet(const Piece& piece, Board board, int color = 0);
 
 int maxDrop(const Piece&, const Board&);
 
+void rotateIPieceClockwise();
+void rotatePieceClockwise();
+
 void spawnParticles(const Piece&);
 
 void spawnParticlesAt(int, int, int);
