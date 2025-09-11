@@ -103,7 +103,7 @@ int main( int argc, char* args[] )
             }
 
             //rotate helper (can I move this into the case?)
-            std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+            //std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
 
             switch (action) { //handle input actions
                 case InputAction::MoveLeft:
@@ -167,57 +167,15 @@ int main( int argc, char* args[] )
                     }
                 case InputAction::Hold:
                     pieceSet(currentPiece, board); //clear current position
-
                     if (!holdUsed){ //if hold not used this turn
-
-                        //reset peice rotation
-                        if (currentPiece.width == 1 || currentPiece.height == 1) { //if I piece, reset to original horizontal position
-                            currentPiece = iPiece; // Reset to I piece
-                        }
-                        else
-                        {
-                            while (currentPiece.rotation != 0) { // rotate back to original position
-                                // Rotate back to original orientation
-                                for (int sx = 0; sx < currentPiece.width; ++sx) {
-                                    for (int sy = 0; sy < currentPiece.height; ++sy) {
-                                        newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
-                                    }
-                                }
-                                currentPiece.shape = newShape;
-                                std::swap(currentPiece.width, currentPiece.height);
-                                currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-                                //reset newShape for next potential rotation
-                                newShape = std::vector<std::vector<int>>(currentPiece.width, std::vector<int>(currentPiece.height, 0));
-                            }
-                        }
-                        
-
+                        resetRotation();
                         if (holdPiece.shape.empty()) {
-                            holdPiece = currentPiece;
-                            pickPiece = std::rand() % 7; // Generates a random number between 0 and 6 inclusive
-                            //std::cout << "Picked piece: " << pickPiece << std::endl;
-                            currentPiece = pieceTypes[nextPickPiece]; // Select a new random piece
-                            nextPickPiece = std::rand() % 7; // Randomly select the next piece
-                            nextPiece = pieceTypes[nextPickPiece]; // Update next piece
-                            currentPiece.y = 0;
-                            currentPiece.x = boardWidth / 2;
-                            //holdPiece.rotation = 0; // need to implement rotation reset
+                            firstHold(); //first time holding a piece
                         } else {
-
-                            std::swap(holdPiece, currentPiece);
-                            currentPiece.y = 0;
-                            currentPiece.x = boardWidth / 2;
+                            pieceSwap(); //swap current and hold pieces
                         }
                         holdUsed = true; // Mark hold as used for this turn
                     }
-
-                    
-
-                    // holdPiece = currentPiece;
-                    // currentPiece = pieceTypes[nextPickPiece]; // Select a new random piece
-                    // nextPickPiece = std::rand() % 7; // Randomly select the next piece
-                    // nextPiece = pieceTypes[nextPickPiece]; // Update next piece
-                    
                     break;
                 case InputAction::Pause:
                     paused = !paused;
