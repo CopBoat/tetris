@@ -2,6 +2,7 @@
 #define GLOBALS_H
 
 #include "ltexture.h"
+#include "ltimer.h"
 #include "piece.h"
 #include <SDL3/SDL.h>
 #include <string>
@@ -56,11 +57,16 @@ inline const std::vector<std::string> windowTitles = {
     "Kirkland SignatureTM Block Game",
     "FROM TACOMA WITH LOVE",
     "IPiece when?!",
-    "can I please get a longboi",
+    "Can I please get a longboi?",
     "VLC - HighScore_World-Record.mp4",
     "Thou shalt make complete rows - Tetraviticus 2:15",
-    "bring the pieces back together (rediscover communication)"
+    "Bring the pieces back together (rediscover communication)"
 };
+
+
+extern LTimer capTimer;
+extern Uint64 lastDropTime;
+extern Uint64 dropSpeed;
 
 extern std::vector<std::pair<int, int>> wallKickOffsets0R;
 extern std::vector<std::pair<int, int>> wallKickOffsetsR0;

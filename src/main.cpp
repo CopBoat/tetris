@@ -44,13 +44,6 @@ int main( int argc, char* args[] )
         //The event data
         SDL_Event e;
         SDL_zero( e );
-        
-        //frames per second timer
-        LTimer capTimer;
-
-        Uint64 lastDropTime = SDL_GetTicksNS(); //
-        
-        Uint64 dropSpeed{ 700000000 }; // Milliseconds between drops
 
         // Array of piece types
         Piece pieceTypes[7] = { iPiece, oPiece, tPiece, lPiece, jPiece, sPiece, zPiece }; // Array of piece types
@@ -381,30 +374,17 @@ int main( int argc, char* args[] )
                         break;
                     }
                 case InputAction::Hold:
-                    // Implement hold functionality here
-                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                            if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx;
-                                int boardY = currentPiece.y + sy;
-                                if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                                    board.current[boardX][boardY] = 0;
-                                }
-                            }
-                        }
-                    }
+                    pieceSet(currentPiece, board); //clear current position
 
-                    if (!holdUsed){
+                    if (!holdUsed){ //if hold not used this turn
 
                         //reset peice rotation
-
-                        // if I piece, reset to original horizontal position
-                        if (currentPiece.width == 1 || currentPiece.height == 1) {
+                        if (currentPiece.width == 1 || currentPiece.height == 1) { //if I piece, reset to original horizontal position
                             currentPiece = iPiece; // Reset to I piece
                         }
                         else
                         {
-                            while (currentPiece.rotation != 0) {
+                            while (currentPiece.rotation != 0) { // rotate back to original position
                                 // Rotate back to original orientation
                                 for (int sx = 0; sx < currentPiece.width; ++sx) {
                                     for (int sy = 0; sy < currentPiece.height; ++sy) {
