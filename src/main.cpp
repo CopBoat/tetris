@@ -119,8 +119,6 @@ int main( int argc, char* args[] )
                 lockDelayCounter = 0;
             }
 
-            float spacing = 2.0f; // Amount of spacing between blocks
-
             //UI ELEMENTS
             //background black
             SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 255 ); // Use alpha 255 for opaque
@@ -187,15 +185,6 @@ int main( int argc, char* args[] )
                     }
                 }
 
-            // std::cout << "Board state:\n";
-            //     for (int y = 0; y < boardHeight; ++y) {
-            //         for (int x = 0; x < boardWidth; ++x) {
-            //             std::cout << board.current[x][y] << " ";
-            //         }
-            //         std::cout << "\n";
-            //     }
-
-
             if (paused) {
                 //render a "Paused" message
                 SDL_Color textColor{ 0xFF, 0xFF, 0xFF, 0xFF };
@@ -203,8 +192,7 @@ int main( int argc, char* args[] )
                 gameOverLabel.render(200, 300);
                 SDL_RenderPresent(gRenderer);
 
-                //render board with hollow blocks
-
+                //todo render board with hollow blocks
 
                 // Cap frame rate while paused
                 Uint64 nsPerFrame = 1000000000 / kScreenFps;

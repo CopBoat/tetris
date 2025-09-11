@@ -264,6 +264,8 @@ Piece zPiece = {
     7  // color
 };
 
+float spacing = 2.0f; // Amount of spacing between blocks
+
 LTimer capTimer; //frames per second timer
 Uint64 lastDropTime = SDL_GetTicksNS(); //
 Uint64 dropSpeed{ 700000000 }; // Milliseconds between drops
