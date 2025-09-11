@@ -19,6 +19,10 @@ void rotatePieceClockwise();
 void rotateIPieceCounterClockwise();
 void rotatePieceCounterClockwise();
 
+void resetRotation();
+void firstHold();
+void pieceSwap();
+
 void spawnParticles(const Piece&);
 
 void spawnParticlesAt(int, int, int);

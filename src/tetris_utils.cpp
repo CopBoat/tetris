@@ -223,6 +223,44 @@ void rotatePieceCounterClockwise() {
     }
 }
 
+void resetRotation() {
+    if (currentPiece.width == 1 || currentPiece.height == 1) { // I piece
+        currentPiece = iPiece; // Reset to I piece
+    }
+    else 
+    {
+        while (currentPiece.rotation != 0) { // rotate back to original position
+            std::vector<std::vector<int>> newShape(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+            for (int sx = 0; sx < currentPiece.width; ++sx) {
+                for (int sy = 0; sy < currentPiece.height; ++sy) {
+                    newShape[sx][currentPiece.height - 1 - sy] = currentPiece.shape[sy][sx];
+                }
+            }
+            currentPiece.shape = newShape;
+            std::swap(currentPiece.width, currentPiece.height);
+            currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+            newShape = std::vector<std::vector<int>>(currentPiece.width, std::vector<int>(currentPiece.height, 0));
+        }
+    }
+}
+
+void firstHold() {
+    holdPiece = currentPiece;
+    pickPiece = std::rand() % 7; // Generates a random number between 0 and 6 inclusive
+    //std::cout << "Picked piece: " << pickPiece << std::endl;
+    currentPiece = pieceTypes[nextPickPiece]; // Select a new random piece
+    nextPickPiece = std::rand() % 7; // Randomly select the next piece
+    nextPiece = pieceTypes[nextPickPiece]; // Update next piece
+    currentPiece.y = 0;
+    currentPiece.x = boardWidth / 2;
+}
+
+void pieceSwap() {
+    std::swap(holdPiece, currentPiece);
+    currentPiece.y = 0;
+    currentPiece.x = boardWidth / 2;
+}
+
 void spawnParticles(const Piece& piece) {
     for (int sx = 0; sx < piece.width; ++sx) {
         for (int sy = 0; sy < piece.height; ++sy) {
