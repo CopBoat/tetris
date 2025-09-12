@@ -119,71 +119,7 @@ int main( int argc, char* args[] )
                 lockDelayCounter = 0;
             }
 
-            //UI ELEMENTS
-            //background black
-            SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 255 ); // Use alpha 255 for opaque
-            SDL_RenderClear( gRenderer );
-
-            //Set render color to white
-            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
-
-            // Draw grid lines
-            SDL_SetRenderDrawColor(gRenderer, 40, 40, 40, 255); // Dark gray for grid lines
-            for (int x = 0; x <= boardWidth; ++x) {
-                SDL_RenderLine(gRenderer, x * blockSize, 0, x * blockSize, boardHeight * blockSize);
-            }
-            for (int y = 0; y <= boardHeight; ++y) {
-                SDL_RenderLine(gRenderer, 0, y * blockSize, boardWidth * blockSize, y * blockSize);
-            }
-
-            //draw line seperating the board and UI
-            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
-            SDL_RenderLine( gRenderer, 480, 0, 480, kScreenHeight );
-
-            //render the UI elements
-            scoreLabel.render( 520, 40);
-            score.render( 520, 80 );
-            levelLabel.render( 520, 120 );
-            level.render( 520, 160 );
-            nextLabel.render( 520, 200 );
-            holdLabel.render( 520, 380 );
-            highScoreLabel.render( 520, 560 );
-            highScore.render( 520, 600 );
-            SDL_FRect nextFRect{ 510, 240, 100, 100 };
-            SDL_RenderRect( gRenderer, &nextFRect ); // Render a rectangle for the next piece
-            SDL_FRect holdFRect{ 510.f, 420.f, 100.f, 100.f };
-            SDL_RenderRect( gRenderer, &holdFRect ); // Render a rectangle for the hold piece
-
-            //todo put next piece here
-            SDL_SetRenderDrawColor( gRenderer, 128, 128, 128, 255 ); // Gray color for pieces
-            for (int sx = 0; sx < nextPiece.width; ++sx) {
-                    for (int sy = 0; sy < nextPiece.height; ++sy) {
-                        if (nextPiece.shape[sy][sx] != 0) {
-                            int boardX = nextPiece.x + sx;
-                            int boardY = nextPiece.y + sy;
-                            // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                            //     board.current[boardX][boardY] = currentPiece.color;
-                            // }
-                            SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 265.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
-                            SDL_RenderFillRect(gRenderer, &rect);
-                        }
-                    }
-                }
-
-            //todo put hold piece here
-            for (int sx = 0; sx < holdPiece.width; ++sx) {
-                    for (int sy = 0; sy < holdPiece.height; ++sy) {
-                        if (holdPiece.shape[sy][sx] != 0) {
-                            int boardX = holdPiece.x + sx;
-                            int boardY = holdPiece.y + sy;
-                            // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                            //     board.current[boardX][boardY] = currentPiece.color;
-                            // }
-                            SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 445.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
-                            SDL_RenderFillRect(gRenderer, &rect);
-                        }
-                    }
-                }
+            renderUI();
 
             if (paused) {
                 //render a "Paused" message
@@ -224,76 +160,9 @@ int main( int argc, char* args[] )
                 }
             }
 
-            // --- RENDER BOARD AND PARTICLES DURING ANIMATION ---
-            // Clear background
-            SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-            SDL_RenderClear(gRenderer);
-
-            //render the UI elements
-            scoreLabel.render( 520, 40);
-            score.render( 520, 80 );
-            levelLabel.render( 520, 120 );
-            level.render( 520, 160 );
-            nextLabel.render( 520, 200 );
-            holdLabel.render( 520, 380 );
-            highScoreLabel.render( 520, 560 );
-            highScore.render( 520, 600 );
-            
-            
-
-            //todo put next piece here
-            SDL_SetRenderDrawColor( gRenderer, 128, 128, 128, 255 ); // Gray color for pieces
-            for (int sx = 0; sx < nextPiece.width; ++sx) {
-                    for (int sy = 0; sy < nextPiece.height; ++sy) {
-                        if (nextPiece.shape[sy][sx] != 0) {
-                            int boardX = nextPiece.x + sx;
-                            int boardY = nextPiece.y + sy;
-                            // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                            //     board.current[boardX][boardY] = currentPiece.color;
-                            // }
-                            SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 265.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
-                            SDL_RenderFillRect(gRenderer, &rect);
-                        }
-                    }
-                }
-
-            //todo put hold piece here
-            for (int sx = 0; sx < holdPiece.width; ++sx) {
-                    for (int sy = 0; sy < holdPiece.height; ++sy) {
-                        if (holdPiece.shape[sy][sx] != 0) {
-                            int boardX = holdPiece.x + sx;
-                            int boardY = holdPiece.y + sy;
-                            // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                            //     board.current[boardX][boardY] = currentPiece.color;
-                            // }
-                            SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 445.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
-                            SDL_RenderFillRect(gRenderer, &rect);
-                        }
-                    }
-                }
-
-            
-            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
-            
-            SDL_FRect nextFRect{ 510, 240, 100, 100 };
-            SDL_RenderRect( gRenderer, &nextFRect ); // Render a rectangle for the next piece
-            SDL_FRect holdFRect{ 510.f, 420.f, 100.f, 100.f };
-            SDL_RenderRect( gRenderer, &holdFRect ); // Render a rectangle for the hold piece
-            
-
-            // Draw grid lines
-            SDL_SetRenderDrawColor(gRenderer, 40, 40, 40, 255);
-            for (int x = 0; x <= boardWidth; ++x)
-                SDL_RenderLine(gRenderer, x * blockSize, 0, x * blockSize, boardHeight * blockSize);
-            for (int y = 0; y <= boardHeight; ++y)
-                SDL_RenderLine(gRenderer, 0, y * blockSize, boardWidth * blockSize, y * blockSize);
-
-            //draw line seperating the board and UI
-            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
-            SDL_RenderLine( gRenderer, 480, 0, 480, kScreenHeight );
+            renderUI();
 
             // Draw the blocks
-            float spacing = 2.0f;
             for (int x = 0; x < boardWidth; ++x) {
                 for (int y = 0; y < boardHeight; ++y) {
                     int val = board.current[x][y];
@@ -325,22 +194,7 @@ int main( int argc, char* args[] )
                 }
             }
 
-            // Render particles
-            for (auto it = particles.begin(); it != particles.end();) {
-                it->x += it->vx;
-                it->y += it->vy;
-                it->lifetime--;
-                if (it->alpha > 0) it->alpha -= 255.0f / (it->lifetime + 1);
-                SDL_Color c = it->color;
-                c.a = static_cast<Uint8>(std::max(0.0f, it->alpha));
-                SDL_SetRenderDrawColor(gRenderer, c.r, c.g, c.b, c.a);
-                SDL_FRect rect{it->x, it->y, 2, 2};
-                SDL_RenderFillRect(gRenderer, &rect);
-                if (it->lifetime <= 0 || it->alpha <= 0)
-                    it = particles.erase(it);
-                else
-                    ++it;
-            }
+            renderParticles();
 
             SDL_RenderPresent(gRenderer);
 
@@ -364,7 +218,6 @@ int main( int argc, char* args[] )
             capFrameRate();
             continue; // Skip rest of loop while animating
         }
-
 
             //check game over
             if (currentPiece.y == 0) {
@@ -421,14 +274,10 @@ int main( int argc, char* args[] )
                 }
             }
 
-
             // Check if the piece can be placed at its next position
-            //currentPiece.y += 1;
             bool canPlaceNext = checkPlacement(currentPiece, board, 0, 1);
-            
 
             // Place the current piece's shape onto the board at its current position
-            
             for (int sx = 0; sx < currentPiece.width; ++sx) {
                 for (int sy = 0; sy < currentPiece.height; ++sy) {
                     if (currentPiece.shape[sy][sx] != 0) {
@@ -441,9 +290,6 @@ int main( int argc, char* args[] )
                 }
             }
              
-
-            
-
             // Render the current blocks on the board
             std::vector<SDL_FRect> blockRects;
             for (int x = 0; x < boardWidth; ++x) {
@@ -454,8 +300,6 @@ int main( int argc, char* args[] )
                     }
                 }
             }
-
-            
 
             // Render the rectangles for the blocks
             if (!blockRects.empty()) {
@@ -509,57 +353,23 @@ int main( int argc, char* args[] )
                 }
             }
 
-            // Update and render particles
-            for (auto it = particles.begin(); it != particles.end();) {
-                it->x += it->vx;
-                it->y += it->vy;
-                it->lifetime--;
-                if (it->alpha > 0) it->alpha -= 255.0f / (it->lifetime + 1); // Fade out
-                SDL_Color c = it->color;
-                c.a = static_cast<Uint8>(std::max(0.0f, it->alpha));
-                SDL_SetRenderDrawColor(gRenderer, c.r, c.g, c.b, c.a);
-                SDL_FRect rect{it->x, it->y, 2, 2}; // Small sparkle
-                SDL_RenderFillRect(gRenderer, &rect);
-                if (it->lifetime <= 0 || it->alpha <= 0)
-                    it = particles.erase(it);
-                else
-                    ++it;
-            }
+            renderParticles();
 
-            //update screen
-            SDL_RenderPresent( gRenderer );
-
-            // if (!canPlaceNext)
-            // {
-            //     newPiece = true;
-            // }
-
-            
-
-
-            
+            SDL_RenderPresent( gRenderer ); //update screen
 
             if (!newPiece) {
-                    // board.current[currentPiece.x][currentPiece.y] = 0;
-                    // currentPiece.y += 1; 
-
-                    //std::cout << canPlaceNext << std::endl;
-
-                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                            if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx;
-                                int boardY = currentPiece.y + sy;
-                                // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                                //     board.current[boardX][boardY] = 0;
-                                // }
-                                board.current[boardX][boardY] = 0;
-                            }
+                for (int sx = 0; sx < currentPiece.width; ++sx) {
+                    for (int sy = 0; sy < currentPiece.height; ++sy) {
+                        if (currentPiece.shape[sy][sx] != 0) {
+                            int boardX = currentPiece.x + sx;
+                            int boardY = currentPiece.y + sy;
+                            board.current[boardX][boardY] = 0;
                         }
                     }
-                    
+                }
             }
             
+            // Handle automatic piece dropping based on drop speed
             Uint64 now = SDL_GetTicksNS();
             if (now - lastDropTime >= dropSpeed && canPlaceNext) {
                 currentPiece.y += 1;
@@ -585,31 +395,18 @@ int main( int argc, char* args[] )
                 lockDelayCounter = 0;
             }
 
-
             //use  if (newPiece) to test rotation after hard drop
             if (newPiece || hardDropFlag) {
-                    //currentPiece.y -= 1; // Move back up to last valid position
-                    for (int sx = 0; sx < currentPiece.width; ++sx) {
-                        for (int sy = 0; sy < currentPiece.height; ++sy) {
-                            if (currentPiece.shape[sy][sx] != 0) {
-                                int boardX = currentPiece.x + sx;
-                                int boardY = currentPiece.y + sy;
-                                // if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                                //     board.current[boardX][boardY] = 0;
-                                // }
-                                board.current[boardX][boardY] = currentPiece.color;
-                            }
+                    
+                for (int sx = 0; sx < currentPiece.width; ++sx) {
+                    for (int sy = 0; sy < currentPiece.height; ++sy) {
+                        if (currentPiece.shape[sy][sx] != 0) {
+                            int boardX = currentPiece.x + sx;
+                            int boardY = currentPiece.y + sy;
+                            board.current[boardX][boardY] = currentPiece.color;
                         }
                     }
-
-                // std::cout << "Board state:\n";
-                // for (int y = 0; y < boardHeight; ++y) {
-                //     for (int x = 0; x < boardWidth; ++x) {
-                //         std::cout << board.current[x][y] << " ";
-                //     }
-                //     std::cout << "\n";
-                // }
-
+                }
 
                 int fullRows[boardHeight];
 
@@ -617,22 +414,14 @@ int main( int argc, char* args[] )
                     fullRows[i] = 0;
                 }
 
-                //int rowcount = 0;
-                //int maxRowCount = 0;
                 for (int y = 0; y < boardHeight; ++y) {
                     int rowcount = 0;
                     for (int x = 0; x < boardWidth; ++x) {
                         if (board.current[x][y] != 0) {
                             rowcount++;
-                            //std::cout << "Rowcount: " << rowcount << std::endl;
                         }
                     }
-                    // if (rowcount > maxRowCount) {
-                    //     maxRowCount = rowcount;
-                    // }
-                    //std::cout << "maxRowCount: " << maxRowCount << std::endl;
                     if (rowcount == boardWidth) {
-                        //std::cout << "Full row at: " << y << std::endl;
                         fullRows[y] = 1;
                     }
                 }
@@ -643,40 +432,8 @@ int main( int argc, char* args[] )
                 {
                     if (fullRows[i] == 1) {
                         clearedRows++;
-                        //std::cout << "Row " << i << " is full!" << std::endl;
-                        
-                        
                     }
-
-                    
                 }
-
-                // for (int i = 0; i < boardHeight; ++i) 
-                // {
-                //     if (fullRows[i] == 1) {
-                //         clearedRows++;
-                //         //std::cout << "Row " << i << " is full!" << std::endl;
-                //         for (int y = i; y > 0; --y) {
-                //             for (int x = 0; x < boardWidth; ++x) {
-                //                 //board.current[x][0] = 0; // Clear the top row
-                //                 board.current[x][y] = board.current[x][y - 1];
-                //             }
-                //         }
-                //         for (int x = 0; x < boardWidth; ++x) {
-                //             board.current[x][0] = 0; // Clear the top row
-                //         }
-                //         // for (int x = 0; x < boardWidth; ++x) {
-                //         //     // for (int y = i; y > 0; --y) {
-                //         //     //     board.current[x][y] = board.current[x][y - 1];
-                //         //     // }
-                //         //     // board.current[x][0] = 0; // Clear the top row
-                //         //     board.current[x][i] = 0;
-                //         // }
-                        
-                //     }
-
-                    
-                // }
 
                 if (!clearingRows && clearedRows > 0) {
                     clearingRows = true;
@@ -686,8 +443,7 @@ int main( int argc, char* args[] )
                     for (int i = 0; i < boardHeight; ++i) {
                         if (fullRows[i] == 1) rowsToClear.push_back(i);
                     }
-                    // Optionally: Play a sound here
-                    //continue; // Skip rest of loop to start animation
+                    // Play a sound here?
                 }
 
                 switch (clearedRows)
@@ -729,23 +485,8 @@ int main( int argc, char* args[] )
                         levelIncrease = levelValue;
                     }
 
-                // if (scoreValue > 200) {
-                    
-                //     if (levelValue <= 9) {
-                //         levelValue += 1;
-                //         level.loadFromRenderedText( std::to_string(levelValue), { 0xFF, 0xFF, 0xFF, 0xFF } );
-                //         //levelValue = 0;
-                //         if (dropSpeed > 10) {
-                //             dropSpeed -= 5; // Increase speed
-                //         }
-                //     }
-                // }
-
-                //std::cout << "newPiece" << std::endl;
                 currentPiece.y = 0; // Reset for next falling piece
                 currentPiece.x = boardWidth / 2; // Reset horizontal position to center
-                //pickPiece = std::rand() % 7; // Generates a random number between 0 and 6 inclusive
-                //std::cout << "Picked piece: " << pickPiece << std::endl;
                 currentPiece = pieceTypes[nextPickPiece]; // Select a new random piece
                 nextPickPiece = std::rand() % 7; // Randomly select the next piece
                 nextPiece = pieceTypes[nextPickPiece]; // Update next piece
