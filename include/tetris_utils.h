@@ -9,7 +9,7 @@
 
 bool checkPlacement(const Piece&, const Board&, int, int);
 
-void pieceSet(const Piece& piece, Board board, int color = 0);
+void pieceSet(const Piece& piece, Board& board, int color = 0);
 
 int maxDrop(const Piece&, const Board&);
 
@@ -34,6 +34,12 @@ void renderPauseMenu();
 void animateRowClear();
 
 bool checkGameOver();
+
+void autoDrop(bool canPlaceNextPiece);
+
+void handleLockDelay(bool canPlaceNextPiece);
+
+void handlePieceLanded();
 
 std::string chooseWindowTitle();
 
