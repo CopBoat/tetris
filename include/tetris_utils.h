@@ -24,8 +24,10 @@ void firstHold();
 void pieceSwap();
 
 void spawnParticles(const Piece&);
-
 void spawnParticlesAt(int, int, int);
+
+void renderBoardBlocks();
+void renderBoardBlocksDuringAnimation();
 
 std::string chooseWindowTitle();
 
