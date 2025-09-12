@@ -318,6 +318,103 @@ void spawnParticlesAt(int x, int y, int color) {
     }
 }
 
+void renderBoardBlocks() {
+    // Render the current blocks on the board
+    std::vector<SDL_FRect> blockRects;
+    for (int x = 0; x < boardWidth; ++x) {
+        for (int y = 0; y < boardHeight; ++y) {
+            if (board.current[x][y] != 0) {
+                SDL_FRect rect{ static_cast<float>(x * blockSize), static_cast<float>(y * blockSize), blockSize, blockSize };
+                blockRects.push_back(rect);
+            }
+        }
+    }
+
+    // Render the rectangles for the blocks
+    if (!blockRects.empty()) {
+        // Render rectangles for the blocks with individual colors
+        for (size_t i = 0; i < blockRects.size(); ++i) {
+            for (int x = 0; x < boardWidth; ++x) {
+                for (int y = 0; y < boardHeight; ++y) {
+                    int val = board.current[x][y];
+                    if (val != 0) {
+                        SDL_FRect rect{ static_cast<float>(x * blockSize) + spacing / 2,
+                                        static_cast<float>(y * blockSize) + spacing / 2,
+                                        blockSize - spacing,
+                                        blockSize - spacing };
+                        SDL_Color color;
+                        switch (val) {
+                            case 1: color = {0, 255, 255, 255}; break; //cyan
+                            case 2: color = {255, 255, 0, 255}; break; //yellow
+                            case 3: color = {128, 0, 128, 255}; break; //purple
+                            case 4: color = {255, 0, 0, 255}; break; //blue
+                            case 5: color = {0, 0, 255, 255}; break; //orange
+                            case 6: color = {0, 255, 0, 255}; break; //green
+                            case 7: color = {255, 0, 0, 255}; break; //red
+                            default: color = {127, 127, 127, 255}; break; //grey
+                        }
+                        // Check if this block is part of the current falling piece
+                        bool isCurrentPieceBlock = false;
+                        for (int sx = 0; sx < currentPiece.width; ++sx) {
+                            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                                if (currentPiece.shape[sy][sx] != 0 &&
+                                    x == currentPiece.x + sx &&
+                                    y == currentPiece.y + sy) {
+                                    isCurrentPieceBlock = true;
+                                    break;
+                                }
+                            }
+                            if (isCurrentPieceBlock) break;
+                        }
+                        // Only darken locked pieces
+                        if (!isCurrentPieceBlock) {
+                            color.r = static_cast<Uint8>(color.r * 0.7f);
+                            color.g = static_cast<Uint8>(color.g * 0.7f);
+                            color.b = static_cast<Uint8>(color.b * 0.7f);
+                        }
+                        SDL_SetRenderDrawColor(gRenderer, color.r, color.g, color.b, color.a);
+                        SDL_RenderFillRect(gRenderer, &rect);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void renderBoardBlocksDuringAnimation() {
+    // Draw the blocks
+    for (int x = 0; x < boardWidth; ++x) {
+        for (int y = 0; y < boardHeight; ++y) {
+            int val = board.current[x][y];
+            if (val != 0) {
+                SDL_FRect rect{ static_cast<float>(x * blockSize) + spacing / 2,
+                                static_cast<float>(y * blockSize) + spacing / 2,
+                                blockSize - spacing,
+                                blockSize - spacing };
+                SDL_Color color;
+                switch (val) {
+                    case 1: color = {0, 255, 255, 255}; break; //cyan
+                    case 2: color = {255, 255, 0, 255}; break; //yellow
+                    case 3: color = {128, 0, 128, 255}; break; //purple
+                    case 4: color = {255, 0, 0, 255}; break; //blue
+                    case 5: color = {0, 0, 255, 255}; break; //orange
+                    case 6: color = {0, 255, 0, 255}; break; //green
+                    case 7: color = {255, 0, 0, 255}; break; //red
+                    default: color = {127, 127, 127, 255}; break; //grey
+                }
+                
+                color.r = static_cast<Uint8>(color.r * 0.7f);
+                color.g = static_cast<Uint8>(color.g * 0.7f);
+                color.b = static_cast<Uint8>(color.b * 0.7f);
+                        
+                SDL_SetRenderDrawColor(gRenderer, color.r, color.g, color.b, color.a);
+                SDL_RenderFillRect(gRenderer, &rect);
+                
+            }
+        }
+    }
+}
+
 std::string chooseWindowTitle() {
     int alternateIndex = std::rand() % 3;
     if (alternateIndex == 0) {
