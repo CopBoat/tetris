@@ -132,17 +132,7 @@ int main( int argc, char* args[] )
             bool canPlaceNext = checkPlacement(currentPiece, board, 0, 1);
 
             // Place the current piece's shape onto the board at its current position
-            for (int sx = 0; sx < currentPiece.width; ++sx) {
-                for (int sy = 0; sy < currentPiece.height; ++sy) {
-                    if (currentPiece.shape[sy][sx] != 0) {
-                        int boardX = currentPiece.x + sx;
-                        int boardY = currentPiece.y + sy;
-                        if (boardX >= 0 && boardX < boardWidth && boardY >= 0 && boardY < boardHeight) {
-                            board.current[boardX][boardY] = currentPiece.color;
-                        }
-                    }
-                }
-            }
+            pieceSet(currentPiece, board, currentPiece.color);
              
             renderBoardBlocks();
 
@@ -150,143 +140,14 @@ int main( int argc, char* args[] )
 
             SDL_RenderPresent( gRenderer ); //update screen
 
-            if (!newPiece) {
-                for (int sx = 0; sx < currentPiece.width; ++sx) {
-                    for (int sy = 0; sy < currentPiece.height; ++sy) {
-                        if (currentPiece.shape[sy][sx] != 0) {
-                            int boardX = currentPiece.x + sx;
-                            int boardY = currentPiece.y + sy;
-                            board.current[boardX][boardY] = 0;
-                        }
-                    }
-                }
-            }
+            if (!newPiece) { pieceSet(currentPiece, board); } // Clear the piece's current position on the board
+
+            autoDrop(canPlaceNext); // Handle automatic piece dropping based on drop speed
+
+            handleLockDelay(canPlaceNext); // Handle lock delay if the piece has landed
+
+            handlePieceLanded(); // Handle piece landing and row clearing
             
-            // Handle automatic piece dropping based on drop speed
-            Uint64 now = SDL_GetTicksNS();
-            if (now - lastDropTime >= dropSpeed && canPlaceNext) {
-                currentPiece.y += 1;
-                lastDropTime = now;
-            }
-
-
-            if (!canPlaceNext && !hardDropFlag)
-            {
-                if (!pieceLanded) {
-                    pieceLanded = true;
-                    lockDelayCounter = 0;
-                } else {
-                    lockDelayCounter++;
-                    if (lockDelayCounter >= lockDelayFrames) {
-                        newPiece = true;
-                        pieceLanded = false;
-                        lockDelayCounter = 0;
-                    }
-                }
-            } else {
-                pieceLanded = false;
-                lockDelayCounter = 0;
-            }
-
-            //use  if (newPiece) to test rotation after hard drop
-            if (newPiece || hardDropFlag) {
-                    
-                for (int sx = 0; sx < currentPiece.width; ++sx) {
-                    for (int sy = 0; sy < currentPiece.height; ++sy) {
-                        if (currentPiece.shape[sy][sx] != 0) {
-                            int boardX = currentPiece.x + sx;
-                            int boardY = currentPiece.y + sy;
-                            board.current[boardX][boardY] = currentPiece.color;
-                        }
-                    }
-                }
-
-                int fullRows[boardHeight];
-
-                for (int i = 0; i < boardHeight; ++i) {
-                    fullRows[i] = 0;
-                }
-
-                for (int y = 0; y < boardHeight; ++y) {
-                    int rowcount = 0;
-                    for (int x = 0; x < boardWidth; ++x) {
-                        if (board.current[x][y] != 0) {
-                            rowcount++;
-                        }
-                    }
-                    if (rowcount == boardWidth) {
-                        fullRows[y] = 1;
-                    }
-                }
-
-                int clearedRows = 0;
-
-                for (int i = 0; i < boardHeight; ++i) 
-                {
-                    if (fullRows[i] == 1) {
-                        clearedRows++;
-                    }
-                }
-
-                if (!clearingRows && clearedRows > 0) {
-                    clearingRows = true;
-                    clearAnimStart = SDL_GetTicksNS();
-                    clearAnimStep = 0;
-                    rowsToClear.clear();
-                    for (int i = 0; i < boardHeight; ++i) {
-                        if (fullRows[i] == 1) rowsToClear.push_back(i);
-                    }
-                    // Play a sound here?
-                }
-
-                switch (clearedRows)
-                    {
-                    case 1:
-                        scoreValue += 40*(levelValue+1); // Bonus for clearing one row
-                        break;
-                    case 2:
-                        scoreValue += 100*(levelValue+1); // Bonus for clearing two rows
-                        break;
-                    case 3:
-                        scoreValue += 300*(levelValue+1); // Bonus for clearing three rows
-                        break;
-                    case 4:
-                        scoreValue += 1200*(levelValue+1); // Bonus for clearing four rows (Tetris)
-                    default:
-                        break;
-                    }
-
-                    score.loadFromRenderedText( std::to_string(scoreValue), { 0xFF, 0xFF, 0xFF, 0xFF } );
-                    if (scoreValue > highScoreValue) {
-                        highScoreValue = scoreValue;
-                        highScore.loadFromRenderedText( std::to_string(highScoreValue), { 0xFF, 0xFF, 0xFF, 0xFF } );
-                    }
-
-                    rowsCleared += clearedRows;
-
-                    
-                    levelValue = rowsCleared / 10;
-                    level.loadFromRenderedText( std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF } );
-
-                    if (levelValue > levelIncrease) {
-                        if (levelValue < 5) {
-                            dropSpeed -= 200000000; // Increase speed- may cause crash after level 4
-                        } else if (levelValue == 5) {
-                            dropSpeed -= 20000000; // Increase speed- may cause crash after level 4
-                            level.loadFromRenderedText( "MAX", { 0xFF, 0xFF, 0xFF, 0xFF } );
-                        }
-                        levelIncrease = levelValue;
-                    }
-
-                currentPiece.y = 0; // Reset for next falling piece
-                currentPiece.x = boardWidth / 2; // Reset horizontal position to center
-                currentPiece = pieceTypes[nextPickPiece]; // Select a new random piece
-                nextPickPiece = std::rand() % 7; // Randomly select the next piece
-                nextPiece = pieceTypes[nextPickPiece]; // Update next piece
-                newPiece = false;
-                hardDropFlag = false;
-                holdUsed = false; // Reset hold usage for the new piece
-            }
             capFrameRate();
         } 
     }
