@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "ltimer.h"
+#include"tetris_utils.h"
 #include "tPieceIcon.h"
 #include "Pixeboy_ttf.h"
 #include <SDL3/SDL.h>
@@ -194,6 +195,76 @@ void capFrameRate(){
     if( frameNs < nsPerFrame )
     {
         SDL_DelayNS( nsPerFrame - frameNs );
+    }
+}
+
+void renderUI() {
+    //clear screen
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(gRenderer);
+
+    //render the UI elements
+    scoreLabel.render( 520, 40);
+    score.render( 520, 80 );
+    levelLabel.render( 520, 120 );
+    level.render( 520, 160 );
+    nextLabel.render( 520, 200 );
+    holdLabel.render( 520, 380 );
+    highScoreLabel.render( 520, 560 );
+    highScore.render( 520, 600 );
+    SDL_SetRenderDrawColor( gRenderer, 128, 128, 128, 255 ); // Gray color for pieces
+    for (int sx = 0; sx < nextPiece.width; ++sx) { // render next piece in the UI
+            for (int sy = 0; sy < nextPiece.height; ++sy) {
+                if (nextPiece.shape[sy][sx] != 0) {
+                    int boardX = nextPiece.x + sx;
+                    int boardY = nextPiece.y + sy;
+                    SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 265.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
+                    SDL_RenderFillRect(gRenderer, &rect);
+                }
+            }
+        }
+    for (int sx = 0; sx < holdPiece.width; ++sx) { // render hold piece in the UI
+            for (int sy = 0; sy < holdPiece.height; ++sy) {
+                if (holdPiece.shape[sy][sx] != 0) {
+                    int boardX = holdPiece.x + sx;
+                    int boardY = holdPiece.y + sy;
+                    SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 445.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
+                    SDL_RenderFillRect(gRenderer, &rect);
+                }
+            }
+        }
+    SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 ); // set render color to white
+    SDL_FRect nextFRect{ 510, 240, 100, 100 };
+    SDL_RenderRect( gRenderer, &nextFRect ); // Render a rectangle for the next piece
+    SDL_FRect holdFRect{ 510.f, 420.f, 100.f, 100.f };
+    SDL_RenderRect( gRenderer, &holdFRect ); // Render a rectangle for the hold piece
+    // Draw grid lines
+    SDL_SetRenderDrawColor(gRenderer, 40, 40, 40, 255);
+    for (int x = 0; x <= boardWidth; ++x)
+        SDL_RenderLine(gRenderer, x * blockSize, 0, x * blockSize, boardHeight * blockSize);
+    for (int y = 0; y <= boardHeight; ++y)
+        SDL_RenderLine(gRenderer, 0, y * blockSize, boardWidth * blockSize, y * blockSize);
+
+    //draw line seperating the board and UI
+    SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
+    SDL_RenderLine( gRenderer, 480, 0, 480, kScreenHeight );
+}
+
+void renderParticles() {
+    for (auto it = particles.begin(); it != particles.end();) {
+        it->x += it->vx;
+        it->y += it->vy;
+        it->lifetime--;
+        if (it->alpha > 0) it->alpha -= 255.0f / (it->lifetime + 1); // Fade out
+        SDL_Color c = it->color;
+        c.a = static_cast<Uint8>(std::max(0.0f, it->alpha));
+        SDL_SetRenderDrawColor(gRenderer, c.r, c.g, c.b, c.a);
+        SDL_FRect rect{it->x, it->y, 2, 2}; // Small sparkle
+        SDL_RenderFillRect(gRenderer, &rect);
+        if (it->lifetime <= 0 || it->alpha <= 0)
+            it = particles.erase(it);
+        else
+            ++it;
     }
 }
 

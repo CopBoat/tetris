@@ -17,6 +17,10 @@ void close();
 
 void capFrameRate();
 
+void renderUI();
+
+void renderParticles();
+
 constexpr int kScreenWidth{ 640 };
 constexpr int kScreenHeight{ 640 };
 constexpr int kScreenFps{ 60 };
