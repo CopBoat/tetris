@@ -29,6 +29,12 @@ void spawnParticlesAt(int, int, int);
 void renderBoardBlocks();
 void renderBoardBlocksDuringAnimation();
 
+void renderPauseMenu();
+
+void animateRowClear();
+
+bool checkGameOver();
+
 std::string chooseWindowTitle();
 
 extern Piece pieceTypes[7];

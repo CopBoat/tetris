@@ -415,6 +415,121 @@ void renderBoardBlocksDuringAnimation() {
     }
 }
 
+void renderPauseMenu() {
+    //render a "Paused" message
+    SDL_Color textColor{ 0xFF, 0xFF, 0xFF, 0xFF };
+    gameOverLabel.loadFromRenderedText("PAUSED", textColor);
+    gameOverLabel.render(200, 300);
+    SDL_RenderPresent(gRenderer);
+
+    //todo render board with hollow blocks
+
+    capFrameRate();
+}
+
+void animateRowClear() {
+    Uint64 now = SDL_GetTicksNS();
+    int animFrame = ((now - clearAnimStart) * clearAnimSteps) / clearAnimDuration;
+    if (animFrame > clearAnimStep) {
+        clearAnimStep = animFrame;
+        // For each row, clear blocks from center out
+        for (int row : rowsToClear) {
+            int center = boardWidth / 2;
+            for (int offset = 0; offset <= clearAnimStep; ++offset) {
+                int left = center - offset;
+                int right = center + offset;
+                if (left >= 0 && board.current[left][row] != 0) {
+                    spawnParticlesAt(left, row, board.current[left][row]);
+                    board.current[left][row] = 0;
+                }
+                if (right < boardWidth && right != left && board.current[right][row] != 0) {
+                    spawnParticlesAt(right, row, board.current[right][row]);
+                    board.current[right][row] = 0;
+                }
+            }
+        }
+    }
+
+    renderUI();
+
+    renderBoardBlocksDuringAnimation();
+
+    renderParticles();
+
+    SDL_RenderPresent(gRenderer);
+
+    // Pause for animation duration
+    if (now - clearAnimStart >= clearAnimDuration) {
+        // Shift rows down
+        for (int row : rowsToClear) {
+            for (int y = row; y > 0; --y) {
+                for (int x = 0; x < boardWidth; ++x) {
+                    board.current[x][y] = board.current[x][y - 1];
+                }
+            }
+            for (int x = 0; x < boardWidth; ++x) {
+                board.current[x][0] = 0;
+            }
+        }
+        clearingRows = false;
+        rowsToClear.clear();
+    }
+    capFrameRate();
+}
+
+bool checkGameOver() {
+    bool gameOver = false;
+    for (int sx = 0; sx < currentPiece.width; ++sx) 
+    {
+        for (int sy = 0; sy < currentPiece.height; ++sy) 
+        {
+            if (currentPiece.shape[sy][sx] != 0) 
+            {
+                int boardX = currentPiece.x + sx;
+                int boardY = currentPiece.y + sy;
+                if (board.current[boardX][boardY] != 0) 
+                {
+                    gameOver = true;
+                    break;
+                }
+            }
+        }
+        if (gameOver) break;
+    }
+    if (gameOver) {
+        // Render "Game Over" message
+        SDL_Color textColor{ 0xFF, 0x00, 0x00, 0xFF }; // Red text
+        gameOverLabel.loadFromRenderedText( "GAME OVER", textColor );
+        gameOverLabel.render( 200, 300 );
+        SDL_RenderPresent( gRenderer );
+        SDL_Delay(4000); // Pause for 3 seconds to show the message
+        //quit = true; // Exit the main loop
+        //restart the game
+        // Reset game state instead of restarting main
+        scoreValue = 0;
+        levelValue = 0;
+        rowsCleared = 0;
+        levelIncrease = 0;
+        dropSpeed = 900000000;
+        holdPiece = Piece();
+        holdUsed = false;
+        for (int x = 0; x < boardWidth; ++x)
+            for (int y = 0; y < boardHeight; ++y)
+                board.current[x][y] = 0;
+        pickPiece = std::rand() % 7;
+        nextPickPiece = std::rand() % 7;
+        currentPiece = pieceTypes[pickPiece];
+        nextPiece = pieceTypes[nextPickPiece];
+        currentPiece.x = boardWidth / 2;
+        currentPiece.y = 0;
+        score.loadFromRenderedText(std::to_string(scoreValue), { 0xFF, 0xFF, 0xFF, 0xFF });
+        level.loadFromRenderedText(std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF });
+        newPiece = false;
+        
+    }
+    return gameOver;
+}
+
 std::string chooseWindowTitle() {
     int alternateIndex = std::rand() % 3;
     if (alternateIndex == 0) {
