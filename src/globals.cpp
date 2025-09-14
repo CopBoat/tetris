@@ -97,7 +97,7 @@ bool init(std::string title)
     }
     else
     {
-        if( SDL_CreateWindowAndRenderer( title.c_str(), kScreenWidth, kScreenHeight, 0, &gWindow, &gRenderer ) == false )
+        if( SDL_CreateWindowAndRenderer( title.c_str(), kScreenWidth, kScreenHeight, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer ) == false )
         {
             SDL_Log( "Window could not be created! SDL error: %s\n", SDL_GetError() );
             success = false;
@@ -390,3 +390,43 @@ std::vector<std::pair<int, int>> wallKickOffsetsIL0 = {{0, 0}, {1, 0}, {-2, 0}, 
 std::vector<std::pair<int, int>> wallKickOffsetsI0L = {{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}};
 
 std::vector<std::pair<int, int>> wallKickOffsetsI[8] = {wallKickOffsetsI0R, wallKickOffsetsIR2, wallKickOffsetsI2L, wallKickOffsetsIL0, wallKickOffsetsI0L, wallKickOffsetsIL2, wallKickOffsetsI2R, wallKickOffsetsIR0};
+
+GameState currentState = GameState::MENU;
+
+LTexture titleTexture;
+LTexture playTexture;
+LTexture optionsTexture;
+LTexture optionsTitleTexture;
+LTexture backTexture;
+
+void renderMenu() {
+    // Clear screen
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(gRenderer);
+
+    // Render "TETRIS" title and menu options
+    // You can use your LTexture class for text rendering
+    // Example:
+    titleTexture.loadFromRenderedText("TETRIS", {255,255,255,255});
+    titleTexture.render(200, 100);
+    playTexture.loadFromRenderedText("1. Play", {255,255,255,255});
+    playTexture.render(200, 200);
+    optionsTexture.loadFromRenderedText("2. Options", {255,255,255,255});
+    optionsTexture.render(200, 250);
+
+    SDL_RenderPresent(gRenderer);
+}
+
+void renderOptions() {
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(gRenderer);
+
+    // Render "Options" and any settings you want
+    // Example:
+    optionsTitleTexture.loadFromRenderedText("OPTIONS", {255,255,255,255});
+    optionsTitleTexture.render(200, 100);
+    backTexture.loadFromRenderedText("Press ESC to return", {255,255,255,255});
+    backTexture.render(200, 200);
+
+    SDL_RenderPresent(gRenderer);
+}

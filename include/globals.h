@@ -96,4 +96,16 @@ extern std::vector<std::pair<int, int>> wallKickOffsetsIL0;
 extern std::vector<std::pair<int, int>> wallKickOffsetsI0L;
 extern std::vector<std::pair<int, int>> wallKickOffsetsI[8];
 
+enum class GameState { MENU, PLAYING, OPTIONS };
+extern GameState currentState;
+
+extern LTexture titleTexture;
+extern LTexture playTexture;
+extern LTexture optionsTexture;
+extern LTexture optionsTitleTexture;
+extern LTexture backTexture;
+
+void renderMenu();
+void renderOptions();
+
 #endif
