@@ -399,20 +399,38 @@ LTexture optionsTexture;
 LTexture optionsTitleTexture;
 LTexture backTexture;
 
+int menuSelection = 0;
+
 void renderMenu() {
     // Clear screen
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
+    // Query current window size
+    int winW = 0, winH = 0;
+    SDL_GetWindowSize(gWindow, &winW, &winH);
+
+    // Calculate right-aligned X position (250 px from right edge)
+    int rightX = winW - 250;
+    int centerY = winH / 4;
+
+    
+
+    // Draw selection rectangle
+    SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
+    int rectY = (menuSelection == 0) ? centerY + 60 : centerY + 110;
+    int rectW = playTexture.getWidth() + 20;
+    int rectH = playTexture.getHeight() + 10;
+    SDL_FRect selectRect{static_cast<float>(rightX - 18), static_cast<float>(rectY - 10), static_cast<float>(rectW + 20), static_cast<float>(rectH + 10)};
+    SDL_RenderFillRect(gRenderer, &selectRect); 
+
     // Render "TETRIS" title and menu options
-    // You can use your LTexture class for text rendering
-    // Example:
     titleTexture.loadFromRenderedText("TETRIS", {255,255,255,255});
-    titleTexture.render(200, 100);
-    playTexture.loadFromRenderedText("1. Play", {255,255,255,255});
-    playTexture.render(200, 200);
-    optionsTexture.loadFromRenderedText("2. Options", {255,255,255,255});
-    optionsTexture.render(200, 250);
+    titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
+    playTexture.loadFromRenderedText("Play", {255,255,255,255});
+    playTexture.render(rightX, centerY + 60);
+    optionsTexture.loadFromRenderedText("Options", {255,255,255,255});
+    optionsTexture.render(rightX - 15, centerY + 110);
 
     SDL_RenderPresent(gRenderer);
 }

@@ -105,6 +105,8 @@ extern LTexture optionsTexture;
 extern LTexture optionsTitleTexture;
 extern LTexture backTexture;
 
+extern int menuSelection;
+
 void renderMenu();
 void renderOptions();
 

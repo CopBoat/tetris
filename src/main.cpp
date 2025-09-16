@@ -64,8 +64,28 @@ int main( int argc, char* args[] )
                 if (currentState == GameState::MENU) {
                     //handleMenuEvent(e, quit, currentState);
                     if (e.type == SDL_EVENT_KEY_DOWN) {
-                        if (e.key.key == SDLK_1) currentState = GameState::PLAYING;
-                        if (e.key.key == SDLK_2) currentState = GameState::OPTIONS;
+                        // if (e.key.key == SDLK_1) currentState = GameState::PLAYING;
+                        // if (e.key.key == SDLK_2) currentState = GameState::OPTIONS;
+
+                        if (e.key.key == SDLK_UP) {
+                            menuSelection = (menuSelection - 1 + 2) % 2; // Wrap around for 2 options
+                        } else if (e.key.key == SDLK_DOWN) {
+                            menuSelection = (menuSelection + 1) % 2; // Wrap around for 2 options
+                        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+                            if (menuSelection == 0) currentState = GameState::PLAYING;
+                            else if (menuSelection == 1) currentState = GameState::OPTIONS;
+                        }
+                    }
+
+                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+                        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+                            menuSelection = (menuSelection - 1 + 2) % 2; // Wrap around for 2 options
+                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
+                            menuSelection = (menuSelection + 1) % 2; // Wrap around for 2 options
+                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+                            if (menuSelection == 0) { currentState = GameState::PLAYING; continue; }
+                            else if (menuSelection == 1) currentState = GameState::OPTIONS;
+                        }
                     }
                     //continue; // Skip the rest of the loop while in menu
                 } else if (currentState == GameState::OPTIONS) {
