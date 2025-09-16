@@ -9,6 +9,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 bool loadMedia()
 {
@@ -279,6 +280,9 @@ LTexture holdLabel;
 LTexture highScoreLabel;
 LTexture gameOverLabel;
 
+LTexture resumeTexture;
+LTexture quitTexture;
+
 LTexture score;
 LTexture level;
 LTexture highScore;
@@ -447,4 +451,36 @@ void renderOptions() {
     backTexture.render(200, 200);
 
     SDL_RenderPresent(gRenderer);
+}
+
+void renderWipeIntro(SDL_Renderer* renderer, int screenWidth, int screenHeight) {
+    const int durationMs = 1200; // Animation duration
+    Uint32 startTime = SDL_GetTicks();
+    bool done = false;
+
+    while (!done) {
+        Uint32 now = SDL_GetTicks();
+        float t = (now - startTime) / (float)durationMs;
+        if (t > 1.0f) t = 1.0f;
+
+        // Ease-out cubic: y = 1 - (1-t)^3
+        float eased = 1.0f - pow(1.0f - t, 3);
+
+        int wipeHeight = static_cast<int>(screenHeight * eased);
+
+        renderBoardBlocks();
+        renderUI();
+        renderParticles();
+        //SDL_RenderPresent(gRenderer);
+
+        // Draw overlay
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_FRect overlay = {0.0f, static_cast<float>(wipeHeight), static_cast<float>(screenWidth), static_cast<float>(screenHeight - wipeHeight)};
+        SDL_RenderFillRect(renderer, &overlay);
+
+        SDL_RenderPresent(renderer);
+
+        if (t >= 1.0f) done = true;
+        SDL_Delay(16); // ~60 FPS
+    }
 }

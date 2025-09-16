@@ -46,6 +46,9 @@ extern LTexture score;
 extern LTexture level;
 extern LTexture highScore;
 
+extern LTexture resumeTexture;
+extern LTexture quitTexture;
+
 extern int scoreValue;
 extern int levelValue;
 extern int highScoreValue;
@@ -67,8 +70,7 @@ inline const std::vector<std::string> windowTitles = {
     "IPiece when?!",
     "Can I please get a longboi?",
     "VLC - HighScore_World-Record.mp4",
-    "Thou shalt make complete rows - Tetraviticus 2:15",
-    "Bring the pieces back together (rediscover communication)"
+    "Thou shalt make complete rows - Tetraviticus 2:15"
 };
 
 
@@ -109,5 +111,7 @@ extern int menuSelection;
 
 void renderMenu();
 void renderOptions();
+
+void renderWipeIntro(SDL_Renderer*, int, int);
 
 #endif
