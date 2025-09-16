@@ -72,7 +72,7 @@ int main( int argc, char* args[] )
                         } else if (e.key.key == SDLK_DOWN) {
                             menuSelection = (menuSelection + 1) % 2; // Wrap around for 2 options
                         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-                            if (menuSelection == 0) currentState = GameState::PLAYING;
+                            if (menuSelection == 0) { currentState = GameState::PLAYING; renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); }
                             else if (menuSelection == 1) currentState = GameState::OPTIONS;
                         }
                     }
@@ -83,7 +83,7 @@ int main( int argc, char* args[] )
                         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
                             menuSelection = (menuSelection + 1) % 2; // Wrap around for 2 options
                         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-                            if (menuSelection == 0) { currentState = GameState::PLAYING; continue; }
+                            if (menuSelection == 0) { currentState = GameState::PLAYING; renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); continue; }
                             else if (menuSelection == 1) currentState = GameState::OPTIONS;
                         }
                     }
@@ -171,7 +171,21 @@ int main( int argc, char* args[] )
 
             renderUI();
 
-            if (paused) { renderPauseMenu(); continue; } // Skip the rest of the loop while paused
+            if (paused) // todo add paused as a game state
+            { 
+                if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+                    if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+                        pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2; // Wrap around for 2 options
+                    } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
+                        pauseMenuSelection = (pauseMenuSelection + 1) % 2; // Wrap around for 2 options
+                    } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+                        if (pauseMenuSelection == 0) { currentState == GameState::MENU; } // Resume
+                        //else if (pauseMenuSelection == 1) { currentState = GameState::MENU; playing = false; pauseGame(); renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); } // Quit to menu
+                    }
+                }
+                renderPauseMenu(); 
+                continue; 
+            } // Skip the rest of the loop while paused
 
             if (clearingRows) { animateRowClear(); continue; } // Skip rest of loop while animating
 
