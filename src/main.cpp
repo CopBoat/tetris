@@ -26,6 +26,21 @@ int main( int argc, char* args[] )
 
     bool playing = false;
 
+    // Controller repeat config (ms)
+    constexpr Uint64 kDAS_MS          = 167; // delay before auto-repeat
+    constexpr Uint64 kARR_MS          = 33;  // auto-repeat rate (horizontal)
+    constexpr Uint64 kSoftDrop_ARR_MS = 33;  // auto-repeat rate (soft drop)
+
+    struct RepeatState {
+        bool   held{false};
+        Uint64 pressedAt{0};
+        Uint64 lastRepeatAt{0};
+    };
+    enum class HDir { None, Left, Right };
+
+    RepeatState gpLeft{}, gpRight{}, gpDown{};
+    HDir activeH{ HDir::None };
+
     //Initialize
     if( init(chooseWindowTitle()) == false ) //initialize SDL Components
     {
@@ -114,14 +129,60 @@ int main( int argc, char* args[] )
                     }
                     if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
                         switch (e.gbutton.button) {
-                            case SDL_GAMEPAD_BUTTON_DPAD_LEFT:     action = InputAction::MoveLeft;               break;
-                            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:    action = InputAction::MoveRight;              break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_LEFT: {
+                                action = InputAction::MoveLeft;
+                                gpLeft.held = true;
+                                gpLeft.pressedAt = gpLeft.lastRepeatAt = SDL_GetTicks();
+                                activeH = HDir::Left;
+                            } break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: {
+                                action = InputAction::MoveRight;
+                                gpRight.held = true;
+                                gpRight.pressedAt = gpRight.lastRepeatAt = SDL_GetTicks();
+                                activeH = HDir::Right;
+                            } break;
                             case SDL_GAMEPAD_BUTTON_WEST:          action = InputAction::RotateClockwise;        break;
                             case SDL_GAMEPAD_BUTTON_EAST:          action = InputAction::RotateCounterClockwise; break;
-                            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:     action = InputAction::SoftDrop;               break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_DOWN: {
+                                action = InputAction::SoftDrop;
+                                gpDown.held = true;
+                                gpDown.pressedAt = gpDown.lastRepeatAt = SDL_GetTicks();
+                            } break;
                             case SDL_GAMEPAD_BUTTON_SOUTH:         action = InputAction::HardDrop;               break;
                             case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
                             case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
+                            default: break;
+                        }
+                    }
+                    // Handle button releases to stop repeating and resolve LR conflict
+                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_UP) {
+                        switch (e.gbutton.button) {
+                            case SDL_GAMEPAD_BUTTON_DPAD_LEFT: {
+                                gpLeft.held = false;
+                                if (activeH == HDir::Left) {
+                                    if (gpRight.held) {
+                                        // switch to right: restart DAS timing
+                                        activeH = HDir::Right;
+                                        gpRight.pressedAt = gpRight.lastRepeatAt = SDL_GetTicks();
+                                    } else {
+                                        activeH = HDir::None;
+                                    }
+                                }
+                            } break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: {
+                                gpRight.held = false;
+                                if (activeH == HDir::Right) {
+                                    if (gpLeft.held) {
+                                        activeH = HDir::Left;
+                                        gpLeft.pressedAt = gpLeft.lastRepeatAt = SDL_GetTicks();
+                                    } else {
+                                        activeH = HDir::None;
+                                    }
+                                }
+                            } break;
+                            case SDL_GAMEPAD_BUTTON_DPAD_DOWN: {
+                                gpDown.held = false;
+                            } break;
                             default: break;
                         }
                     }
@@ -140,6 +201,8 @@ int main( int argc, char* args[] )
                     }
                 } else {
                     playing = false;
+                    // Clear held states when leaving PLAYING
+                    gpLeft = {}; gpRight = {}; gpDown = {}; activeH = HDir::None;
                 }
             }
 
@@ -167,6 +230,7 @@ int main( int argc, char* args[] )
 
             if (!playing) continue; // Skip the rest of the loop if not playing
 
+            // One-shot action from this frame's events
             switch (action) { //handle input actions
                 case InputAction::MoveLeft: { moveLeft(); break; }
                 case InputAction::MoveRight: { moveRight(); break; }
@@ -179,8 +243,36 @@ int main( int argc, char* args[] )
                 default: break;
             }
 
+            // Inject auto-repeat moves for held D-pad buttons (DAS/ARR)
+            bool repeatedHorizontalThisFrame = false;
+            const Uint64 now = SDL_GetTicks();
+
+            // Horizontal (last-direction-wins)
+            if (activeH == HDir::Left && gpLeft.held) {
+                if (now - gpLeft.pressedAt >= kDAS_MS && now - gpLeft.lastRepeatAt >= kARR_MS) {
+                    moveLeft();
+                    gpLeft.lastRepeatAt = now;
+                    repeatedHorizontalThisFrame = true;
+                }
+            } else if (activeH == HDir::Right && gpRight.held) {
+                if (now - gpRight.pressedAt >= kDAS_MS && now - gpRight.lastRepeatAt >= kARR_MS) {
+                    moveRight();
+                    gpRight.lastRepeatAt = now;
+                    repeatedHorizontalThisFrame = true;
+                }
+            }
+
+            // Soft drop repeat
+            if (gpDown.held) {
+                if (now - gpDown.pressedAt >= kDAS_MS && now - gpDown.lastRepeatAt >= kSoftDrop_ARR_MS) {
+                    softDrop();
+                    gpDown.lastRepeatAt = now;
+                }
+            }
+
             //only allow rotation and x movement to reset lockDelayCounter
-            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::RotateClockwise || action == InputAction::RotateCounterClockwise)) {
+            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || action == InputAction::RotateClockwise || action == InputAction::RotateCounterClockwise
+                                || repeatedHorizontalThisFrame)) {
                 lockDelayCounter = 0;
             }
 
