@@ -28,8 +28,8 @@ int main( int argc, char* args[] )
 
     // Controller repeat config (ms)
     constexpr Uint64 kDAS_MS          = 167; // delay before auto-repeat
-    constexpr Uint64 kARR_MS          = 33;  // auto-repeat rate (horizontal)
-    constexpr Uint64 kSoftDrop_ARR_MS = 33;  // auto-repeat rate (soft drop)
+    constexpr Uint64 kARR_MS          = 42;  // auto-repeat rate (horizontal)
+    constexpr Uint64 kSoftDrop_ARR_MS = 42;  // auto-repeat rate (soft drop)
 
     struct RepeatState {
         bool   held{false};
