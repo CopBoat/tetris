@@ -10,6 +10,9 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <random>
+#include <array>
+#include <algorithm>
 
 bool loadMedia()
 {
@@ -395,6 +398,24 @@ std::vector<std::pair<int, int>> wallKickOffsetsI0L = {{0, 0}, {-1, 0}, {2, 0}, 
 
 std::vector<std::pair<int, int>> wallKickOffsetsI[8] = {wallKickOffsetsI0R, wallKickOffsetsIR2, wallKickOffsetsI2L, wallKickOffsetsIL0, wallKickOffsetsI0L, wallKickOffsetsIL2, wallKickOffsetsI2R, wallKickOffsetsIR0};
 
+// 7-bag RNG (seeded once, no dependency on main())
+static std::mt19937 rng([]{
+    std::random_device rd;
+    return std::mt19937(rd());
+}());
+static std::array<int, 7> pieceBag{};
+static size_t bagIdx = pieceBag.size();
+
+static void refillBag() {
+    for (int i = 0; i < 7; ++i) pieceBag[i] = i;
+    std::shuffle(pieceBag.begin(), pieceBag.end(), rng);
+    bagIdx = 0;
+}
+int drawPieceIndex() {
+    if (bagIdx >= pieceBag.size()) refillBag();
+    return pieceBag[bagIdx++];
+}
+
 GameState currentState = GameState::MENU;
 
 LTexture titleTexture;
@@ -546,8 +567,8 @@ void quitToMenu() {
     for (int x = 0; x < boardWidth; ++x)
         for (int y = 0; y < boardHeight; ++y)
             board.current[x][y] = 0;
-    pickPiece = std::rand() % 7;
-    nextPickPiece = std::rand() % 7;
+    pickPiece = drawPieceIndex();
+    nextPickPiece = drawPieceIndex();
     currentPiece = pieceTypes[pickPiece];
     nextPiece = pieceTypes[nextPickPiece];
     currentPiece.x = boardWidth / 2;

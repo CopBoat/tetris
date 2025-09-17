@@ -657,8 +657,8 @@ std::string chooseWindowTitle() {
 }
 
 Piece pieceTypes[7] = { iPiece, oPiece, tPiece, lPiece, jPiece, sPiece, zPiece }; // Array of piece types
-int pickPiece = std::rand() % 7;  // Randomly select the current piece from pieceTypes 
-int nextPickPiece = std::rand() % 7; // Randomly select the next piece from pieceTypes
+int pickPiece = drawPieceIndex();  // Randomly select the current piece from pieceTypes 
+int nextPickPiece = drawPieceIndex(); // Randomly select the next piece from pieceTypes
 Piece currentPiece = pieceTypes[pickPiece]; // Initialize current piece
 Piece nextPiece = pieceTypes[nextPickPiece]; // Initialize next piece
 
