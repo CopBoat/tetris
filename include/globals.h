@@ -17,6 +17,8 @@ void close();
 
 void capFrameRate();
 
+void toggleFullscreen();
+
 void renderUI();
 
 void renderParticles();

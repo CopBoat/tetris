@@ -94,6 +94,14 @@ int main( int argc, char* args[] )
             {
                 if( e.type == SDL_EVENT_QUIT ) { quit = true; }
 
+                // Double-click anywhere in the client area to toggle fullscreen
+                if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN &&
+                    e.button.button == SDL_BUTTON_LEFT &&
+                    e.button.clicks == 2) {
+                    toggleFullscreen();
+                    continue;
+                }
+
                 if (currentState == GameState::MENU) {
                     // input only; no rendering here
                     if (e.type == SDL_EVENT_KEY_DOWN) {
