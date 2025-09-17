@@ -107,6 +107,13 @@ bool init(std::string title)
             success = false;
         } else
         {
+            // Make rendering use a fixed logical size and scale to the window
+            // 3-arg variant (SDL3 older API) + set scale mode separately
+            if (!SDL_SetRenderLogicalPresentation(gRenderer, kScreenWidth, kScreenHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
+                SDL_Log("Failed to set logical presentation: %s", SDL_GetError());
+            }
+            //SDL_SetRenderScaleMode(gRenderer, SDL_SCALEMODE_NEAREST);
+
             // Add this block to set the window icon
             //SDL_Surface* iconSurface = IMG_Load("assets/tPieceIcon.png"); // Use your icon file path
             SDL_IOStream* io_stream = SDL_IOFromMem(assets_tPieceIcon_png, assets_tPieceIcon_png_len);
@@ -431,9 +438,9 @@ void renderMenu() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
-    // Query current window size
-    int winW = 0, winH = 0;
-    SDL_GetWindowSize(gWindow, &winW, &winH);
+    // Use logical size for layout; renderer scales to window
+    const int winW = kScreenWidth;
+    const int winH = kScreenHeight;
     int rightX = winW - 250;
     int centerY = winH / 4;
 
@@ -483,9 +490,9 @@ void renderPauseMenu() {
     SDL_GetRenderDrawBlendMode(gRenderer, &prevBlend);
     SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
 
-    // Window/output size
-    int winW = 0, winH = 0;
-    SDL_GetWindowSize(gWindow, &winW, &winH);
+    // Use logical size for layout; renderer scales to window
+    const int winW = kScreenWidth;
+    const int winH = kScreenHeight;
 
     // Dim overlay
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 160);
