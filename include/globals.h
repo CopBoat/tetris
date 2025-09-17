@@ -21,6 +21,8 @@ void renderUI();
 
 void renderParticles();
 
+int drawPieceIndex();
+
 constexpr int kScreenWidth{ 640 };
 constexpr int kScreenHeight{ 640 };
 constexpr int kScreenFps{ 60 };
