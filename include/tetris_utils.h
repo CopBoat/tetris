@@ -29,8 +29,7 @@ void spawnParticlesAt(int, int, int);
 void renderBoardBlocks();
 void renderBoardBlocksDuringAnimation();
 
-extern int pauseMenuSelection;
-void renderPauseMenu();
+
 
 void animateRowClear();
 
