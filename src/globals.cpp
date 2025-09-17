@@ -413,44 +413,148 @@ void renderMenu() {
     // Query current window size
     int winW = 0, winH = 0;
     SDL_GetWindowSize(gWindow, &winW, &winH);
-
-    // Calculate right-aligned X position (250 px from right edge)
     int rightX = winW - 250;
     int centerY = winH / 4;
 
-    
+    // Prepare text first so widths/heights are valid
+    titleTexture.loadFromRenderedText("TETRIS", {255,255,255,255});
+    playTexture.loadFromRenderedText("Play", {255,255,255,255});
+    optionsTexture.loadFromRenderedText("Options", {255,255,255,255});
 
-    // Draw selection rectangle
+    // Selection rectangle
     SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
     int rectY = (menuSelection == 0) ? centerY + 60 : centerY + 110;
     int rectW = playTexture.getWidth() + 20;
     int rectH = playTexture.getHeight() + 10;
     SDL_FRect selectRect{static_cast<float>(rightX - 18), static_cast<float>(rectY - 10), static_cast<float>(rectW + 20), static_cast<float>(rectH + 10)};
-    SDL_RenderFillRect(gRenderer, &selectRect); 
+    SDL_RenderFillRect(gRenderer, &selectRect);
 
-    // Render "TETRIS" title and menu options
-    titleTexture.loadFromRenderedText("TETRIS", {255,255,255,255});
+    // Draw
     titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
-    playTexture.loadFromRenderedText("Play", {255,255,255,255});
     playTexture.render(rightX, centerY + 60);
-    optionsTexture.loadFromRenderedText("Options", {255,255,255,255});
     optionsTexture.render(rightX - 15, centerY + 110);
 
-    SDL_RenderPresent(gRenderer);
+    // SDL_RenderPresent moved to main
 }
 
 void renderOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
-    // Render "Options" and any settings you want
-    // Example:
     optionsTitleTexture.loadFromRenderedText("OPTIONS", {255,255,255,255});
     optionsTitleTexture.render(200, 100);
     backTexture.loadFromRenderedText("Press ESC to return", {255,255,255,255});
     backTexture.render(200, 200);
 
-    SDL_RenderPresent(gRenderer);
+    // SDL_RenderPresent moved to main
+}
+
+int pauseMenuSelection = 0;
+
+void renderPauseMenu() {
+    // Redraw game scene behind pause menu
+    renderUI();
+    renderBoardBlocks();
+    renderParticles();
+
+    // Enable blending only for translucent overlay + selection
+    SDL_BlendMode prevBlend;
+    SDL_GetRenderDrawBlendMode(gRenderer, &prevBlend);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+
+    // Window/output size
+    int winW = 0, winH = 0;
+    SDL_GetWindowSize(gWindow, &winW, &winH);
+
+    // Dim overlay
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 160);
+    SDL_FRect overlay{0.f, 0.f, static_cast<float>(winW), static_cast<float>(winH)};
+    SDL_RenderFillRect(gRenderer, &overlay);
+
+    // Text
+    SDL_Color textColor{255, 255, 255, 255};
+    gameOverLabel.loadFromRenderedText("PAUSED", textColor);
+    resumeTexture.loadFromRenderedText("Resume", textColor);
+    quitTexture.loadFromRenderedText("Quit", textColor);
+
+    // Layout
+    const int centerX = winW / 2;
+    const int titleY  = winH / 4;
+
+    const int titleW = gameOverLabel.getWidth();
+    const int titleH = gameOverLabel.getHeight();
+
+    const int afterTitle = 40;   // vertical gap under title
+    const int optionsY   = titleY + titleH + afterTitle;
+
+    // Measure options and center the pair as a group
+    const int resumeW = resumeTexture.getWidth();
+    const int resumeH = resumeTexture.getHeight();
+    const int quitW   = quitTexture.getWidth();
+    const int quitH   = quitTexture.getHeight();
+    const int gapX    = 60; // horizontal gap between Resume and Quit
+
+    const int groupW = resumeW + gapX + quitW;
+    const int resumeX = centerX - groupW / 2;
+    const int quitX   = resumeX + resumeW + gapX;
+
+    // Selection rectangle around the chosen option
+    const int padX = 12;
+    const int padY = 8;
+
+    int rectX, rectY, rectW, rectH;
+    if (pauseMenuSelection == 0) {
+        rectX = resumeX - padX;
+        rectY = optionsY - padY;
+        rectW = resumeW + padX * 2;
+        rectH = resumeH + padY * 2;
+    } else {
+        rectX = quitX - padX;
+        rectY = optionsY - padY;
+        rectW = quitW + padX * 2;
+        rectH = quitH + padY * 2;
+    }
+
+    SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 180);
+    SDL_FRect selectRect{
+        static_cast<float>(rectX),
+        static_cast<float>(rectY),
+        static_cast<float>(rectW),
+        static_cast<float>(rectH)
+    };
+    SDL_RenderFillRect(gRenderer, &selectRect);
+
+    // Draw title and options
+    gameOverLabel.render(centerX - titleW / 2, titleY);
+    resumeTexture.render(resumeX, optionsY);
+    quitTexture.render(quitX, optionsY);
+
+    // Restore previous blend mode
+    SDL_SetRenderDrawBlendMode(gRenderer, prevBlend);
+}
+
+void quitToMenu() {
+    // Reset game state
+    currentState = GameState::MENU;
+    scoreValue = 0;
+    levelValue = 0;
+    rowsCleared = 0;
+    levelIncrease = 0;
+    dropSpeed = 900000000;
+    holdPiece = Piece();
+    holdUsed = false;
+    for (int x = 0; x < boardWidth; ++x)
+        for (int y = 0; y < boardHeight; ++y)
+            board.current[x][y] = 0;
+    pickPiece = std::rand() % 7;
+    nextPickPiece = std::rand() % 7;
+    currentPiece = pieceTypes[pickPiece];
+    nextPiece = pieceTypes[nextPickPiece];
+    currentPiece.x = boardWidth / 2;
+    currentPiece.y = 0;
+    score.loadFromRenderedText(std::to_string(scoreValue), { 0xFF, 0xFF, 0xFF, 0xFF });
+    level.loadFromRenderedText(std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF });
+    newPiece = false;
 }
 
 void renderWipeIntro(SDL_Renderer* renderer, int screenWidth, int screenHeight) {

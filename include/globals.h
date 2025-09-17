@@ -98,7 +98,7 @@ extern std::vector<std::pair<int, int>> wallKickOffsetsIL0;
 extern std::vector<std::pair<int, int>> wallKickOffsetsI0L;
 extern std::vector<std::pair<int, int>> wallKickOffsetsI[8];
 
-enum class GameState { MENU, PLAYING, OPTIONS };
+enum class GameState { MENU, PLAYING, OPTIONS, PUASE };
 extern GameState currentState;
 
 extern LTexture titleTexture;
@@ -111,6 +111,10 @@ extern int menuSelection;
 
 void renderMenu();
 void renderOptions();
+
+extern int pauseMenuSelection;
+void renderPauseMenu();
+void quitToMenu();
 
 void renderWipeIntro(SDL_Renderer*, int, int);
 

@@ -56,53 +56,50 @@ int main( int argc, char* args[] )
 
             while( SDL_PollEvent( &e ) == true ) //While there are events to handle
             {
-                if( e.type == SDL_EVENT_QUIT ) //If event is quit type
-                {
-                    quit = true; //End the main loop
-                }
+                if( e.type == SDL_EVENT_QUIT ) { quit = true; }
 
                 if (currentState == GameState::MENU) {
-                    //handleMenuEvent(e, quit, currentState);
+                    // input only; no rendering here
                     if (e.type == SDL_EVENT_KEY_DOWN) {
-                        // if (e.key.key == SDLK_1) currentState = GameState::PLAYING;
-                        // if (e.key.key == SDLK_2) currentState = GameState::OPTIONS;
-
                         if (e.key.key == SDLK_UP) {
-                            menuSelection = (menuSelection - 1 + 2) % 2; // Wrap around for 2 options
+                            menuSelection = (menuSelection - 1 + 2) % 2;
                         } else if (e.key.key == SDLK_DOWN) {
-                            menuSelection = (menuSelection + 1) % 2; // Wrap around for 2 options
+                            menuSelection = (menuSelection + 1) % 2;
                         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-                            if (menuSelection == 0) { currentState = GameState::PLAYING; renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); }
-                            else if (menuSelection == 1) currentState = GameState::OPTIONS;
-                        }
-                    }
-
-                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-                        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
-                            menuSelection = (menuSelection - 1 + 2) % 2; // Wrap around for 2 options
-                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
-                            menuSelection = (menuSelection + 1) % 2; // Wrap around for 2 options
-                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
                             if (menuSelection == 0) { currentState = GameState::PLAYING; renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); continue; }
                             else if (menuSelection == 1) currentState = GameState::OPTIONS;
                         }
                     }
-                    //continue; // Skip the rest of the loop while in menu
+                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+                        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+                            menuSelection = (menuSelection - 1 + 2) % 2;
+                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
+                            menuSelection = (menuSelection + 1) % 2;
+                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+                            if (menuSelection == 0) { currentState = GameState::PLAYING; renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); continue;}
+                            else if (menuSelection == 1) currentState = GameState::OPTIONS;
+                        }
+                    }
                 } else if (currentState == GameState::OPTIONS) {
-                    //handleOptionsEvent(e, currentState);
                     if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
                         currentState = GameState::MENU;
-                    //continue; // Skip the rest of the loop while in options
+                } else if (currentState == GameState::PUASE) {
+                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+                        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) {
+                            pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2;
+                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) {
+                            pauseMenuSelection = (pauseMenuSelection + 1) % 2;
+                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; }
+                            else if (pauseMenuSelection == 1) { currentState = GameState::MENU; quitToMenu(); }
+                        }
+                    }
                 }
 
-                // Render based on state
-                if (currentState == GameState::MENU) { renderMenu(); }
-                else if (currentState == GameState::OPTIONS) { renderOptions(); }
-                else 
-                {
+                // Only collect game input while playing
+                if (currentState == GameState::PLAYING) {
                     playing = true;
-                    if (e.type == SDL_EVENT_KEY_DOWN) //Handle keyboard inputs
-                    {
+                    if (e.type == SDL_EVENT_KEY_DOWN) {
                         switch (e.key.key)
                         {
                             case SDLK_LEFT: action = InputAction::MoveLeft;  break;
@@ -115,9 +112,7 @@ int main( int argc, char* args[] )
                             default: break;
                         }
                     }
-
-                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) //Handle gamepad inputs
-                    {
+                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
                         switch (e.gbutton.button) {
                             case SDL_GAMEPAD_BUTTON_DPAD_LEFT:     action = InputAction::MoveLeft;               break;
                             case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:    action = InputAction::MoveRight;              break;
@@ -130,9 +125,7 @@ int main( int argc, char* args[] )
                             default: break;
                         }
                     }
-
-                    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION) //Handle gamepad axis motion
-                    {
+                    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION) {
                         if (e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
                             if (e.gaxis.value < -8000) {
                                 action = InputAction::MoveLeft;
@@ -145,9 +138,31 @@ int main( int argc, char* args[] )
                             }
                         }
                     }
+                } else {
+                    playing = false;
                 }
+            }
+
+            // After processing all events, render exactly once based on state
+            if (currentState == GameState::MENU) {
+                renderMenu();
+                SDL_RenderPresent(gRenderer);
+                capFrameRate();
+                continue;
+            } else if (currentState == GameState::OPTIONS) {
+                renderOptions();
+                SDL_RenderPresent(gRenderer);
+                capFrameRate();
+                continue;
+            } else if (currentState == GameState::PUASE) {
+                //renderUI();
+                renderPauseMenu();
+                 // draw the game scene behind the pause menu
+                //renderBoardBlocks(); // draw board on top of UI
                 
-               
+                SDL_RenderPresent(gRenderer);
+                capFrameRate();
+                continue;
             }
 
             if (!playing) continue; // Skip the rest of the loop if not playing
@@ -160,7 +175,7 @@ int main( int argc, char* args[] )
                 case InputAction::SoftDrop: { softDrop(); break; }
                 case InputAction::HardDrop: { hardDrop(); break; }
                 case InputAction::Hold: { hold(); break; }
-                case InputAction::Pause: { pauseGame(); break; }
+                case InputAction::Pause: { currentState = GameState::PUASE; break; }
                 default: break;
             }
 
@@ -171,21 +186,11 @@ int main( int argc, char* args[] )
 
             renderUI();
 
-            if (paused) // todo add paused as a game state
-            { 
-                if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-                    if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
-                        pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2; // Wrap around for 2 options
-                    } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
-                        pauseMenuSelection = (pauseMenuSelection + 1) % 2; // Wrap around for 2 options
-                    } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-                        if (pauseMenuSelection == 0) { currentState == GameState::MENU; } // Resume
-                        //else if (pauseMenuSelection == 1) { currentState = GameState::MENU; playing = false; pauseGame(); renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); } // Quit to menu
-                    }
-                }
-                renderPauseMenu(); 
-                continue; 
-            } // Skip the rest of the loop while paused
+            // if (paused) // todo add paused as a game state
+            // { 
+            //     currentState = GameState::PUASE;
+            //     continue; 
+            // } // Skip the rest of the loop while paused
 
             if (clearingRows) { animateRowClear(); continue; } // Skip rest of loop while animating
 

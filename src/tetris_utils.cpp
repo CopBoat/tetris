@@ -415,52 +415,6 @@ void renderBoardBlocksDuringAnimation() {
     }
 }
 
-int pauseMenuSelection = 0;
-
-void renderPauseMenu() {
-    //render a "Paused" message
-    SDL_Color textColor{ 0xFF, 0xFF, 0xFF, 0xFF };
-    gameOverLabel.loadFromRenderedText("PAUSED", textColor);
-    gameOverLabel.render(200, 300);
-    //SDL_RenderPresent(gRenderer);
-
-    //todo render board with hollow blocks
-
-    // // Clear screen
-    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-    // SDL_RenderClear(gRenderer);
-
-    // Query current window size
-    int winW = 0, winH = 0;
-    SDL_GetWindowSize(gWindow, &winW, &winH);
-
-    // Calculate right-aligned X position (250 px from right edge)
-    int rightX = winW - 250;
-    int centerY = winH / 4;
-
-    
-
-    // Draw selection rectangle
-    SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
-    int rectY = (pauseMenuSelection == 0) ? centerY + 60 : centerY + 110;
-    int rectW = resumeTexture.getWidth() + 20;
-    int rectH = resumeTexture.getHeight() + 10;
-    SDL_FRect selectRect{static_cast<float>(rightX - 18), static_cast<float>(rectY - 10), static_cast<float>(rectW + 20), static_cast<float>(rectH + 10)};
-    SDL_RenderFillRect(gRenderer, &selectRect); 
-
-    // Render "TETRIS" title and menu options
-    
-    resumeTexture.loadFromRenderedText("Resume", {255,255,255,255});
-    resumeTexture.render(rightX, centerY + 60);
-    quitTexture.loadFromRenderedText("Quit", {255,255,255,255});
-    quitTexture.render(rightX - 15, centerY + 110);
-
-    SDL_RenderPresent(gRenderer);
-    
-
-    capFrameRate();
-}
-
 void animateRowClear() {
     Uint64 now = SDL_GetTicksNS();
     int animFrame = ((now - clearAnimStart) * clearAnimSteps) / clearAnimDuration;
