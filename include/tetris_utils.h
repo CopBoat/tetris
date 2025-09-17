@@ -29,7 +29,7 @@ void spawnParticlesAt(int, int, int);
 void renderBoardBlocks();
 void renderBoardBlocksDuringAnimation();
 
-
+void renderGhostPiece();
 
 void animateRowClear();
 
