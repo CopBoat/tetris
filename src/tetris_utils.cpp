@@ -2,6 +2,8 @@
 #include "globals.h"
 #include <iostream>
 #include <math.h>
+#include <climits>
+#include <algorithm>
 
 bool checkPlacement(const Piece& piece, const Board& board, int newX, int newY) {
     bool placementValid = true;
@@ -318,6 +320,142 @@ void spawnParticlesAt(int x, int y, int color) {
     }
 }
 
+// Helper: check if (x,y) is occupied by the current falling piece itself
+static inline bool isCurrentPieceCell(int x, int y) {
+    for (int sx = 0; sx < currentPiece.width; ++sx) {
+        for (int sy = 0; sy < currentPiece.height; ++sy) {
+            if (currentPiece.shape[sy][sx] != 0) {
+                if (x == currentPiece.x + sx && y == currentPiece.y + sy) return true;
+            }
+        }
+    }
+    return false;
+}
+
+// Helper: collision test at absolute (px, py) for the given piece, ignoring overlaps with currentPiece itself
+static bool collidesAt(const Piece& piece, int px, int py, const Board& b) {
+    for (int sx = 0; sx < piece.width; ++sx) {
+        for (int sy = 0; sy < piece.height; ++sy) {
+            if (piece.shape[sy][sx] == 0) continue;
+            int bx = px + sx;
+            int by = py + sy;
+            if (bx < 0 || bx >= boardWidth || by < 0 || by >= boardHeight) return true;
+            int val = b.current[bx][by];
+            if (val != 0 && !isCurrentPieceCell(bx, by)) return true;
+        }
+    }
+    return false;
+}
+
+// Compute the ghost landing Y for the current piece
+static int computeGhostY(const Piece& piece, const Board& b) {
+    int gy = piece.y;
+    // Drop until the next step would collide
+    while (!collidesAt(piece, piece.x, gy + 1, b)) {
+        gy += 1;
+        if (gy >= boardHeight - piece.height) break;
+    }
+    return gy;
+}
+
+// Map piece color index to an SDL_Color (same palette as board rendering)
+static SDL_Color colorFromValue(int val) {
+    switch (val) {
+        case 1: return SDL_Color{0, 255, 255, 255};   // cyan (I)
+        case 2: return SDL_Color{255, 255, 0, 255};   // yellow (O)
+        case 3: return SDL_Color{128, 0, 128, 255};   // purple (T)
+        case 4: return SDL_Color{255, 0, 0, 255};     // blue (J)    NOTE: your palette labels seem swapped
+        case 5: return SDL_Color{0, 0, 255, 255};     // orange (L)
+        case 6: return SDL_Color{0, 255, 0, 255};     // green (S)
+        case 7: return SDL_Color{255, 0, 0, 255};     // red (Z)
+        default: return SDL_Color{127, 127, 127, 255};
+    }
+}
+
+// Render a hollow, translucent ghost piece at the landing position and highlight grid cells in-between
+void renderGhostPiece() {
+    if (clearingRows) return; // skip during clear animation
+
+    // No ghost for O piece if you prefer; removing this keeps ghost for all
+    // if (currentPiece.width == currentPiece.height) return;
+
+    int gy = computeGhostY(currentPiece, board);
+    if (gy < currentPiece.y) return; // nothing to show
+
+    SDL_Color c = colorFromValue(currentPiece.color);
+    // Make it translucent and a bit lighter
+    Uint8 ghostAlpha = 160;
+    Uint8 gridAlpha  = 70;
+
+    // Enable blending
+    SDL_BlendMode oldMode;
+    SDL_GetRenderDrawBlendMode(gRenderer, &oldMode);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+
+    // Draw ghost as hollow rectangles
+    for (int sx = 0; sx < currentPiece.width; ++sx) {
+        for (int sy = 0; sy < currentPiece.height; ++sy) {
+            if (currentPiece.shape[sy][sx] == 0) continue;
+
+            int gx = currentPiece.x + sx;
+            int gyCell = gy + sy;
+
+            SDL_FRect rect{
+                static_cast<float>(gx * blockSize) + spacing / 2.0f,
+                static_cast<float>(gyCell * blockSize) + spacing / 2.0f,
+                blockSize - spacing,
+                blockSize - spacing
+            };
+
+            SDL_SetRenderDrawColor(gRenderer, c.r, c.g, c.b, ghostAlpha);
+// #if SDL_VERSION_ATLEAST(2,0,10)
+//             SDL_RenderDrawRectF(gRenderer, &rect);
+// #else
+            SDL_FRect ir{ static_cast<int>(rect.x), static_cast<int>(rect.y),
+                         static_cast<int>(rect.w), static_cast<int>(rect.h) };
+            SDL_RenderRect(gRenderer, &ir);
+//#endif
+        }
+    }
+
+    // Highlight grid cells between current piece and ghost along the same columns
+    if (gy > currentPiece.y) {
+        const Uint8 gridAlpha = 10; // lighter, less pronounced
+        SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, gridAlpha);
+
+        for (int sx = 0; sx < currentPiece.width; ++sx) {
+            // Find occupied rows for this column
+            int minSy = INT_MAX, maxSy = INT_MIN;
+            for (int sy = 0; sy < currentPiece.height; ++sy) {
+                if (currentPiece.shape[sy][sx] != 0) {
+                    minSy = std::min(minSy, sy);
+                    maxSy = std::max(maxSy, sy);
+                }
+            }
+            if (minSy == INT_MAX) continue;
+
+            int colX = currentPiece.x + sx;
+
+            // From just below the lowest current-piece cell to just above the highest ghost cell
+            int yStartCell = currentPiece.y + maxSy + 1;
+            int yEndCell   = gy + minSy;
+
+            if (yEndCell <= yStartCell) continue;
+
+            SDL_FRect seg{
+                static_cast<float>(colX * blockSize),                // full column width
+                static_cast<float>(yStartCell * blockSize),          // no spacing vertically
+                static_cast<float>(blockSize),                       // full width (no spacing)
+                static_cast<float>((yEndCell - yStartCell) * blockSize)
+            };
+            SDL_RenderFillRect(gRenderer, &seg);
+        }
+    }
+
+    // Restore previous blend mode
+    SDL_SetRenderDrawBlendMode(gRenderer, oldMode);
+}
+
 void renderBoardBlocks() {
     // Render the current blocks on the board
     std::vector<SDL_FRect> blockRects;
@@ -379,6 +517,9 @@ void renderBoardBlocks() {
             }
         }
     }
+
+    // Draw the ghost on top of the locked blocks (but before presenting)
+    renderGhostPiece();
 }
 
 void renderBoardBlocksDuringAnimation() {
