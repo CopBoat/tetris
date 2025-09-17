@@ -58,6 +58,10 @@ int main( int argc, char* args[] )
         gpDownHeld  = gpDpadDownHeld  || gpAxisDownHeld;
     };
 
+    // Menu/pause analog navigation hysteresis flags
+    bool menuAxisUpHeld{false}, menuAxisDownHeld{false};
+    bool pauseAxisLeftHeld{false}, pauseAxisRightHeld{false};
+
     //Initialize
     if( init(chooseWindowTitle()) == false ) //initialize SDL Components
     {
@@ -112,9 +116,30 @@ int main( int argc, char* args[] )
                             else if (menuSelection == 1) currentState = GameState::OPTIONS;
                         }
                     }
+                    // Analog stick up/down for menu
+                    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
+                        const int v = e.gaxis.value;
+                        if (v <= -kAxisPress) {
+                            if (!menuAxisUpHeld) {
+                                menuSelection = (menuSelection - 1 + 2) % 2;
+                                menuAxisUpHeld = true;
+                                menuAxisDownHeld = false;
+                            }
+                        } else if (v >= kAxisPress) {
+                            if (!menuAxisDownHeld) {
+                                menuSelection = (menuSelection + 1) % 2;
+                                menuAxisDownHeld = true;
+                                menuAxisUpHeld = false;
+                            }
+                        } else if (std::abs(v) < kAxisRelease) {
+                            menuAxisUpHeld = false;
+                            menuAxisDownHeld = false;
+                        }
+                    }
                 } else if (currentState == GameState::OPTIONS) {
                     if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
                         currentState = GameState::MENU;
+
                 } else if (currentState == GameState::PUASE) {
                     if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
                         if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) {
@@ -122,8 +147,28 @@ int main( int argc, char* args[] )
                         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) {
                             pauseMenuSelection = (pauseMenuSelection + 1) % 2;
                         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; }
+                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; continue; }
                             else if (pauseMenuSelection == 1) { currentState = GameState::MENU; quitToMenu(); }
+                        }
+                    }
+                    // Analog stick left/right for pause menu
+                    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
+                        const int v = e.gaxis.value;
+                        if (v <= -kAxisPress) {
+                            if (!pauseAxisLeftHeld) {
+                                pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2;
+                                pauseAxisLeftHeld = true;
+                                pauseAxisRightHeld = false;
+                            }
+                        } else if (v >= kAxisPress) {
+                            if (!pauseAxisRightHeld) {
+                                pauseMenuSelection = (pauseMenuSelection + 1) % 2;
+                                pauseAxisRightHeld = true;
+                                pauseAxisLeftHeld = false;
+                            }
+                        } else if (std::abs(v) < kAxisRelease) {
+                            pauseAxisLeftHeld = false;
+                            pauseAxisRightHeld = false;
                         }
                     }
                 }
