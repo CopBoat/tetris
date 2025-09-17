@@ -147,6 +147,9 @@ bool init(std::string title)
                 }
             }
 
+            // Optional: tweak double-click timeout (ms)
+            SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "350");
+            
         }
     }
     return success;
@@ -207,6 +210,22 @@ void capFrameRate(){
     {
         SDL_DelayNS( nsPerFrame - frameNs );
     }
+}
+
+static inline void ApplyFullscreenCursorState() {
+    const bool isFullscreen = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN) != 0;
+
+    // SDL3: boolean ShowCursor
+    if (isFullscreen) {SDL_ShowCursor();}
+    else {
+        SDL_HideCursor();
+    } // hide when fullscreen
+}
+
+void toggleFullscreen() {
+    const bool isFullscreen = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN) != 0;
+    SDL_SetWindowFullscreen(gWindow, !isFullscreen);
+    ApplyFullscreenCursorState();
 }
 
 void renderUI() {
