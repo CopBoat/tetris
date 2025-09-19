@@ -17,6 +17,7 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
 - Rotate Clockwise: Up Arrow
 - Rotate Counter Clockwise: 
 - Hard Drop: Spacebar
+- Hold: h
 - Pause: Escape
 ### Controller
 - Move Left: Dpad Left
@@ -25,6 +26,7 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
 - Rotate Clockwise: X Button
 - Rotate Counter Clockwise: B Button
 - Hard Drop: A Button
+- Hold: Left Bumper
 - Pause: Start Button
 
 ## Installation
@@ -40,4 +42,4 @@ Grab one of the releases or compile it yourself with the instructions below!
 
 ## Resources
 - [The Tetris Wiki](https://tetris.wiki/Tetris.wiki): Guidlines and general information
-- [Lazy Foo' Productions SDL3 Tutorial Series](https://lazyfoo.net/tutorials/SDL3/index.php): A great series of lessons, to which he suggested creating tetris after completing. This project was built from the true type/animation lesson as a base. 
+- [Lazy Foo' Productions SDL3 Tutorial Series](https://lazyfoo.net/tutorials/SDL3/index.php): A great series of lessons, to which he suggested creating tetris after completing. This project utilizes the LTexture and LTimer classes from his true type/animation lessons.
