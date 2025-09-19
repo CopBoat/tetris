@@ -159,6 +159,18 @@ int main( int argc, char* args[] )
                             else if (pauseMenuSelection == 1) { currentState = GameState::MENU; quitToMenu(); }
                         }
                     }
+                    if (e.type == SDL_EVENT_KEY_DOWN) {
+                        if (e.key.key == SDLK_LEFT) {
+                            pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2;
+                        } else if (e.key.key == SDLK_RIGHT) {
+                            pauseMenuSelection = (pauseMenuSelection + 1) % 2;
+                        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; continue; }
+                            else if (pauseMenuSelection == 1) { currentState = GameState::MENU; quitToMenu(); }
+                        } else if (e.key.key == SDLK_ESCAPE) {
+                            currentState = GameState::PLAYING;
+                        }
+                    }
                     // Analog stick left/right for pause menu
                     if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
                         const int v = e.gaxis.value;
@@ -179,6 +191,8 @@ int main( int argc, char* args[] )
                             pauseAxisRightHeld = false;
                         }
                     }
+
+
                 }
 
                 // Only collect game input while playing
