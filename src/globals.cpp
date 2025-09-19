@@ -510,7 +510,7 @@ void renderPauseMenu() {
     SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
 
     // Use logical size for layout; renderer scales to window
-    const int winW = kScreenWidth;
+    const int winW = kScreenWidth - 160;
     const int winH = kScreenHeight;
 
     // Dim overlay
