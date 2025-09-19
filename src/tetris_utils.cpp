@@ -556,6 +556,38 @@ void renderBoardBlocksDuringAnimation() {
     }
 }
 
+// Game Over animation: fill the entire board with grey blocks row-by-row, left-to-right
+void animateGameOverFill(int cellDelayMs /*=12*/) {
+    const int greyVal = 8; // any non-zero value that maps to grey by default in the renderer
+
+    // Suppress ghost during this sequence (renderBoardBlocksDuringAnimation doesn't draw it anyway)
+    bool savedClearing = clearingRows;
+    clearingRows = true;
+
+    for (int y = boardHeight-1; y >= 0; --y) {
+        for (int x = 0; x < boardWidth; ++x) {
+            board.current[x][y] = greyVal;
+
+            // Draw the frame
+            renderUI();
+            renderBoardBlocksDuringAnimation();
+
+            // Optional: overlay "GAME OVER" text
+            SDL_Color textColor{ 0xFF, 0x00, 0x00, 0xFF };
+            gameOverLabel.loadFromRenderedText("GAME OVER", textColor);
+            gameOverLabel.render(200, 300);
+
+            SDL_RenderPresent(gRenderer);
+            SDL_Delay(cellDelayMs);
+        }
+    }
+
+    // Brief pause with filled board
+    SDL_Delay(3000);
+
+    clearingRows = savedClearing;
+}
+
 void animateRowClear() {
     Uint64 now = SDL_GetTicksNS();
     int animFrame = ((now - clearAnimStart) * clearAnimSteps) / clearAnimDuration;
@@ -626,14 +658,9 @@ bool checkGameOver() {
         if (gameOver) break;
     }
     if (gameOver) {
-        // Render "Game Over" message
-        SDL_Color textColor{ 0xFF, 0x00, 0x00, 0xFF }; // Red text
-        gameOverLabel.loadFromRenderedText( "GAME OVER", textColor );
-        gameOverLabel.render( 200, 300 );
-        SDL_RenderPresent( gRenderer );
-        SDL_Delay(4000); // Pause for 3 seconds to show the message
-        //quit = true; // Exit the main loop
-        //restart the game
+        // Render "Game Over" animation
+        animateGameOverFill(12);
+
         // Reset game state instead of restarting main
         scoreValue = 0;
         levelValue = 0;
