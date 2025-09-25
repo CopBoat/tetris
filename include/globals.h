@@ -148,6 +148,8 @@ extern LTexture exitTexture;
 
 extern LTexture optionsTitleTexture;
 extern LTexture optionsGridLabel;
+extern LTexture optionsBlockGapLabel;
+extern LTexture optionsPlacementPreviewLabel;
 
 extern LTexture optionsTitleTexture2;
 extern LTexture windowSizeLabel;

@@ -481,6 +481,8 @@ LTexture exitTexture;
 
 LTexture optionsTitleTexture;
 LTexture optionsGridLabel;
+LTexture optionsBlockGapLabel;
+LTexture optionsPlacementPreviewLabel;
 
 LTexture optionsTitleTexture2;
 LTexture windowSizeLabel;
@@ -634,10 +636,16 @@ void renderGameOptions() {
     optionsTitleTexture3.render(500, 20);
 
     optionsGridLabel.loadFromRenderedText("Grid lines < ON >", {255,255,255,255});
-    optionsGridLabel.render(400, 100);
+    optionsGridLabel.render(50, 100);
+
+    optionsBlockGapLabel.loadFromRenderedText("Block Gap < 2px >", {255,255,255,255});
+    optionsBlockGapLabel.render(50, 140);
+
+    optionsPlacementPreviewLabel.loadFromRenderedText("Placement Preview < Ghost Piece & Highlights >", {255,255,255,255});
+    optionsPlacementPreviewLabel.render(50, 180);
 
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
-    backTexture.render(200, 400);
+    backTexture.render(50, 400);
 }
 
 void renderVideoOptions() {
@@ -649,10 +657,13 @@ void renderVideoOptions() {
     optionsTitleTexture3.render(500, 20);
 
     windowSizeLabel.loadFromRenderedText("Window Size < Standard >", {255,255,255,255});
-    windowSizeLabel.render(400, 100);
+    windowSizeLabel.render(50, 100);
+
+    fullscreenLabel.loadFromRenderedText("Fullscreen < OFF >", {255,255,255,255});
+    fullscreenLabel.render(50, 140);
     
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
-    backTexture.render(200, 400);
+    backTexture.render(50, 400);
 }
 
 void renderInputOptions() {
@@ -664,19 +675,19 @@ void renderInputOptions() {
     optionsTitleTexture3.render(500, 20);
 
     inputConfigKeyDirectionLabel.loadFromRenderedText("Move Keys < Arrow Keys >", {255,255,255,255});
-    inputConfigKeyDirectionLabel.render(400, 60);
+    inputConfigKeyDirectionLabel.render(50, 60);
 
     inputConfigHardDropLabel.loadFromRenderedText("Hard Drop (A) Select to change binding", {255,255,255,255});
-    inputConfigHardDropLabel.render(400, 100);
+    inputConfigHardDropLabel.render(50, 100);
 
     inputConfigHoldLabel.loadFromRenderedText("Hold (Left Bumper) Select to change binding", {255,255,255,255});
-    inputConfigHoldLabel.render(400, 140);
+    inputConfigHoldLabel.render(50, 140);
 
     inputConfigRotateCWLabel.loadFromRenderedText("Rotate Clockwise (X) Select to change binding", {255,255,255,255});
-    inputConfigRotateCWLabel.render(400, 180);
+    inputConfigRotateCWLabel.render(50, 180);
 
     inputConfigRotateCCWLabel.loadFromRenderedText("Rotate Counter Clockwise (B) Select to change binding", {255,255,255,255});
-    inputConfigRotateCCWLabel.render(400, 220);
+    inputConfigRotateCCWLabel.render(50, 220);
 
 
 
