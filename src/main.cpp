@@ -410,7 +410,7 @@ int main( int argc, char* args[] )
                 capFrameRate();
                 continue;
             } else if (currentState == GameState::OPTIONS) {
-                renderOptions();
+                renderGameOptions();
                 SDL_RenderPresent(gRenderer);
                 capFrameRate();
                 continue;

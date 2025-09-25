@@ -476,9 +476,20 @@ bool pauseAxisLeftHeld{false}, pauseAxisRightHeld{false};
 LTexture titleTexture;
 LTexture playTexture;
 LTexture optionsTexture;
-LTexture optionsTitleTexture;
 LTexture backTexture;
 LTexture exitTexture;
+
+LTexture optionsTitleTexture;
+LTexture optionsGridLabel;
+
+LTexture optionsTitleTexture2;
+LTexture windowSizeLabel;
+LTexture fullscreenLabel;
+
+
+LTexture optionsTitleTexture3;
+LTexture inputConfigLabel;
+
 
 int menuSelection = 0;
 
@@ -607,16 +618,54 @@ int handleMenuEvent(const SDL_Event& e) {
     return -1; // No selection made
 }
 
-void renderOptions() {
+void renderGameOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
-    optionsTitleTexture.loadFromRenderedText("OPTIONS", {255,255,255,255});
-    optionsTitleTexture.render(200, 100);
-    backTexture.loadFromRenderedText("Press ESC to return", {255,255,255,255});
-    backTexture.render(200, 200);
+    optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
+    optionsTitleTexture.render(200, 20);
+    optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
+    optionsTitleTexture2.render(350, 20);
+    optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
+    optionsTitleTexture3.render(500, 20);
 
-    // SDL_RenderPresent moved to main
+    optionsGridLabel.loadFromRenderedText("Grid lines < ON >", {255,255,255,255});
+    optionsGridLabel.render(400, 100);
+
+    backTexture.loadFromRenderedText("Return", {255,255,255,255});
+    backTexture.render(200, 400);
+}
+
+void renderVideoOptions() {
+    optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
+    optionsTitleTexture.render(200, 20);
+    optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
+    optionsTitleTexture2.render(350, 20);
+    optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
+    optionsTitleTexture3.render(500, 20);
+
+    windowSizeLabel.loadFromRenderedText("Window Size < Standard >", {255,255,255,255});
+    windowSizeLabel.render(400, 100);
+    
+    backTexture.loadFromRenderedText("Return", {255,255,255,255});
+    backTexture.render(200, 400);
+}
+
+void renderInputOptions() {
+    optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
+    optionsTitleTexture.render(200, 20);
+    optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
+    optionsTitleTexture2.render(350, 20);
+    optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
+    optionsTitleTexture3.render(500, 20);
+
+    inputConfigLabel.loadFromRenderedText("Hard Drop (A) Select to change binding", {255,255,255,255});
+    inputConfigLabel.render(400, 100);
+
+
+
+    backTexture.loadFromRenderedText("Return", {255,255,255,255});
+    backTexture.render(200, 400);
 }
 
 int pauseMenuSelection = 0;

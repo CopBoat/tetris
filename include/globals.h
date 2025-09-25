@@ -137,14 +137,27 @@ extern bool gpLeftHeld, gpRightHeld, gpDownHeld;
 extern bool menuAxisUpHeld, menuAxisDownHeld;
 extern bool pauseAxisLeftHeld, pauseAxisRightHeld;
 
+//should this be extern?
 extern void recomputeGamepadHeld();
 
 extern LTexture titleTexture;
 extern LTexture playTexture;
 extern LTexture optionsTexture;
-extern LTexture optionsTitleTexture;
 extern LTexture backTexture;
 extern LTexture exitTexture;
+
+extern LTexture optionsTitleTexture;
+extern LTexture optionsGridLabel;
+
+extern LTexture optionsTitleTexture2;
+extern LTexture windowSizeLabel;
+extern LTexture fullscreenLabel;
+
+
+extern LTexture optionsTitleTexture3;
+extern LTexture inputConfigLabel;
+
+
 
 extern int menuSelection;
 
@@ -152,7 +165,9 @@ void renderMenu();
 static inline void moveMenuSelection(int);
 int handleMenuEvent(const SDL_Event&);
 
-void renderOptions();
+void renderGameOptions();
+void renderVideoOptions();
+void renderInputOptions();
 
 extern int pauseMenuSelection;
 void renderPauseMenu();
