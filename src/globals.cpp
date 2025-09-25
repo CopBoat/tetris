@@ -649,6 +649,9 @@ void renderGameOptions() {
 }
 
 void renderVideoOptions() {
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(gRenderer);
+
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
     optionsTitleTexture.render(200, 20);
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
@@ -667,6 +670,9 @@ void renderVideoOptions() {
 }
 
 void renderInputOptions() {
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(gRenderer);
+    
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
     optionsTitleTexture.render(200, 20);
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
