@@ -43,8 +43,8 @@ class LTexture
         void render( float x, float y, SDL_FRect* clip = nullptr, float width = kOriginalSize, float height = kOriginalSize, double degrees = 0.0, SDL_FPoint* center = nullptr, SDL_FlipMode flipMode = SDL_FLIP_NONE );
 
         //Gets texture attributes
-        int getWidth();
-        int getHeight();
+        int getWidth() const;
+        int getHeight() const;
         bool isLoaded();
 
     private:

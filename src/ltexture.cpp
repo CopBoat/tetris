@@ -72,12 +72,12 @@ void LTexture::render( float x, float y, SDL_FRect* clip, float width, float hei
     SDL_RenderTextureRotated(gRenderer, mTexture, clip, &dstRect, degrees, center, flipMode);
 }
 
-int LTexture::getWidth()
+int LTexture::getWidth() const
 {
     return mWidth;
 }
 
-int LTexture::getHeight()
+int LTexture::getHeight() const
 {
     return mHeight;
 }

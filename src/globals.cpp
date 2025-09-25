@@ -444,13 +444,49 @@ int drawPieceIndex() {
 
 GameState currentState = GameState::MENU;
 
+// Controller repeat config (ms)
+Uint64 kDAS_MS          = 167; // delay before auto-repeat
+Uint64 kARR_MS          = 42;  // auto-repeat rate (horizontal)
+Uint64 kSoftDrop_ARR_MS = 42;  // auto-repeat rate (soft drop)
+
+RepeatState gpLeft{}, gpRight{}, gpDown{};
+HDir activeH{ HDir::None };
+
+// Analog stick thresholds with hysteresis
+int kAxisPress   = 16000; // press when beyond this magnitude
+int kAxisRelease = 12000; // release when within this magnitude
+
+// Track per-source held states
+bool kbLeftHeld{false}, kbRightHeld{false}, kbDownHeld{false};
+// Gamepad: split DPAD vs Analog, then combine
+bool gpDpadLeftHeld{false}, gpDpadRightHeld{false}, gpDpadDownHeld{false};
+bool gpAxisLeftHeld{false}, gpAxisRightHeld{false}, gpAxisDownHeld{false};
+bool gpLeftHeld{false}, gpRightHeld{false}, gpDownHeld{false};
+
+void recomputeGamepadHeld() {
+    gpLeftHeld  = gpDpadLeftHeld  || gpAxisLeftHeld;
+    gpRightHeld = gpDpadRightHeld || gpAxisRightHeld;
+    gpDownHeld  = gpDpadDownHeld  || gpAxisDownHeld;
+}
+
+// Menu/pause analog navigation hysteresis flags
+bool menuAxisUpHeld{false}, menuAxisDownHeld{false};
+bool pauseAxisLeftHeld{false}, pauseAxisRightHeld{false};
+
 LTexture titleTexture;
 LTexture playTexture;
 LTexture optionsTexture;
 LTexture optionsTitleTexture;
 LTexture backTexture;
+LTexture exitTexture;
 
 int menuSelection = 0;
+
+// Helper to move menu selection (0..2) with wrap-around
+static inline void moveMenuSelection(int delta) {
+    const int count = 3; // Play, Options, Exit
+    menuSelection = (menuSelection + delta + count) % count;
+}
 
 void renderMenu() {
     // Clear screen
@@ -467,21 +503,108 @@ void renderMenu() {
     titleTexture.loadFromRenderedText("TETRIS", {255,255,255,255});
     playTexture.loadFromRenderedText("Play", {255,255,255,255});
     optionsTexture.loadFromRenderedText("Options", {255,255,255,255});
+    exitTexture.loadFromRenderedText("Exit", {255,255,255,255});
 
-    // Selection rectangle
+    // Row positions
+    const int yPlay    = centerY + 60;
+    const int yOptions = centerY + 110;
+    const int yExit    = centerY + 160;
+
+    // X positions (kept similar to your existing offsets)
+    const int xPlay    = rightX;
+    const int xOptions = rightX - 15;
+    const int xExit    = rightX - 5;
+
+    // Selection rectangle around the chosen option
+    const LTexture* selTex = (menuSelection == 0) ? &playTexture
+                           : (menuSelection == 1) ? &optionsTexture
+                           : &exitTexture;
+    const int selX = (menuSelection == 0) ? xPlay
+                   : (menuSelection == 1) ? xOptions
+                   : xExit;
+    const int selY = (menuSelection == 0) ? yPlay
+                   : (menuSelection == 1) ? yOptions
+                   : yExit;
+
+    const int padX = 18;
+    const int padY = 10;
+
     SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
-    int rectY = (menuSelection == 0) ? centerY + 60 : centerY + 110;
-    int rectW = playTexture.getWidth() + 20;
-    int rectH = playTexture.getHeight() + 10;
-    SDL_FRect selectRect{static_cast<float>(rightX - 18), static_cast<float>(rectY - 10), static_cast<float>(rectW + 20), static_cast<float>(rectH + 10)};
+    SDL_FRect selectRect{
+        static_cast<float>(selX - padX),
+        static_cast<float>(selY - padY),
+        static_cast<float>(selTex->getWidth() + padX * 2 - 2),
+        static_cast<float>(selTex->getHeight() + padY * 2 - 2)
+    };
     SDL_RenderFillRect(gRenderer, &selectRect);
 
     // Draw
     titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
-    playTexture.render(rightX, centerY + 60);
-    optionsTexture.render(rightX - 15, centerY + 110);
+    playTexture.render(xPlay, yPlay);
+    optionsTexture.render(xOptions, yOptions);
+    exitTexture.render(xExit, yExit);
+
+
+    // Selection rectangle
+    // SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
+    // int rectY = (menuSelection == 0) ? centerY + 60 : centerY + 110;
+    // int rectW = playTexture.getWidth() + 20;
+    // int rectH = playTexture.getHeight() + 10;
+    // SDL_FRect selectRect{static_cast<float>(rightX - 18), static_cast<float>(rectY - 10), static_cast<float>(rectW + 20), static_cast<float>(rectH + 10)};
+    // SDL_RenderFillRect(gRenderer, &selectRect);
+
+    // // Draw
+    // titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
+    // playTexture.render(rightX, centerY + 60);
+    // optionsTexture.render(rightX - 15, centerY + 110);
 
     // SDL_RenderPresent moved to main
+}
+
+int handleMenuEvent(const SDL_Event& e) {
+    //handke keyboard input for menu navigation
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        if (e.key.key == SDLK_UP) {
+            moveMenuSelection(-1);
+        } else if (e.key.key == SDLK_DOWN) {
+            moveMenuSelection(1);
+        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+            return menuSelection; // Return the selected option
+        }
+    }
+
+    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+            moveMenuSelection(-1);
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
+            menuSelection = (menuSelection + 1) % 2;
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+            return menuSelection; // Return the selected option
+        }
+    }
+
+    // Analog stick up/down for menu
+    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
+        const int v = e.gaxis.value;
+        if (v <= -kAxisPress) {
+            if (!menuAxisUpHeld) {
+                moveMenuSelection(-1);
+                menuAxisUpHeld = true;
+                menuAxisDownHeld = false;
+            }
+        } else if (v >= kAxisPress) {
+            if (!menuAxisDownHeld) {
+                moveMenuSelection(1);
+                menuAxisDownHeld = true;
+                menuAxisUpHeld = false;
+            }
+        } else if (std::abs(v) < kAxisRelease) {
+            menuAxisUpHeld = false;
+            menuAxisDownHeld = false;
+        }
+    }
+
+    return -1; // No selection made
 }
 
 void renderOptions() {

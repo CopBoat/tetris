@@ -26,42 +26,6 @@ int main( int argc, char* args[] )
 
     bool playing = false;
 
-    // Controller repeat config (ms)
-    constexpr Uint64 kDAS_MS          = 167; // delay before auto-repeat
-    constexpr Uint64 kARR_MS          = 42;  // auto-repeat rate (horizontal)
-    constexpr Uint64 kSoftDrop_ARR_MS = 42;  // auto-repeat rate (soft drop)
-
-    struct RepeatState {
-        bool   held{false};
-        Uint64 pressedAt{0};
-        Uint64 lastRepeatAt{0};
-    };
-    enum class HDir { None, Left, Right };
-
-    RepeatState gpLeft{}, gpRight{}, gpDown{};
-    HDir activeH{ HDir::None };
-
-    // Analog stick thresholds with hysteresis
-    constexpr int kAxisPress   = 16000; // press when beyond this magnitude
-    constexpr int kAxisRelease = 12000; // release when within this magnitude
-
-    // Track per-source held states
-    bool kbLeftHeld{false}, kbRightHeld{false}, kbDownHeld{false};
-    // Gamepad: split DPAD vs Analog, then combine
-    bool gpDpadLeftHeld{false}, gpDpadRightHeld{false}, gpDpadDownHeld{false};
-    bool gpAxisLeftHeld{false}, gpAxisRightHeld{false}, gpAxisDownHeld{false};
-    bool gpLeftHeld{false}, gpRightHeld{false}, gpDownHeld{false};
-
-    auto recomputeGamepadHeld = [&]() {
-        gpLeftHeld  = gpDpadLeftHeld  || gpAxisLeftHeld;
-        gpRightHeld = gpDpadRightHeld || gpAxisRightHeld;
-        gpDownHeld  = gpDpadDownHeld  || gpAxisDownHeld;
-    };
-
-    // Menu/pause analog navigation hysteresis flags
-    bool menuAxisUpHeld{false}, menuAxisDownHeld{false};
-    bool pauseAxisLeftHeld{false}, pauseAxisRightHeld{false};
-
     //Initialize
     if( init(chooseWindowTitle()) == false ) //initialize SDL Components
     {
@@ -103,51 +67,31 @@ int main( int argc, char* args[] )
                 }
 
                 if (currentState == GameState::MENU) {
-                    // input only; no rendering here
-                    if (e.type == SDL_EVENT_KEY_DOWN) {
-                        if (e.key.key == SDLK_UP) {
-                            menuSelection = (menuSelection - 1 + 2) % 2;
-                        } else if (e.key.key == SDLK_DOWN) {
-                            menuSelection = (menuSelection + 1) % 2;
-                        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-                            if (menuSelection == 0) { currentState = GameState::PLAYING; renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); continue; }
-                            else if (menuSelection == 1) currentState = GameState::OPTIONS;
-                        }
+                    
+                    switch (handleMenuEvent(e)) {
+                        case 0: // Start Game
+                            currentState = GameState::PLAYING;
+                            renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight);
+                            break;
+                        case 1: // Options
+                            currentState = GameState::OPTIONS;
+                            break;
+                        case 2: // Exit
+                            quit = true;
+                            break;
+                        default:
+                            break;
                     }
-                    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-                        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
-                            menuSelection = (menuSelection - 1 + 2) % 2;
-                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
-                            menuSelection = (menuSelection + 1) % 2;
-                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-                            if (menuSelection == 0) { currentState = GameState::PLAYING; renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight); continue;}
-                            else if (menuSelection == 1) currentState = GameState::OPTIONS;
-                        }
-                    }
-                    // Analog stick up/down for menu
-                    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
-                        const int v = e.gaxis.value;
-                        if (v <= -kAxisPress) {
-                            if (!menuAxisUpHeld) {
-                                menuSelection = (menuSelection - 1 + 2) % 2;
-                                menuAxisUpHeld = true;
-                                menuAxisDownHeld = false;
-                            }
-                        } else if (v >= kAxisPress) {
-                            if (!menuAxisDownHeld) {
-                                menuSelection = (menuSelection + 1) % 2;
-                                menuAxisDownHeld = true;
-                                menuAxisUpHeld = false;
-                            }
-                        } else if (std::abs(v) < kAxisRelease) {
-                            menuAxisUpHeld = false;
-                            menuAxisDownHeld = false;
-                        }
-                    }
+
                 } else if (currentState == GameState::OPTIONS) {
                     if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
                         currentState = GameState::MENU;
 
+
+
+
+
+                        
                 } else if (currentState == GameState::PUASE) {
                     if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
                         if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) {

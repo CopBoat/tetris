@@ -105,15 +105,53 @@ extern std::vector<std::pair<int, int>> wallKickOffsetsI[8];
 enum class GameState { MENU, PLAYING, OPTIONS, PUASE };
 extern GameState currentState;
 
+// Controller repeat config (ms)
+extern Uint64 kDAS_MS;
+extern Uint64 kARR_MS;
+extern Uint64 kSoftDrop_ARR_MS;
+
+struct RepeatState {
+    bool   held{false};
+    Uint64 pressedAt{0};
+    Uint64 lastRepeatAt{0};
+};
+enum class HDir { None, Left, Right };
+
+// Declare externs for globals defined in globals.cpp
+extern RepeatState gpLeft;
+extern RepeatState gpRight;
+extern RepeatState gpDown;
+extern HDir activeH;
+
+// Analog stick thresholds with hysteresis
+extern int kAxisPress;
+extern int kAxisRelease;
+
+// Track per-source held states
+extern bool kbLeftHeld, kbRightHeld, kbDownHeld;
+extern bool gpDpadLeftHeld, gpDpadRightHeld, gpDpadDownHeld;
+extern bool gpAxisLeftHeld, gpAxisRightHeld, gpAxisDownHeld;
+extern bool gpLeftHeld, gpRightHeld, gpDownHeld;
+
+// Menu/pause analog navigation hysteresis flags
+extern bool menuAxisUpHeld, menuAxisDownHeld;
+extern bool pauseAxisLeftHeld, pauseAxisRightHeld;
+
+extern void recomputeGamepadHeld();
+
 extern LTexture titleTexture;
 extern LTexture playTexture;
 extern LTexture optionsTexture;
 extern LTexture optionsTitleTexture;
 extern LTexture backTexture;
+extern LTexture exitTexture;
 
 extern int menuSelection;
 
 void renderMenu();
+static inline void moveMenuSelection(int);
+int handleMenuEvent(const SDL_Event&);
+
 void renderOptions();
 
 extern int pauseMenuSelection;
