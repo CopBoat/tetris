@@ -155,7 +155,11 @@ extern LTexture fullscreenLabel;
 
 
 extern LTexture optionsTitleTexture3;
-extern LTexture inputConfigLabel;
+extern LTexture inputConfigHardDropLabel;
+extern LTexture inputConfigHoldLabel;
+extern LTexture inputConfigRotateCWLabel;
+extern LTexture inputConfigRotateCCWLabel;
+extern LTexture inputConfigKeyDirectionLabel;
 
 
 

@@ -488,7 +488,11 @@ LTexture fullscreenLabel;
 
 
 LTexture optionsTitleTexture3;
-LTexture inputConfigLabel;
+LTexture inputConfigHardDropLabel;
+LTexture inputConfigHoldLabel;
+LTexture inputConfigRotateCWLabel;
+LTexture inputConfigRotateCCWLabel;
+LTexture inputConfigKeyDirectionLabel;
 
 
 int menuSelection = 0;
@@ -659,8 +663,20 @@ void renderInputOptions() {
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
     optionsTitleTexture3.render(500, 20);
 
-    inputConfigLabel.loadFromRenderedText("Hard Drop (A) Select to change binding", {255,255,255,255});
-    inputConfigLabel.render(400, 100);
+    inputConfigKeyDirectionLabel.loadFromRenderedText("Move Keys < Arrow Keys >", {255,255,255,255});
+    inputConfigKeyDirectionLabel.render(400, 60);
+
+    inputConfigHardDropLabel.loadFromRenderedText("Hard Drop (A) Select to change binding", {255,255,255,255});
+    inputConfigHardDropLabel.render(400, 100);
+
+    inputConfigHoldLabel.loadFromRenderedText("Hold (Left Bumper) Select to change binding", {255,255,255,255});
+    inputConfigHoldLabel.render(400, 140);
+
+    inputConfigRotateCWLabel.loadFromRenderedText("Rotate Clockwise (X) Select to change binding", {255,255,255,255});
+    inputConfigRotateCWLabel.render(400, 180);
+
+    inputConfigRotateCCWLabel.loadFromRenderedText("Rotate Counter Clockwise (B) Select to change binding", {255,255,255,255});
+    inputConfigRotateCCWLabel.render(400, 220);
 
 
 
