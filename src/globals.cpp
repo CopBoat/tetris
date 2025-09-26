@@ -268,13 +268,15 @@ void renderUI() {
     SDL_RenderRect( gRenderer, &nextFRect ); // Render a rectangle for the next piece
     SDL_FRect holdFRect{ 510.f, 420.f, 100.f, 100.f };
     SDL_RenderRect( gRenderer, &holdFRect ); // Render a rectangle for the hold piece
-    // Draw grid lines
-    SDL_SetRenderDrawColor(gRenderer, 40, 40, 40, 255);
+    
+    if (gridLinesEnabled) { // Draw grid lines
+        SDL_SetRenderDrawColor(gRenderer, 40, 40, 40, 255);
     for (int x = 0; x <= boardWidth; ++x)
         SDL_RenderLine(gRenderer, x * blockSize, 0, x * blockSize, boardHeight * blockSize);
     for (int y = 0; y <= boardHeight; ++y)
         SDL_RenderLine(gRenderer, 0, y * blockSize, boardWidth * blockSize, y * blockSize);
-
+    } 
+    
     //draw line seperating the board and UI
     SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
     SDL_RenderLine( gRenderer, 480, 0, 480, kScreenHeight );
