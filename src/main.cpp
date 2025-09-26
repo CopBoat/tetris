@@ -89,15 +89,16 @@ int main( int argc, char* args[] )
 
                     switch (handleGameOptionsMenuEvent(e)) {
                         case 0: // Game
-                            // currentState = GameState::GAME_OPTIONS;
+                            // move menus
                             break;
-                        case 1: // Video
-                            // currentState = GameState::VIDEO_OPTIONS;
+                        case 1: 
                             break;
-                        case 2: // Input
-                            // currentState = GameState::INPUT_OPTIONS;
+                        case 2: 
                             break;
-                        case 3: // Back
+                        case 3: 
+                            break;
+                        case 4: // Back
+                            std::cout << "Returning to main menu" << std::endl;
                             currentState = GameState::MENU;
                             break;
                         default:
