@@ -418,39 +418,41 @@ void renderGhostPiece() {
         }
     }
 
-    // Highlight grid cells between current piece and ghost along the same columns
-    if (gy > currentPiece.y) {
-        const Uint8 gridAlpha = 10; // lighter, less pronounced
-        SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, gridAlpha);
+    if (placementPreviewSelection == 0 ) { // Highlight grid cells between current piece and ghost along the same columns
+        if (gy > currentPiece.y) {
+            const Uint8 gridAlpha = 10; // lighter, less pronounced
+            SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, gridAlpha);
 
-        for (int sx = 0; sx < currentPiece.width; ++sx) {
-            // Find occupied rows for this column
-            int minSy = INT_MAX, maxSy = INT_MIN;
-            for (int sy = 0; sy < currentPiece.height; ++sy) {
-                if (currentPiece.shape[sy][sx] != 0) {
-                    minSy = std::min(minSy, sy);
-                    maxSy = std::max(maxSy, sy);
+            for (int sx = 0; sx < currentPiece.width; ++sx) {
+                // Find occupied rows for this column
+                int minSy = INT_MAX, maxSy = INT_MIN;
+                for (int sy = 0; sy < currentPiece.height; ++sy) {
+                    if (currentPiece.shape[sy][sx] != 0) {
+                        minSy = std::min(minSy, sy);
+                        maxSy = std::max(maxSy, sy);
+                    }
                 }
+                if (minSy == INT_MAX) continue;
+
+                int colX = currentPiece.x + sx;
+
+                // From just below the lowest current-piece cell to just above the highest ghost cell
+                int yStartCell = currentPiece.y + maxSy + 1;
+                int yEndCell   = gy + minSy;
+
+                if (yEndCell <= yStartCell) continue;
+
+                SDL_FRect seg{
+                    static_cast<float>(colX * blockSize),                // full column width
+                    static_cast<float>(yStartCell * blockSize),          // no spacing vertically
+                    static_cast<float>(blockSize),                       // full width (no spacing)
+                    static_cast<float>((yEndCell - yStartCell) * blockSize)
+                };
+                SDL_RenderFillRect(gRenderer, &seg);
             }
-            if (minSy == INT_MAX) continue;
-
-            int colX = currentPiece.x + sx;
-
-            // From just below the lowest current-piece cell to just above the highest ghost cell
-            int yStartCell = currentPiece.y + maxSy + 1;
-            int yEndCell   = gy + minSy;
-
-            if (yEndCell <= yStartCell) continue;
-
-            SDL_FRect seg{
-                static_cast<float>(colX * blockSize),                // full column width
-                static_cast<float>(yStartCell * blockSize),          // no spacing vertically
-                static_cast<float>(blockSize),                       // full width (no spacing)
-                static_cast<float>((yEndCell - yStartCell) * blockSize)
-            };
-            SDL_RenderFillRect(gRenderer, &seg);
         }
     }
+    
 
     // Restore previous blend mode
     SDL_SetRenderDrawBlendMode(gRenderer, oldMode);
@@ -518,8 +520,9 @@ void renderBoardBlocks() {
         }
     }
 
-    // Draw the ghost on top of the locked blocks (but before presenting)
-    renderGhostPiece();
+    if (placementPreviewSelection != 2 ) {// Draw the ghost on top of the locked blocks (but before presenting)
+        renderGhostPiece();
+    }
 }
 
 void renderBoardBlocksDuringAnimation() {
