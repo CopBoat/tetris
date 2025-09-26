@@ -701,7 +701,7 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
         } else if (e.key.key == SDLK_DOWN) {
             moveGameOptionsMenuSelection(1);
         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-            return menuSelection; // Return the selected option
+            return GameOptionsMenuSelection; // Return the selected option
         }
     }
     return -1; // No selection made
