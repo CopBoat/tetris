@@ -166,6 +166,7 @@ extern LTexture inputConfigKeyDirectionLabel;
 
 
 extern int menuSelection;
+extern int optionsMenuSelection;
 
 void renderMenu();
 static inline void moveMenuSelection(int);
