@@ -169,6 +169,9 @@ void renderMenu();
 static inline void moveMenuSelection(int);
 int handleMenuEvent(const SDL_Event&);
 
+extern int optionsTab;
+extern bool gridLinesEnabled;
+
 extern int GameOptionsMenuSelection;
 void renderGameOptions();
 static inline void moveGameOptionsMenuSelection(int);

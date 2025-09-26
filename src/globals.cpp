@@ -608,7 +608,21 @@ int handleMenuEvent(const SDL_Event& e) {
     return -1; // No selection made
 }
 
+int optionsTab = 0; // 0 = Game, 1 = Video, 2 = Input
+
 int GameOptionsMenuSelection = 0;
+
+bool gridLinesEnabled = true;
+
+int blockGapSelection = 0;
+
+float blockGapValues[] = {2.0f, 5.0f, 10.0f, 0.0f};
+
+// Helper to move menu selection (0..3) with wrap-around
+static inline void moveBlockGapSelection(int delta) {
+    const int count = 4; // tab, grid, gap, preview, back
+    blockGapSelection = (blockGapSelection + delta + count) % count;
+}
 
 // Helper to move menu selection (0..4) with wrap-around
 static inline void moveGameOptionsMenuSelection(int delta) {
@@ -647,8 +661,11 @@ void renderGameOptions() {
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
-                optionsGridLabel.loadFromRenderedText("Grid lines        < ON >", {255,255,255,255});
-            optionsBlockGapLabel.loadFromRenderedText("Block Gap         < 2px >", {255,255,255,255});
+                optionsGridLabel.loadFromRenderedText( gridLinesEnabled ? "Grid lines        < ON >" : "Grid lines        < OFF >", {255,255,255,255});
+            optionsBlockGapLabel.loadFromRenderedText((blockGapSelection == 0) ? "Block Gap         < 2px >" 
+                                                        : (blockGapSelection == 1) ? "Block Gap         < 5px >" 
+                                                        : (blockGapSelection == 2) ? "Block Gap         < 10px >"
+                                                        : "Block Gap         < 0px >" , {255,255,255,255});
     optionsPlacementPreviewLabel.loadFromRenderedText("Placement Preview    < Ghost Piece & Highlights >", {255,255,255,255});
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
 
@@ -705,6 +722,29 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
             moveGameOptionsMenuSelection(-1);
         } else if (e.key.key == SDLK_DOWN) {
             moveGameOptionsMenuSelection(1);
+        }else if (e.key.key == SDLK_LEFT) {
+            if (GameOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 0;
+            } else if (GameOptionsMenuSelection == 1) { // Grid lines
+                gridLinesEnabled = !gridLinesEnabled;
+            } else if (GameOptionsMenuSelection == 2) { // Block gap
+                blockGapSelection = (blockGapSelection - 1 + 4) % 4;
+                spacing = blockGapValues[blockGapSelection];
+            } else if (GameOptionsMenuSelection == 3) { // Placement preview
+                // Toggle placement preview option here
+            }
+        } else if (e.key.key == SDLK_RIGHT) {
+            if (GameOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 1;
+            } else if (GameOptionsMenuSelection == 1) { // Grid lines
+                gridLinesEnabled = !gridLinesEnabled;
+            } else if (GameOptionsMenuSelection == 2) { // Block gap
+                blockGapSelection = (blockGapSelection + 1) % 4;
+                spacing = blockGapValues[blockGapSelection];
+            } else if (GameOptionsMenuSelection == 3) { // Placement preview
+                // Toggle placement preview option here
+            }
+
         } else if (e.key.key == SDLK_ESCAPE) {
             return 4; // Return to main menu
         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
