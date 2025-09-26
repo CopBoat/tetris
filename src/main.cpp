@@ -87,23 +87,35 @@ int main( int argc, char* args[] )
                     // if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
                     //     currentState = GameState::MENU;
 
-                    switch (handleGameOptionsMenuEvent(e)) {
-                        case 0: // Game
-                            // move menus
+                    switch (optionsTab) {
+                        case 0: { // Game // turns out i prob dont need a swtich here
+                                    switch (handleGameOptionsMenuEvent(e)) {
+                                        case 0: // Game
+                                            // move menus
+                                            break;
+                                        case 1: 
+                                            break;
+                                        case 2: 
+                                            break;
+                                        case 3: 
+                                            break;
+                                        case 4: // Back
+                                            currentState = GameState::MENU;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
                             break;
-                        case 1: 
+                        case 1: // Video
                             break;
-                        case 2: 
-                            break;
-                        case 3: 
-                            break;
-                        case 4: // Back
-                            std::cout << "Returning to main menu" << std::endl;
-                            currentState = GameState::MENU;
+                        case 2: // Input
                             break;
                         default:
                             break;
                     }
+
+                    
 
 
 
