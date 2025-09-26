@@ -624,33 +624,101 @@ int handleMenuEvent(const SDL_Event& e) {
     return -1; // No selection made
 }
 
+int optionsMenuSelection = 0;
+
 void renderGameOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
+    // Use logical size for layout; renderer scales to window
+    const int winW = kScreenWidth;
+    const int winH = kScreenHeight;
+    int rightX = winW / 3.2;
+    int centerY = winH / 32;
+
+    //row positions
+    const int yGame = centerY;
+    const int yVideo = centerY;
+    const int yInput = centerY;
+    const int yGridLines = centerY + 150;
+    const int yBlockGap = centerY + 250;
+    const int yPlacementPreview = centerY + 350;
+    const int yBack = centerY + 450;
+
+    //x positions
+    const int xGame = rightX - 60; //140
+    const int xVideo = rightX + 120; //380
+    const int xInput = rightX + 300; //500
+    const int xGridLines = rightX - 150;
+    const int xBlockGap = rightX - 150;
+    const int xPlacementPreview = rightX - 150;
+    const int xBack = rightX - 150;
+
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
-    optionsTitleTexture.render(200, 20);
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
-    optionsTitleTexture2.render(350, 20);
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
-    optionsTitleTexture3.render(500, 20);
-
-    optionsGridLabel.loadFromRenderedText("Grid lines < ON >", {255,255,255,255});
-    optionsGridLabel.render(50, 100);
-
-    optionsBlockGapLabel.loadFromRenderedText("Block Gap < 2px >", {255,255,255,255});
-    optionsBlockGapLabel.render(50, 140);
-
-    optionsPlacementPreviewLabel.loadFromRenderedText("Placement Preview < Ghost Piece & Highlights >", {255,255,255,255});
-    optionsPlacementPreviewLabel.render(50, 180);
-
+                optionsGridLabel.loadFromRenderedText("Grid lines        < ON >", {255,255,255,255});
+            optionsBlockGapLabel.loadFromRenderedText("Block Gap         < 2px >", {255,255,255,255});
+    optionsPlacementPreviewLabel.loadFromRenderedText("Placement Preview    < Ghost Piece & Highlights >", {255,255,255,255});
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
-    backTexture.render(50, 400);
+
+    // Selection rectangle around the chosen option
+    const LTexture* selTex = (optionsMenuSelection == 0) ? &optionsTitleTexture
+                           : (optionsMenuSelection == 1) ? &optionsGridLabel
+                           : (optionsMenuSelection == 2) ? &optionsBlockGapLabel
+                           : (optionsMenuSelection == 3) ? &optionsPlacementPreviewLabel
+                           : &backTexture;
+    const int selX = (optionsMenuSelection == 0) ? xGame
+                   : (optionsMenuSelection == 1) ? xGridLines
+                   : (optionsMenuSelection == 2) ? xBlockGap
+                   : (optionsMenuSelection == 3) ? xPlacementPreview
+                   : xBack;
+    const int selY = (optionsMenuSelection == 0) ? yGame
+                   : (optionsMenuSelection == 1) ? yGridLines
+                   : (optionsMenuSelection == 2) ? yBlockGap
+                   : (optionsMenuSelection == 3) ? yPlacementPreview
+                   : yBack;
+
+    const int padX = 18;
+    const int padY = 10;
+    
+    
+    SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
+    SDL_FRect selectRect{
+        static_cast<float>(selX - padX),
+        static_cast<float>(selY - padY),
+        static_cast<float>(selTex->getWidth() + padX * 2 - 2),
+        static_cast<float>(selTex->getHeight() + padY * 2 - 2)
+    };
+    SDL_RenderFillRect(gRenderer, &selectRect);
+
+    //draw text
+    optionsTitleTexture.render(xGame, yGame);
+    optionsTitleTexture2.render(xVideo, yVideo);
+    optionsTitleTexture3.render(xInput, yInput);
+    optionsGridLabel.render(xGridLines, yGridLines);
+    optionsBlockGapLabel.render(xBlockGap, yBlockGap);
+    optionsPlacementPreviewLabel.render(xPlacementPreview, yPlacementPreview);
+    backTexture.render(xBack, yBack);
+
 }
 
 void renderVideoOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
+
+    // Use logical size for layout; renderer scales to window
+    const int winW = kScreenWidth;
+    const int winH = kScreenHeight;
+    int rightX = winW / 3.2;
+    int centerY = winH / 32;
+
+    //row positions
+    const int yGame = centerY;
+    const int yVideo = centerY;
+    const int yInput = centerY;
+    
+
 
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
     optionsTitleTexture.render(200, 20);
@@ -672,7 +740,7 @@ void renderVideoOptions() {
 void renderInputOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
-    
+
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
     optionsTitleTexture.render(200, 20);
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
