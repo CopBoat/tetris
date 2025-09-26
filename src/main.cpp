@@ -73,10 +73,10 @@ int main( int argc, char* args[] )
                             currentState = GameState::PLAYING;
                             renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight);
                             break;
-                        case 1: // Options
+                        case 1: // Options menu
                             currentState = GameState::OPTIONS;
                             break;
-                        case 2: // Exit
+                        case 2: // Exit program
                             quit = true;
                             break;
                         default:

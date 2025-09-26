@@ -672,6 +672,11 @@ void renderGameOptions() {
     const int padX = 18;
     const int padY = 10;
     
+
+    //rect to show current tab
+    SDL_SetRenderDrawColor(gRenderer, 128, 128, 128, 70); 
+    SDL_FRect tabRect{122, 10, 78, 32};
+    SDL_RenderFillRect(gRenderer, &tabRect);
     
     SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
     SDL_FRect selectRect{
@@ -680,7 +685,7 @@ void renderGameOptions() {
         static_cast<float>(selTex->getWidth() + padX * 2 - 2),
         static_cast<float>(selTex->getHeight() + padY * 2 - 2)
     };
-    SDL_RenderFillRect(gRenderer, &selectRect);
+    SDL_RenderFillRect(gRenderer, &selectRect);    
 
     //draw text
     optionsTitleTexture.render(xGame, yGame);
@@ -700,6 +705,8 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
             moveGameOptionsMenuSelection(-1);
         } else if (e.key.key == SDLK_DOWN) {
             moveGameOptionsMenuSelection(1);
+        } else if (e.key.key == SDLK_ESCAPE) {
+            return 4; // Return to main menu
         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
             return GameOptionsMenuSelection; // Return the selected option
         }
