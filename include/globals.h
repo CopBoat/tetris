@@ -164,15 +164,16 @@ extern LTexture inputConfigRotateCCWLabel;
 extern LTexture inputConfigKeyDirectionLabel;
 
 
-
 extern int menuSelection;
-extern int optionsMenuSelection;
-
 void renderMenu();
 static inline void moveMenuSelection(int);
 int handleMenuEvent(const SDL_Event&);
 
+extern int GameOptionsMenuSelection;
 void renderGameOptions();
+static inline void moveGameOptionsMenuSelection(int);
+int handleGameOptionsMenuEvent(const SDL_Event&);
+
 void renderVideoOptions();
 void renderInputOptions();
 

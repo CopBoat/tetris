@@ -84,8 +84,25 @@ int main( int argc, char* args[] )
                     }
 
                 } else if (currentState == GameState::OPTIONS) {
-                    if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
-                        currentState = GameState::MENU;
+                    // if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
+                    //     currentState = GameState::MENU;
+
+                    switch (handleGameOptionsMenuEvent(e)) {
+                        case 0: // Game
+                            // currentState = GameState::GAME_OPTIONS;
+                            break;
+                        case 1: // Video
+                            // currentState = GameState::VIDEO_OPTIONS;
+                            break;
+                        case 2: // Input
+                            // currentState = GameState::INPUT_OPTIONS;
+                            break;
+                        case 3: // Back
+                            currentState = GameState::MENU;
+                            break;
+                        default:
+                            break;
+                    }
 
 
 

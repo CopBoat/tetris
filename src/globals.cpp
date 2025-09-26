@@ -560,22 +560,6 @@ void renderMenu() {
     playTexture.render(xPlay, yPlay);
     optionsTexture.render(xOptions, yOptions);
     exitTexture.render(xExit, yExit);
-
-
-    // Selection rectangle
-    // SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
-    // int rectY = (menuSelection == 0) ? centerY + 60 : centerY + 110;
-    // int rectW = playTexture.getWidth() + 20;
-    // int rectH = playTexture.getHeight() + 10;
-    // SDL_FRect selectRect{static_cast<float>(rightX - 18), static_cast<float>(rectY - 10), static_cast<float>(rectW + 20), static_cast<float>(rectH + 10)};
-    // SDL_RenderFillRect(gRenderer, &selectRect);
-
-    // // Draw
-    // titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
-    // playTexture.render(rightX, centerY + 60);
-    // optionsTexture.render(rightX - 15, centerY + 110);
-
-    // SDL_RenderPresent moved to main
 }
 
 int handleMenuEvent(const SDL_Event& e) {
@@ -624,7 +608,13 @@ int handleMenuEvent(const SDL_Event& e) {
     return -1; // No selection made
 }
 
-int optionsMenuSelection = 0;
+int GameOptionsMenuSelection = 0;
+
+// Helper to move menu selection (0..4) with wrap-around
+static inline void moveGameOptionsMenuSelection(int delta) {
+    const int count = 5; // tab, grid, gap, preview, back
+    GameOptionsMenuSelection = (GameOptionsMenuSelection + delta + count) % count;
+}
 
 void renderGameOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
@@ -663,20 +653,20 @@ void renderGameOptions() {
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
 
     // Selection rectangle around the chosen option
-    const LTexture* selTex = (optionsMenuSelection == 0) ? &optionsTitleTexture
-                           : (optionsMenuSelection == 1) ? &optionsGridLabel
-                           : (optionsMenuSelection == 2) ? &optionsBlockGapLabel
-                           : (optionsMenuSelection == 3) ? &optionsPlacementPreviewLabel
+    const LTexture* selTex = (GameOptionsMenuSelection == 0) ? &optionsTitleTexture
+                           : (GameOptionsMenuSelection == 1) ? &optionsGridLabel
+                           : (GameOptionsMenuSelection == 2) ? &optionsBlockGapLabel
+                           : (GameOptionsMenuSelection == 3) ? &optionsPlacementPreviewLabel
                            : &backTexture;
-    const int selX = (optionsMenuSelection == 0) ? xGame
-                   : (optionsMenuSelection == 1) ? xGridLines
-                   : (optionsMenuSelection == 2) ? xBlockGap
-                   : (optionsMenuSelection == 3) ? xPlacementPreview
+    const int selX = (GameOptionsMenuSelection == 0) ? xGame
+                   : (GameOptionsMenuSelection == 1) ? xGridLines
+                   : (GameOptionsMenuSelection == 2) ? xBlockGap
+                   : (GameOptionsMenuSelection == 3) ? xPlacementPreview
                    : xBack;
-    const int selY = (optionsMenuSelection == 0) ? yGame
-                   : (optionsMenuSelection == 1) ? yGridLines
-                   : (optionsMenuSelection == 2) ? yBlockGap
-                   : (optionsMenuSelection == 3) ? yPlacementPreview
+    const int selY = (GameOptionsMenuSelection == 0) ? yGame
+                   : (GameOptionsMenuSelection == 1) ? yGridLines
+                   : (GameOptionsMenuSelection == 2) ? yBlockGap
+                   : (GameOptionsMenuSelection == 3) ? yPlacementPreview
                    : yBack;
 
     const int padX = 18;
@@ -701,6 +691,20 @@ void renderGameOptions() {
     optionsPlacementPreviewLabel.render(xPlacementPreview, yPlacementPreview);
     backTexture.render(xBack, yBack);
 
+}
+
+int handleGameOptionsMenuEvent(const SDL_Event& e) {
+    //handke keyboard input for menu navigation
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        if (e.key.key == SDLK_UP) {
+            moveGameOptionsMenuSelection(-1);
+        } else if (e.key.key == SDLK_DOWN) {
+            moveGameOptionsMenuSelection(1);
+        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+            return menuSelection; // Return the selected option
+        }
+    }
+    return -1; // No selection made
 }
 
 void renderVideoOptions() {
