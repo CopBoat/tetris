@@ -620,6 +620,8 @@ int blockGapSelection = 0;
 
 float blockGapValues[] = {2.0f, 5.0f, 10.0f, 0.0f};
 
+int placementPreviewSelection = 0; // 0 = ghost piece + highlights, 1 = ghost piece only, 2 = off
+
 // Helper to move menu selection (0..3) with wrap-around
 static inline void moveBlockGapSelection(int delta) {
     const int count = 4; // tab, grid, gap, preview, back
@@ -668,7 +670,9 @@ void renderGameOptions() {
                                                         : (blockGapSelection == 1) ? "Block Gap         < 5px >" 
                                                         : (blockGapSelection == 2) ? "Block Gap         < 10px >"
                                                         : "Block Gap         < 0px >" , {255,255,255,255});
-    optionsPlacementPreviewLabel.loadFromRenderedText("Placement Preview    < Ghost Piece & Highlights >", {255,255,255,255});
+    optionsPlacementPreviewLabel.loadFromRenderedText( (placementPreviewSelection == 0) ? "Placement Preview    < Ghost Piece & Highlights >"
+                                                        : (placementPreviewSelection == 1) ? "Placement Preview    < Ghost Piece Only >"
+                                                        : "Placement Preview    < None >" , {255,255,255,255});
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
 
     // Selection rectangle around the chosen option
@@ -733,7 +737,8 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
                 blockGapSelection = (blockGapSelection - 1 + 4) % 4;
                 spacing = blockGapValues[blockGapSelection];
             } else if (GameOptionsMenuSelection == 3) { // Placement preview
-                // Toggle placement preview option here
+                placementPreviewSelection = (placementPreviewSelection - 1 + 3) % 3;
+
             }
         } else if (e.key.key == SDLK_RIGHT) {
             if (GameOptionsMenuSelection == 0) { // Game tab
@@ -744,7 +749,7 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
                 blockGapSelection = (blockGapSelection + 1) % 4;
                 spacing = blockGapValues[blockGapSelection];
             } else if (GameOptionsMenuSelection == 3) { // Placement preview
-                // Toggle placement preview option here
+                placementPreviewSelection = (placementPreviewSelection + 1) % 3;
             }
 
         } else if (e.key.key == SDLK_ESCAPE) {

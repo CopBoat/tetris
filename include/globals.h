@@ -171,6 +171,7 @@ int handleMenuEvent(const SDL_Event&);
 
 extern int optionsTab;
 extern bool gridLinesEnabled;
+extern int placementPreviewSelection;
 
 extern int GameOptionsMenuSelection;
 void renderGameOptions();
