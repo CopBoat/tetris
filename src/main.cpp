@@ -42,6 +42,10 @@ int main( int argc, char* args[] )
 
     else //if everything initialized fine
     {
+
+        // Show splash screen (logo first, then text)
+        showSplashScreen();
+        
         bool quit{ false }; //The quit flag
 
         //The event data

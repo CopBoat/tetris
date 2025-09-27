@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+void showSplashScreen();
 
 bool init(std::string title = "Tetris (CopBoat's Version)");
 

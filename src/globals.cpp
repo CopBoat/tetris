@@ -14,6 +14,139 @@
 #include <array>
 #include <algorithm>
 
+void showSplashScreen()
+{
+    SDL_Log("Showing splash screen...");
+
+    // Load logo using SDL_image
+    SDL_Texture* logoTex = IMG_LoadTexture(gRenderer, "/home/cop/Documents/programming/tetris/assets/splashLogo.png");
+    if (!logoTex) {
+        SDL_Log("Splash logo failed to load: %s", SDL_GetError());
+        return;
+    }
+
+    // SDL3: width/height outputs are float*
+    float texW = 0.0f, texH = 0.0f;
+    SDL_GetTextureSize(logoTex, &texW, &texH);
+    int logoW = static_cast<int>(texW);
+    int logoH = static_cast<int>(texH);
+
+    const float maxW = kScreenWidth * 0.6f;
+    const float maxH = kScreenHeight * 0.6f;
+    float scale = 1.0f;
+    if (logoW > 0 && logoH > 0) {
+        scale = std::min(maxW / logoW, maxH / logoH);
+        if (scale > 1.0f) scale = 1.0f;
+    }
+    int drawW = static_cast<int>(logoW * scale);
+    int drawH = static_cast<int>(logoH * scale);
+    SDL_FRect dstLogo = {
+        (kScreenWidth - drawW) * 0.5f,
+        (kScreenHeight - drawH) * 0.5f - 20.0f, // room for text
+        static_cast<float>(drawW),
+        static_cast<float>(drawH)
+    };
+
+    // Text (created after small delay so logo shows first)
+    const char* splashText = "CopBoat's Version";
+    SDL_Texture* textTex = nullptr;
+    int textW = 0, textH = 0;
+
+    // Enable blending for fade
+    SDL_SetTextureBlendMode(logoTex, SDL_BLENDMODE_BLEND);
+
+    // Timeline
+    const Uint32 fadeInMS  = 900;
+    const Uint32 holdMS    = 1200;
+    const Uint32 fadeOutMS = 900;
+    const Uint32 totalMS   = fadeInMS + holdMS + fadeOutMS;
+
+    // Text appears shortly after the logo starts fading in
+    const Uint32 textDelayMS = 400;
+
+    const Uint32 start = SDL_GetTicks();
+
+    while ((SDL_GetTicks() - start) < totalMS) {
+        // Handle quit events so user can close during splash
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_EVENT_QUIT) {
+                if (textTex) SDL_DestroyTexture(textTex);
+                SDL_DestroyTexture(logoTex);
+                return;
+            }
+        }
+
+        Uint32 t = SDL_GetTicks() - start;
+
+        // Compute alpha with simple ease-in/out
+        float alphaF = 1.0f;
+        if (t < fadeInMS) {
+            float x = (float)t / (float)fadeInMS;        // 0..1
+            alphaF = x * x * (3 - 2 * x);                // smoothstep
+        } else if (t < fadeInMS + holdMS) {
+            alphaF = 1.0f;
+        } else {
+            float x = (float)(t - fadeInMS - holdMS) / (float)fadeOutMS; // 0..1
+            x = std::min(std::max(x, 0.0f), 1.0f);
+            float inv = 1.0f - x;
+            alphaF = inv * inv * (3 - 2 * inv);          // smoothstep out
+        }
+        Uint8 alpha = static_cast<Uint8>(std::round(alphaF * 255.0f));
+
+        // Create text texture after delay (once)
+        if (!textTex && t >= textDelayMS) {
+            SDL_Color white{255, 255, 255, 255};
+            extern TTF_Font* gFont;
+            if (gFont) {
+                SDL_Surface* surf = TTF_RenderText_Blended(gFont, splashText, strlen(splashText), white);
+                if (surf) {
+                    textTex = SDL_CreateTextureFromSurface(gRenderer, surf);
+                    SDL_DestroySurface(surf);
+                    if (textTex) {
+                        SDL_SetTextureBlendMode(textTex, SDL_BLENDMODE_BLEND);
+                        // Query text size
+                        float tw = 0.0f, th = 0.0f;
+                        SDL_GetTextureSize(textTex, &tw, &th);
+                        textW = static_cast<int>(tw);
+                        textH = static_cast<int>(th);
+                    }
+                }
+            }
+        }
+
+        // Apply alpha to textures
+        SDL_SetTextureAlphaMod(logoTex, alpha);
+        if (textTex) SDL_SetTextureAlphaMod(textTex, alpha);
+
+        // Render
+        SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(gRenderer);
+
+        SDL_RenderTexture(gRenderer, logoTex, nullptr, &dstLogo);
+
+        if (textTex) {
+            SDL_FRect dstText = {
+                (kScreenWidth - textW) * 0.5f,
+                dstLogo.y + dstLogo.h + 16.0f,
+                static_cast<float>(textW),
+                static_cast<float>(textH)
+            };
+            if (dstText.y + dstText.h > kScreenHeight - 8) {
+                dstText.y = kScreenHeight - 8 - dstText.h;
+            }
+            SDL_RenderTexture(gRenderer, textTex, nullptr, &dstText);
+        }
+
+        SDL_RenderPresent(gRenderer);
+        SDL_Delay(16);
+    }
+
+    // Cleanup
+    if (textTex) SDL_DestroyTexture(textTex);
+    SDL_DestroyTexture(logoTex);
+}
+
 bool loadMedia()
 {
     //File loading flag
