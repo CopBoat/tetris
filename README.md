@@ -32,22 +32,31 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
 ## Installation
 Grab one of the releases or compile it yourself with the instructions below!
 ### 1. Clone the repository and navigate to the cloned folder:
+```bash
 git clone https://github.com/CopBoat/tetris.git
 cd tetris
+```
 
 ### 2. **For Arch/Manjaro or Ubuntu/Debian users**, simply run the automated build script:
+```bash
 ./build.sh
-
+```
 ### 3. **For other Linux distributions or Windows users** (via WSL/MSYS2):
 - In the project root, create a build folder:
+- ```
   mkdir build
   cd build
+  ```
 
 - Use CMake to generate the build system for your platform (Linux, Windows, etc.):
+- ```bash
   cmake ..
-
+```
 - Compile the project using the generated build system:
+```bash
   cmake --build .
+```
+
 
 ### 4. Enjoy your executable! All dependencies are embedded, so you can move the executable wherever you like 😁
 
