@@ -93,11 +93,8 @@ int main( int argc, char* args[] )
                     }
 
                 } else if (currentState == GameState::OPTIONS) {
-                    // if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE)
-                    //     currentState = GameState::MENU;
-
                     switch (optionsTab) {
-                        case 0: { // Game // turns out i prob dont need a swtich here
+                        case 0: { // Game 
                                     switch (handleGameOptionsMenuEvent(e)) {
                                         case 4: // Back
                                             currentState = GameState::MENU;
@@ -105,10 +102,6 @@ int main( int argc, char* args[] )
                                         default:
                                             break;
                                     }
-
-                                    // if (handleGameOptionsMenuEvent(e) == 4 ) {
-                                    //     currentState == GameState::MENU;
-                                    // }
                                 }
                             break;
                         case 1: // Video
@@ -119,11 +112,15 @@ int main( int argc, char* args[] )
                                     default:
                                         break;
                                 }
-                                // if (handleVideoOptionsMenuEvent(e) == 4) {
-                                //     currentState == GameState::MENU;
-                                // }
                             break;
                         case 2: // Input
+                                switch (handleInputOptionsMenuEvent(e)){
+                                    case 3: //back
+                                        currentState = GameState::MENU;
+                                        break;
+                                    default:
+                                        break;
+                                }
                             break;
                         default:
                             break;

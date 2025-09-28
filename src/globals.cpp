@@ -1247,6 +1247,14 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
     return -1; // No selection made
 }
 
+int InputOptionsMenuSelection = 0;
+
+// Helper to move menu selection (0..4) with wrap-around
+static inline void moveInputOptionsMenuSelection(int delta) {
+    const int count = 4; // tab, window-size, fullscreen, back
+    VideoOptionsMenuSelection = (VideoOptionsMenuSelection + delta + count) % count;
+}
+
 void renderInputOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
@@ -1258,19 +1266,19 @@ void renderInputOptions() {
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
     optionsTitleTexture3.render(500, 20);
 
-    inputConfigKeyDirectionLabel.loadFromRenderedText("Move Keys < Arrow Keys >", {255,255,255,255});
+    inputConfigKeyDirectionLabel.loadFromRenderedText("*Select an option below to change binding*", {255,255,255,255});
     inputConfigKeyDirectionLabel.render(50, 60);
 
-    inputConfigHardDropLabel.loadFromRenderedText("Hard Drop (A) Select to change binding", {255,255,255,255});
+    inputConfigHardDropLabel.loadFromRenderedText("Hard Drop: (A) / (Space)", {255,255,255,255});
     inputConfigHardDropLabel.render(50, 100);
 
-    inputConfigHoldLabel.loadFromRenderedText("Hold (Left Bumper) Select to change binding", {255,255,255,255});
+    inputConfigHoldLabel.loadFromRenderedText("Hold: (Left Bumper) / (H)", {255,255,255,255});
     inputConfigHoldLabel.render(50, 140);
 
-    inputConfigRotateCWLabel.loadFromRenderedText("Rotate Clockwise (X) Select to change binding", {255,255,255,255});
+    inputConfigRotateCWLabel.loadFromRenderedText("Rotate Clockwise: (X) / (Up Arrow)", {255,255,255,255});
     inputConfigRotateCWLabel.render(50, 180);
 
-    inputConfigRotateCCWLabel.loadFromRenderedText("Rotate Counter Clockwise (B) Select to change binding", {255,255,255,255});
+    inputConfigRotateCCWLabel.loadFromRenderedText("Rotate Counter Clockwise: (B) ", {255,255,255,255});
     inputConfigRotateCCWLabel.render(50, 220);
 
 
@@ -1361,6 +1369,10 @@ void renderPauseMenu() {
 
     // Restore previous blend mode
     SDL_SetRenderDrawBlendMode(gRenderer, prevBlend);
+}
+
+int handleInputOptionsMenuEvent(const SDL_Event& e) {
+    return -1;
 }
 
 void quitToMenu() {
