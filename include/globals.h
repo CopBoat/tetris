@@ -181,6 +181,7 @@ static inline void moveGameOptionsMenuSelection(int);
 int handleGameOptionsMenuEvent(const SDL_Event&);
 
 extern int VideoOptionsMenuSelection;
+extern bool fullscreenEnabled;
 void renderVideoOptions();
 static inline void moveVideoOptionsMenuSelection(int);
 int handleVideoOptionsMenuEvent(const SDL_Event&);

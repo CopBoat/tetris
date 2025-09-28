@@ -43,8 +43,10 @@ int main( int argc, char* args[] )
     else //if everything initialized fine
     {
 
+        if (fullscreenEnabled) {SDL_SetWindowFullscreen(gWindow, true);}
+
         // Show splash screen (logo first, then text)
-        //showSplashScreen();
+        showSplashScreen();
         
         bool quit{ false }; //The quit flag
 
@@ -61,6 +63,8 @@ int main( int argc, char* args[] )
             while( SDL_PollEvent( &e ) == true ) //While there are events to handle
             {
                 if( e.type == SDL_EVENT_QUIT ) { quit = true; }
+
+              
 
                 // Double-click anywhere in the client area to toggle fullscreen
                 if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN &&
