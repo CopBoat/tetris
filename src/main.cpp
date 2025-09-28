@@ -80,6 +80,7 @@ int main( int argc, char* args[] )
                         case 0: // Start Game
                             currentState = GameState::PLAYING;
                             renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight);
+                            continue;
                             break;
                         case 1: // Options menu
                             currentState = GameState::OPTIONS;
