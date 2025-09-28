@@ -921,9 +921,11 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
             }
 
         } else if (e.key.key == SDLK_ESCAPE) {
+            GameOptionsMenuSelection = 0;
             return 4; // Return to main menu
         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-            return GameOptionsMenuSelection; // Return the selected option
+            GameOptionsMenuSelection = 0;
+            return 4; // Return the selected option
         }
     }
 
@@ -955,9 +957,11 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
                 placementPreviewSelection = (placementPreviewSelection - 1 + 3) % 3;
             }
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_EAST) {
+            GameOptionsMenuSelection = 0;
             return 4;
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-            return GameOptionsMenuSelection; // Return the selected option
+            GameOptionsMenuSelection = 0;
+            return 4; // Return the selected option
         } 
     }
 
@@ -1145,9 +1149,11 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                 toggleFullscreen();
             }
         } else if (e.key.key == SDLK_ESCAPE) {
+            VideoOptionsMenuSelection = 0;
             return 3; // Return to main menu
         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-            return VideoOptionsMenuSelection; // Return the selected option
+            VideoOptionsMenuSelection = 0;
+            return 3; // Return the selected option
         }
     }
 
@@ -1175,9 +1181,11 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                     toggleFullscreen();
                 }
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_EAST) {
+            VideoOptionsMenuSelection = 0;
             return 3;
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-            return VideoOptionsMenuSelection; // Return the selected option
+            VideoOptionsMenuSelection = 0;
+            return 3; // Return the selected option
         } 
     }
 
