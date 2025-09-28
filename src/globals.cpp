@@ -749,7 +749,7 @@ int handleMenuEvent(const SDL_Event& e) {
         if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
             moveMenuSelection(-1);
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
-            menuSelection = (menuSelection + 1) % 2;
+            moveMenuSelection(1);
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
             return menuSelection; // Return the selected option
         }
@@ -907,7 +907,6 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
                 spacing = blockGapValues[blockGapSelection];
             } else if (GameOptionsMenuSelection == 3) { // Placement preview
                 placementPreviewSelection = (placementPreviewSelection - 1 + 3) % 3;
-
             }
         } else if (e.key.key == SDLK_RIGHT) {
             if (GameOptionsMenuSelection == 0) { // Game tab
@@ -927,6 +926,100 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
             return GameOptionsMenuSelection; // Return the selected option
         }
     }
+
+    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+            moveGameOptionsMenuSelection(-1);
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
+            moveGameOptionsMenuSelection(1);
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) {
+            if (GameOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 1;
+            } else if (GameOptionsMenuSelection == 1) { // Grid lines
+                gridLinesEnabled = !gridLinesEnabled;
+            } else if (GameOptionsMenuSelection == 2) { // Block gap
+                blockGapSelection = (blockGapSelection + 1) % 4;
+                spacing = blockGapValues[blockGapSelection];
+            } else if (GameOptionsMenuSelection == 3) { // Placement preview
+                placementPreviewSelection = (placementPreviewSelection + 1) % 3;
+            }
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) {
+            if (GameOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 0;
+            } else if (GameOptionsMenuSelection == 1) { // Grid lines
+                gridLinesEnabled = !gridLinesEnabled;
+            } else if (GameOptionsMenuSelection == 2) { // Block gap
+                blockGapSelection = (blockGapSelection - 1 + 4) % 4;
+                spacing = blockGapValues[blockGapSelection];
+            } else if (GameOptionsMenuSelection == 3) { // Placement preview
+                placementPreviewSelection = (placementPreviewSelection - 1 + 3) % 3;
+            }
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_EAST) {
+            return 4;
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+            return GameOptionsMenuSelection; // Return the selected option
+        } 
+    }
+
+    // Analog stick up/down for menu
+    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
+        const int v = e.gaxis.value;
+        if (v <= -kAxisPress) {
+            if (!menuAxisUpHeld) {
+                moveGameOptionsMenuSelection(-1);
+                menuAxisUpHeld = true;
+                menuAxisDownHeld = false;
+            }
+        } else if (v >= kAxisPress) {
+            if (!menuAxisDownHeld) {
+                moveGameOptionsMenuSelection(1);
+                menuAxisDownHeld = true;
+                menuAxisUpHeld = false;
+            }
+        } else if (std::abs(v) < kAxisRelease) {
+            menuAxisUpHeld = false;
+            menuAxisDownHeld = false;
+        }
+    } 
+    
+    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
+        const int v = e.gaxis.value;
+        if (v <= -kAxisPress) {
+            if (!pauseAxisLeftHeld) {
+                if (GameOptionsMenuSelection == 0) { // Game tab
+                    optionsTab = 0;
+                } else if (GameOptionsMenuSelection == 1) { // Grid lines
+                    gridLinesEnabled = !gridLinesEnabled;
+                } else if (GameOptionsMenuSelection == 2) { // Block gap
+                    blockGapSelection = (blockGapSelection - 1 + 4) % 4;
+                    spacing = blockGapValues[blockGapSelection];
+                } else if (GameOptionsMenuSelection == 3) { // Placement preview
+                    placementPreviewSelection = (placementPreviewSelection - 1 + 3) % 3;
+                }
+                pauseAxisLeftHeld = true;
+                pauseAxisRightHeld = false;
+            }
+        } else if (v >= kAxisPress) {
+            if (!pauseAxisRightHeld) {
+                if (GameOptionsMenuSelection == 0) { // Game tab
+                    optionsTab = 1;
+                } else if (GameOptionsMenuSelection == 1) { // Grid lines
+                    gridLinesEnabled = !gridLinesEnabled;
+                } else if (GameOptionsMenuSelection == 2) { // Block gap
+                    blockGapSelection = (blockGapSelection + 1) % 4;
+                    spacing = blockGapValues[blockGapSelection];
+                } else if (GameOptionsMenuSelection == 3) { // Placement preview
+                    placementPreviewSelection = (placementPreviewSelection + 1) % 3;
+                }
+                pauseAxisRightHeld = true;
+                pauseAxisLeftHeld = false;
+            }
+        } else if (std::abs(v) < kAxisRelease) {
+            pauseAxisLeftHeld = false;
+            pauseAxisRightHeld = false;
+        }
+    }
+
     return -1; // No selection made
 }
 
@@ -934,7 +1027,7 @@ int VideoOptionsMenuSelection = 0;
 
 int WindowSizeMenuSelection = 0;
 
-bool fullscreenEnabled = false;
+bool fullscreenEnabled = true;
 
 //std::string windowSizes[] = {"Medium", "Large", "Small"};
 
