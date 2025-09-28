@@ -155,6 +155,7 @@ extern LTexture optionsPlacementPreviewLabel;
 extern LTexture optionsTitleTexture2;
 extern LTexture windowSizeLabel;
 extern LTexture fullscreenLabel;
+extern LTexture fullscreenTipLabel;
 
 
 extern LTexture optionsTitleTexture3;
@@ -179,7 +180,11 @@ void renderGameOptions();
 static inline void moveGameOptionsMenuSelection(int);
 int handleGameOptionsMenuEvent(const SDL_Event&);
 
+extern int VideoOptionsMenuSelection;
 void renderVideoOptions();
+static inline void moveVideoOptionsMenuSelection(int);
+int handleVideoOptionsMenuEvent(const SDL_Event&);
+
 void renderInputOptions();
 
 extern int pauseMenuSelection;

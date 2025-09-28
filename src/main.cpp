@@ -44,7 +44,7 @@ int main( int argc, char* args[] )
     {
 
         // Show splash screen (logo first, then text)
-        showSplashScreen();
+        //showSplashScreen();
         
         bool quit{ false }; //The quit flag
 
@@ -94,24 +94,29 @@ int main( int argc, char* args[] )
                     switch (optionsTab) {
                         case 0: { // Game // turns out i prob dont need a swtich here
                                     switch (handleGameOptionsMenuEvent(e)) {
-                                        case 0: // Game
-                                            // move menus
-                                            break;
-                                        case 1: 
-                                            break;
-                                        case 2: 
-                                            break;
-                                        case 3: 
-                                            break;
                                         case 4: // Back
                                             currentState = GameState::MENU;
                                             break;
                                         default:
                                             break;
                                     }
+
+                                    // if (handleGameOptionsMenuEvent(e) == 4 ) {
+                                    //     currentState == GameState::MENU;
+                                    // }
                                 }
                             break;
                         case 1: // Video
+                                switch (handleVideoOptionsMenuEvent(e)){
+                                    case 3: //back
+                                        currentState = GameState::MENU;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                // if (handleVideoOptionsMenuEvent(e) == 4) {
+                                //     currentState == GameState::MENU;
+                                // }
                             break;
                         case 2: // Input
                             break;

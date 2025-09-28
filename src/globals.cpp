@@ -16,7 +16,7 @@
 
 void showSplashScreen()
 {
-    SDL_Log("Showing splash screen...");
+    //SDL_Log("Showing splash screen...");
 
     // Load logo using SDL_image
     SDL_Texture* logoTex = IMG_LoadTexture(gRenderer, "/home/cop/Documents/programming/tetris/assets/splashLogo.png");
@@ -622,6 +622,7 @@ LTexture optionsPlacementPreviewLabel;
 LTexture optionsTitleTexture2;
 LTexture windowSizeLabel;
 LTexture fullscreenLabel;
+LTexture fullscreenTipLabel;
 
 
 LTexture optionsTitleTexture3;
@@ -650,6 +651,41 @@ void renderMenu() {
     const int winH = kScreenHeight;
     int rightX = winW - 250;
     int centerY = winH / 4;
+
+    //prepare logo texture
+    SDL_Texture* logoTex = IMG_LoadTexture(gRenderer, "/home/cop/Documents/programming/tetris/assets/Logo.png");
+    if (!logoTex) {
+        SDL_Log("Splash logo failed to load: %s", SDL_GetError());
+        return;
+    }
+
+    float texW = 0.0f, texH = 0.0f;
+    SDL_GetTextureSize(logoTex, &texW, &texH);
+    int logoW = static_cast<int>(texW);
+    int logoH = static_cast<int>(texH);
+
+    const float maxW = kScreenWidth * 0.6f;
+    const float maxH = kScreenHeight * 0.6f;
+    float scale = 1.0f;
+    if (logoW > 0 && logoH > 0) {
+        scale = std::min(maxW / logoW, maxH / logoH);
+        if (scale > 1.0f) scale = 1.0f;
+    }
+    int drawW = static_cast<int>(logoW * scale);
+    int drawH = static_cast<int>(logoH * scale);
+
+    SDL_FRect dstLogo = {
+        (kScreenWidth - drawW) * 0.5f,
+        (kScreenHeight - drawH) * 0.5f - 20.0f, // room for text
+        static_cast<float>(drawW),
+        static_cast<float>(drawH)
+    };
+
+    // Render
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(gRenderer);
+
+    SDL_RenderTexture(gRenderer, logoTex, nullptr, &dstLogo);
 
     // Prepare text first so widths/heights are valid
     titleTexture.loadFromRenderedText("TETRIS", {255,255,255,255});
@@ -691,7 +727,7 @@ void renderMenu() {
     SDL_RenderFillRect(gRenderer, &selectRect);
 
     // Draw
-    titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
+    //titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
     playTexture.render(xPlay, yPlay);
     optionsTexture.render(xOptions, yOptions);
     exitTexture.render(xExit, yExit);
@@ -894,6 +930,20 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
     return -1; // No selection made
 }
 
+int VideoOptionsMenuSelection = 0;
+
+int WindowSizeMenuSelection = 0;
+
+bool fullscreenEnabled = false;
+
+//std::string windowSizes[] = {"Medium", "Large", "Small"};
+
+// Helper to move menu selection (0..4) with wrap-around
+static inline void moveVideoOptionsMenuSelection(int delta) {
+    const int count = 4; // tab, window-size, fullscreen, back
+    VideoOptionsMenuSelection = (VideoOptionsMenuSelection + delta + count) % count;
+}
+
 void renderVideoOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
@@ -908,24 +958,109 @@ void renderVideoOptions() {
     const int yGame = centerY;
     const int yVideo = centerY;
     const int yInput = centerY;
-    
+    const int yWindowSize = centerY + 150;
+    const int yfullscreen = centerY + 250;
+    const int yfullscreenTip = centerY + 280;
+    const int yBack = centerY + 450;
 
+    //x positions
+    const int xGame = rightX - 60; //140
+    const int xVideo = rightX + 120; //380
+    const int xInput = rightX + 300; //500
+    const int xWindowSize = rightX - 150;
+    const int xfullscreen = rightX - 150;
+    const int xfullscreenTip = rightX - 150;
+    const int xBack = rightX - 150;
 
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
-    optionsTitleTexture.render(200, 20);
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
-    optionsTitleTexture2.render(350, 20);
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
-    optionsTitleTexture3.render(500, 20);
-
-    windowSizeLabel.loadFromRenderedText("Window Size < Standard >", {255,255,255,255});
-    windowSizeLabel.render(50, 100);
-
-    fullscreenLabel.loadFromRenderedText("Fullscreen < OFF >", {255,255,255,255});
-    fullscreenLabel.render(50, 140);
-    
+    windowSizeLabel.loadFromRenderedText( (WindowSizeMenuSelection == 0 ) ? "Window Size < Standard >"
+                                            : (WindowSizeMenuSelection == 1) ? "Window Size < Large >"
+                                            : "Window Size < Small >" , {255,255,255,255});
+    fullscreenLabel.loadFromRenderedText( (!fullscreenEnabled) ? "Fullscreen < OFF >"
+                                            : "Fullscreen < ON >", {255,255,255,255});
+    fullscreenTipLabel.loadFromRenderedText("*Toggle at any time by double clicking on the window*", {255,255,255,255});
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
-    backTexture.render(50, 400);
+
+    // Selection rectangle around the chosen option
+    const LTexture* selTex = (VideoOptionsMenuSelection == 0) ? &optionsTitleTexture2
+                           : (VideoOptionsMenuSelection == 1) ? &windowSizeLabel
+                           : (VideoOptionsMenuSelection == 2) ? &fullscreenLabel
+                           : &backTexture;
+    const int selX = (VideoOptionsMenuSelection == 0) ? xVideo
+                   : (VideoOptionsMenuSelection == 1) ? xWindowSize
+                   : (VideoOptionsMenuSelection == 2) ? xfullscreen
+                   : xBack;
+    const int selY = (VideoOptionsMenuSelection == 0) ? yVideo
+                   : (VideoOptionsMenuSelection == 1) ? yWindowSize
+                   : (VideoOptionsMenuSelection == 2) ? yfullscreen
+                   : yBack;
+
+    const int padX = 18;
+    const int padY = 10;
+    
+
+    //rect to show current tab
+    SDL_SetRenderDrawColor(gRenderer, 128, 128, 128, 70); 
+    SDL_FRect tabRect{302, 10, 89, 32};
+    SDL_RenderFillRect(gRenderer, &tabRect);
+    
+    SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
+    SDL_FRect selectRect{
+        static_cast<float>(selX - padX),
+        static_cast<float>(selY - padY),
+        static_cast<float>(selTex->getWidth() + padX * 2 - 2),
+        static_cast<float>(selTex->getHeight() + padY * 2 - 2)
+    };
+    SDL_RenderFillRect(gRenderer, &selectRect); 
+
+
+    //draw text
+    optionsTitleTexture.render(xGame, yGame);
+    optionsTitleTexture2.render(xVideo, yVideo);
+    optionsTitleTexture3.render(xInput, yInput);
+    windowSizeLabel.render(xWindowSize, yWindowSize);
+    fullscreenLabel.render(xfullscreen, yfullscreen);
+    fullscreenTipLabel.render(xfullscreenTip, yfullscreenTip);
+    backTexture.render(xBack, yBack);
+}
+
+int handleVideoOptionsMenuEvent(const SDL_Event& e) {
+    //handke keyboard input for menu navigation
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        if (e.key.key == SDLK_UP) {
+            moveVideoOptionsMenuSelection(-1);
+        } else if (e.key.key == SDLK_DOWN) {
+            moveVideoOptionsMenuSelection(1);
+        }else if (e.key.key == SDLK_LEFT) {
+            if (VideoOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 0;
+            } else if (VideoOptionsMenuSelection == 1) { // window size
+                WindowSizeMenuSelection = (WindowSizeMenuSelection - 1 + 3) % 3;
+            } else if (VideoOptionsMenuSelection == 2) { // full screen
+                fullscreenEnabled = !fullscreenEnabled;
+                toggleFullscreen();
+            }
+                
+            
+        } else if (e.key.key == SDLK_RIGHT) {
+            if (VideoOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 2;
+            } else if (VideoOptionsMenuSelection == 1) { // window size
+                WindowSizeMenuSelection = (WindowSizeMenuSelection + 1) % 3;
+            } else if (VideoOptionsMenuSelection == 2) { // full screen
+                fullscreenEnabled = !fullscreenEnabled;
+                toggleFullscreen();
+            }
+
+        } else if (e.key.key == SDLK_ESCAPE) {
+            return 3; // Return to main menu
+        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+            return VideoOptionsMenuSelection; // Return the selected option
+        }
+    }
+    return -1; // No selection made
 }
 
 void renderInputOptions() {
