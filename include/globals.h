@@ -186,7 +186,10 @@ void renderVideoOptions();
 static inline void moveVideoOptionsMenuSelection(int);
 int handleVideoOptionsMenuEvent(const SDL_Event&);
 
+extern int InputOptionsMenuSelection;
 void renderInputOptions();
+static inline void moveInputOptionsMenuSelection(int);
+int handleInputOptionsMenuEvent(const SDL_Event&);
 
 extern int pauseMenuSelection;
 void renderPauseMenu();
