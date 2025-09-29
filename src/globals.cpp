@@ -1249,9 +1249,9 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
 
 int InputOptionsMenuSelection = 0;
 
-// Helper to move menu selection (0..4) with wrap-around
+// Helper to move menu selection (0..5) with wrap-around
 static inline void moveInputOptionsMenuSelection(int delta) {
-    const int count = 4; // tab, window-size, fullscreen, back
+    const int count = 6; // tab, window-size, fullscreen, back
     VideoOptionsMenuSelection = (VideoOptionsMenuSelection + delta + count) % count;
 }
 
@@ -1259,32 +1259,119 @@ void renderInputOptions() {
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
+    // Use logical size for layout; renderer scales to window
+    const int winW = kScreenWidth;
+    const int winH = kScreenHeight;
+    int rightX = winW / 3.2;
+    int centerY = winH / 32;
+
+    //row positions
+    const int yGame = centerY;
+    const int yVideo = centerY;
+    const int yInput = centerY;
+    const int yKeyDir = centerY + 150;
+    const int yHardDrop = centerY + 200;
+    const int yHold = centerY + 250;
+    const int yRCW = centerY + 300;
+    const int yRCCW = centerY + 350;
+    const int yBack = centerY + 450;
+
+    //x positions
+    const int xGame = rightX - 60; //140
+    const int xVideo = rightX + 120; //380
+    const int xInput = rightX + 300; //500
+    const int xKeyDir = rightX - 150;
+    const int xHardDrop = rightX - 150;
+    const int xHold = rightX - 150;
+    const int xRCW = rightX - 150;
+    const int xRCCW = rightX - 150;
+    const int xBack = rightX - 150;
+
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
-    optionsTitleTexture.render(200, 20);
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
-    optionsTitleTexture2.render(350, 20);
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
-    optionsTitleTexture3.render(500, 20);
-
     inputConfigKeyDirectionLabel.loadFromRenderedText("*Select an option below to change binding*", {255,255,255,255});
-    inputConfigKeyDirectionLabel.render(50, 60);
-
-    inputConfigHardDropLabel.loadFromRenderedText("Hard Drop: (A) / (Space)", {255,255,255,255});
-    inputConfigHardDropLabel.render(50, 100);
-
-    inputConfigHoldLabel.loadFromRenderedText("Hold: (Left Bumper) / (H)", {255,255,255,255});
-    inputConfigHoldLabel.render(50, 140);
-
-    inputConfigRotateCWLabel.loadFromRenderedText("Rotate Clockwise: (X) / (Up Arrow)", {255,255,255,255});
-    inputConfigRotateCWLabel.render(50, 180);
-
-    inputConfigRotateCCWLabel.loadFromRenderedText("Rotate Counter Clockwise: (B) ", {255,255,255,255});
-    inputConfigRotateCCWLabel.render(50, 220);
-
-
-
+    inputConfigHardDropLabel.loadFromRenderedText("Hard Drop: (A) <> (Space)", {255,255,255,255});
+    inputConfigHoldLabel.loadFromRenderedText("Hold: (Left Bumper) <> (H)", {255,255,255,255});
+    inputConfigRotateCWLabel.loadFromRenderedText("Rotate Clockwise: (X) <> (Up Arrow)", {255,255,255,255});
+    inputConfigRotateCCWLabel.loadFromRenderedText("Rotate Counter Clockwise: (B) <> Left CTRL", {255,255,255,255});
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
-    backTexture.render(200, 400);
+
+    // Selection rectangle around the chosen option
+    const LTexture* selTex = (VideoOptionsMenuSelection == 0) ? &optionsTitleTexture3
+                           : (VideoOptionsMenuSelection == 1) ? &inputConfigHardDropLabel
+                           : (VideoOptionsMenuSelection == 2) ? &inputConfigHoldLabel
+                           : (VideoOptionsMenuSelection == 3) ? &inputConfigRotateCWLabel
+                           : (VideoOptionsMenuSelection == 4) ? &inputConfigRotateCCWLabel
+                           : &backTexture;
+    const int selX = (VideoOptionsMenuSelection == 0) ? xInput
+                   : (VideoOptionsMenuSelection == 1) ? xHardDrop
+                   : (VideoOptionsMenuSelection == 2) ? xHold
+                   : (VideoOptionsMenuSelection == 3) ? xRCW
+                   : (VideoOptionsMenuSelection == 4) ? xRCCW
+                   : xBack;
+    const int selY = (VideoOptionsMenuSelection == 0) ? yInput
+                   : (VideoOptionsMenuSelection == 1) ? yHardDrop
+                   : (VideoOptionsMenuSelection == 2) ? yHold
+                   : (VideoOptionsMenuSelection == 3) ? yRCW
+                   : (VideoOptionsMenuSelection == 4) ? yRCCW
+                   : yBack;
+
+    const int padX = 18;
+    const int padY = 10;
+    
+
+    //rect to show current tab
+    SDL_SetRenderDrawColor(gRenderer, 128, 128, 128, 70); 
+    SDL_FRect tabRect{482, 10, 89, 32};
+    SDL_RenderFillRect(gRenderer, &tabRect);
+    
+    SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
+    SDL_FRect selectRect{
+        static_cast<float>(selX - padX),
+        static_cast<float>(selY - padY),
+        static_cast<float>(selTex->getWidth() + padX * 2 - 2),
+        static_cast<float>(selTex->getHeight() + padY * 2 - 2)
+    };
+    SDL_RenderFillRect(gRenderer, &selectRect); 
+
+    //draw text
+    optionsTitleTexture.render(xGame, yGame);
+    optionsTitleTexture2.render(xVideo, yVideo);
+    optionsTitleTexture3.render(xInput, yInput);
+    inputConfigKeyDirectionLabel.render(xKeyDir, yKeyDir);
+    inputConfigHardDropLabel.render(xHardDrop, yHardDrop);
+    inputConfigHoldLabel.render(xHold, yHold);
+    inputConfigRotateCWLabel.render(xRCW, yRCW);
+    inputConfigRotateCCWLabel.render(xRCCW, yRCCW);
+    backTexture.render(xBack, yBack);
+}
+
+int handleInputOptionsMenuEvent(const SDL_Event& e) {
+    //handke keyboard input for menu navigation
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        if (e.key.key == SDLK_UP) {
+            moveInputOptionsMenuSelection(-1);
+        } else if (e.key.key == SDLK_DOWN) {
+            moveInputOptionsMenuSelection(1);
+        }else if (e.key.key == SDLK_LEFT) {
+            if (VideoOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 1;
+            }
+        } else if (e.key.key == SDLK_RIGHT) {
+            if (VideoOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 0;
+            } 
+        } else if (e.key.key == SDLK_ESCAPE) {
+            VideoOptionsMenuSelection = 0;
+            return 3; // Return to main menu
+        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+            VideoOptionsMenuSelection = 0;
+            return 3; // Return the selected option
+        }
+    }
+
+    return -1;
 }
 
 int pauseMenuSelection = 0;
@@ -1369,10 +1456,6 @@ void renderPauseMenu() {
 
     // Restore previous blend mode
     SDL_SetRenderDrawBlendMode(gRenderer, prevBlend);
-}
-
-int handleInputOptionsMenuEvent(const SDL_Event& e) {
-    return -1;
 }
 
 void quitToMenu() {
