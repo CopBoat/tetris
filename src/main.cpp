@@ -139,8 +139,10 @@ int main( int argc, char* args[] )
                             pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2;
                         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) {
                             pauseMenuSelection = (pauseMenuSelection + 1) % 2;
+                        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_START) {
+                            currentState = GameState::PLAYING; pauseMenuSelection = 0; continue;
                         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; continue; }
+                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; pauseMenuSelection = 0; continue; }
                             else if (pauseMenuSelection == 1) { currentState = GameState::MENU; quitToMenu(); }
                         }
                     }
@@ -149,11 +151,11 @@ int main( int argc, char* args[] )
                             pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2;
                         } else if (e.key.key == SDLK_RIGHT) {
                             pauseMenuSelection = (pauseMenuSelection + 1) % 2;
-                        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; continue; }
-                            else if (pauseMenuSelection == 1) { currentState = GameState::MENU; quitToMenu(); }
                         } else if (e.key.key == SDLK_ESCAPE) {
-                            currentState = GameState::PLAYING;
+                            currentState = GameState::PLAYING; pauseMenuSelection = 0; continue;
+                        } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+                            if (pauseMenuSelection == 0) { currentState = GameState::PLAYING; pauseMenuSelection = 0; continue; }
+                            else if (pauseMenuSelection == 1) { currentState = GameState::MENU; quitToMenu(); }
                         }
                     }
                     // Analog stick left/right for pause menu

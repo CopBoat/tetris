@@ -1480,6 +1480,7 @@ void quitToMenu() {
     score.loadFromRenderedText(std::to_string(scoreValue), { 0xFF, 0xFF, 0xFF, 0xFF });
     level.loadFromRenderedText(std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF });
     newPiece = false;
+    pauseMenuSelection = 0;
 }
 
 void renderWipeIntro(SDL_Renderer* renderer, int screenWidth, int screenHeight) {
