@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Checking for SDL3, SDL3_image, and SDL3_ttf..."
+
+# Check for SDL3
+if ! pkg-config --exists sdl3; then
+    echo "SDL3 not found. Attempting to install..."
+    # Installation code (depends on distro)
+    if [[ "$(uname)" == "Linux" ]]; then
+        if [ -f /etc/os-release ]; then
+            . /etc/os-release
+            distro=$ID
+        else
+            echo "Could not detect Linux distribution."
+            exit 1
+        fi
+
+        case "$distro" in
+            arch|manjaro)
+                yay -S --noconfirm sdl3 sdl3_image sdl3_ttf
+                ;;
+            ubuntu|debian)
+                sudo apt update
+                sudo apt install -y libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev
+                ;;
+            *)
+                echo "Unsupported distribution: $distro"
+                exit 1
+                ;;
+        esac
+    fi
+else
+    echo "SDL3 is already installed."
+fi
+
+# Create a build directory and run cmake
+echo "Creating build directory and configuring project..."
+mkdir -p build
+cd build
+cmake ..
+
+# Compile the project
+echo "Building the project..."
+make
+
+# Run the program
+echo "Running the game..."
+if command -v gamemoderun >/dev/null 2>&1; then
+    gamemoderun ./tetris
+else
+    ./tetris
+fi
+cd ..
