@@ -1,8 +1,10 @@
 #include "globals.h"
 #include "ltimer.h"
-#include"tetris_utils.h"
+#include "tetris_utils.h"
 #include "tPieceIcon.h"
 #include "Pixeboy_ttf.h"
+#include "splashLogo.h"
+#include "Logo.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3_image/SDL_image.h>
@@ -19,7 +21,14 @@ void showSplashScreen()
     //SDL_Log("Showing splash screen...");
 
     // Load logo using SDL_image
-    SDL_Texture* logoTex = IMG_LoadTexture(gRenderer, "/home/cop/Documents/programming/tetris/assets/splashLogo.png");
+    SDL_Texture* logoTex = nullptr;
+    SDL_IOStream* io_stream = SDL_IOFromMem(assets_splashLogo_png, assets_splashLogo_png_len);
+    SDL_Surface* splashSurface = IMG_Load_IO(io_stream, 1); // 1 = auto free rw
+    if (splashSurface != nullptr) {
+        logoTex = SDL_CreateTextureFromSurface(gRenderer, splashSurface);
+        SDL_DestroySurface(splashSurface);
+    }
+    
     if (!logoTex) {
         SDL_Log("Splash logo failed to load: %s", SDL_GetError());
         return;
@@ -652,10 +661,17 @@ void renderMenu() {
     int rightX = winW - 250;
     int centerY = winH / 4;
 
-    //prepare logo texture
-    SDL_Texture* logoTex = IMG_LoadTexture(gRenderer, "/home/cop/Documents/programming/tetris/assets/Logo.png");
+    // Load logo using SDL_image
+    SDL_Texture* logoTex = nullptr;
+    SDL_IOStream* io_stream = SDL_IOFromMem(assets_Logo_png, assets_Logo_png_len);
+    SDL_Surface* logoSurface = IMG_Load_IO(io_stream, 1); // 1 = auto free rw
+    if (logoSurface != nullptr) {
+        logoTex = SDL_CreateTextureFromSurface(gRenderer, logoSurface);
+        SDL_DestroySurface(logoSurface);
+    }
+
     if (!logoTex) {
-        SDL_Log("Splash logo failed to load: %s", SDL_GetError());
+        SDL_Log("Menu logo failed to load: %s", SDL_GetError());
         return;
     }
 
