@@ -256,6 +256,11 @@ bool init(std::string title)
             }
             //SDL_SetRenderScaleMode(gRenderer, SDL_SCALEMODE_NEAREST);
 
+            const float aspect = static_cast<float>(kScreenWidth) / static_cast<float>(kScreenHeight);
+            if (!SDL_SetWindowAspectRatio(gWindow, aspect, aspect)) {
+                SDL_Log("Could not set window aspect ratio: %s", SDL_GetError());
+            }
+
             // Add this block to set the window icon
             //SDL_Surface* iconSurface = IMG_Load("assets/tPieceIcon.png"); // Use your icon file path
             SDL_IOStream* io_stream = SDL_IOFromMem(assets_tPieceIcon_png, assets_tPieceIcon_png_len);
@@ -368,6 +373,14 @@ void toggleFullscreen() {
     const bool isFullscreen = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN) != 0;
     SDL_SetWindowFullscreen(gWindow, !isFullscreen);
     ApplyFullscreenCursorState();
+
+    // Disable aspect lock in fullscreen; re-enable in windowed
+    // const float aspect = static_cast<float>(kScreenWidth) / static_cast<float>(kScreenHeight);
+    // if (isFullscreen) {
+    //     SDL_SetWindowAspectRatio(gWindow, 0.0f, 0.0f); // no constraint
+    // } else {
+    //     SDL_SetWindowAspectRatio(gWindow, aspect, aspect); // lock ratio
+    // }
 }
 
 void renderUI() {
