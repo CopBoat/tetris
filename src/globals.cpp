@@ -1261,6 +1261,7 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                 optionsTab = 2;
             } else if (VideoOptionsMenuSelection == 1) { // window size
                 WindowSizeMenuSelection = (WindowSizeMenuSelection + 1) % 3;
+                applyWindowSize(WindowSizeMenuSelection);
             } else if (VideoOptionsMenuSelection == 2) { // full screen
                 fullscreenEnabled = !fullscreenEnabled;
                 toggleFullscreen();
@@ -1270,6 +1271,7 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                     optionsTab = 0;
                 } else if (VideoOptionsMenuSelection == 1) { // window size
                     WindowSizeMenuSelection = (WindowSizeMenuSelection - 1 + 3) % 3;
+                    applyWindowSize(WindowSizeMenuSelection);
                 } else if (VideoOptionsMenuSelection == 2) { // full screen
                     fullscreenEnabled = !fullscreenEnabled;
                     toggleFullscreen();
@@ -1312,6 +1314,7 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                     optionsTab = 0;
                 } else if (VideoOptionsMenuSelection == 1) { // window size
                     WindowSizeMenuSelection = (WindowSizeMenuSelection - 1 + 3) % 3;
+                    applyWindowSize(WindowSizeMenuSelection);
                 } else if (VideoOptionsMenuSelection == 2) { // full screen
                     fullscreenEnabled = !fullscreenEnabled;
                     toggleFullscreen();
@@ -1325,6 +1328,7 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                     optionsTab = 2;
                 } else if (VideoOptionsMenuSelection == 1) { // window size
                     WindowSizeMenuSelection = (WindowSizeMenuSelection + 1) % 3;
+                    applyWindowSize(WindowSizeMenuSelection);
                 } else if (VideoOptionsMenuSelection == 2) { // full screen
                     fullscreenEnabled = !fullscreenEnabled;
                     toggleFullscreen();
