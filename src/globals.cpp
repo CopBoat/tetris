@@ -223,6 +223,44 @@ bool loadMedia()
     return success;
 }
 
+int kScreenWidthStandard = 800;
+int kScreenHeightStandard = 800;
+
+int kScreenWidthSmall = 640;
+int kScreenHeightSmall = 640;
+
+int kScreenWidthLarge = 960;
+int kScreenHeightLarge = 960;
+
+static void SetScreenSizeFromDesktop() {
+    SDL_DisplayID display = SDL_GetPrimaryDisplay();
+    const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(display);
+    if (!mode) {
+        SDL_Log("GetDesktopDisplayMode failed: %s", SDL_GetError());
+        return;
+    }
+    const int desktopH = (int)mode->h;
+    if (desktopH <= 0) return;
+
+     float scale = 1080.0f / desktopH ;
+    if (scale < 1.0f) {
+        scale = 1.0f;
+    }
+
+    kScreenWidthStandard = (int)(800 * scale);
+    kScreenHeightStandard = (int)(800 * scale);
+
+    kScreenWidthSmall = (int)(640 * scale);
+    kScreenHeightSmall = (int)(640 * scale);
+
+    kScreenWidthLarge = (int)(960 * scale);
+    kScreenHeightLarge = (int)(960 * scale);
+
+    SDL_Log("Set standard window size to %dx%d (monitor resolution %dx%d, calculated scale %.2f)", kScreenWidth, kScreenHeight, (int)mode->w, (int)mode->h, scale);
+    SDL_Log("Set small window size to %dx%d", kScreenWidthSmall, kScreenHeightSmall);
+    SDL_Log("Set large window size to %dx%d", kScreenWidthLarge, kScreenHeightLarge);
+}
+
 bool init(std::string title)
 {
     bool success{ true };
@@ -243,6 +281,9 @@ bool init(std::string title)
     }
     else
     {
+
+        
+
         if( SDL_CreateWindowAndRenderer( title.c_str(), kScreenWidth, kScreenHeight, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer ) == false )
         {
             SDL_Log( "Window could not be created! SDL error: %s\n", SDL_GetError() );
@@ -299,6 +340,10 @@ bool init(std::string title)
             
         }
     }
+
+    SetScreenSizeFromDesktop();
+    SDL_SetWindowSize(gWindow, kScreenWidthStandard, kScreenHeightStandard);
+
     return success;
 }
 
@@ -1060,9 +1105,27 @@ int VideoOptionsMenuSelection = 0;
 
 int WindowSizeMenuSelection = 0;
 
-bool fullscreenEnabled = true;
+bool fullscreenEnabled = false;
 
-//std::string windowSizes[] = {"Medium", "Large", "Small"};
+void applyWindowSize(int selection) {
+
+    if (fullscreenEnabled) {
+        toggleFullscreen();
+        fullscreenEnabled = false; 
+    }
+
+    // Center the window on screen after resizing
+    //SDL_SetWindowPosition(gWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+    if (WindowSizeMenuSelection == 0) { // Standard
+        SDL_SetWindowSize(gWindow, kScreenWidthStandard, kScreenHeightStandard);
+    } else if (WindowSizeMenuSelection == 1) { // Large
+        SDL_SetWindowSize(gWindow, kScreenWidthLarge, kScreenHeightLarge);
+    } else if (WindowSizeMenuSelection == 2) { // Small
+        SDL_SetWindowSize(gWindow, kScreenWidthSmall, kScreenHeightSmall);
+    }
+    
+}
 
 // Helper to move menu selection (0..4) with wrap-around
 static inline void moveVideoOptionsMenuSelection(int delta) {
@@ -1164,6 +1227,7 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                 optionsTab = 0;
             } else if (VideoOptionsMenuSelection == 1) { // window size
                 WindowSizeMenuSelection = (WindowSizeMenuSelection - 1 + 3) % 3;
+                applyWindowSize(WindowSizeMenuSelection);
             } else if (VideoOptionsMenuSelection == 2) { // full screen
                 fullscreenEnabled = !fullscreenEnabled;
                 toggleFullscreen();
@@ -1173,6 +1237,7 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
                 optionsTab = 2;
             } else if (VideoOptionsMenuSelection == 1) { // window size
                 WindowSizeMenuSelection = (WindowSizeMenuSelection + 1) % 3;
+                applyWindowSize(WindowSizeMenuSelection);
             } else if (VideoOptionsMenuSelection == 2) { // full screen
                 fullscreenEnabled = !fullscreenEnabled;
                 toggleFullscreen();

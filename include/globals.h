@@ -26,6 +26,15 @@ void renderParticles();
 
 int drawPieceIndex();
 
+extern int kScreenWidthStandard;
+extern int kScreenHeightStandard;
+
+extern int kScreenWidthSmall;
+extern int kScreenHeightSmall;
+
+extern int kScreenWidthLarge;
+extern int kScreenHeightLarge;
+
 constexpr int kScreenWidth{ 640 };
 constexpr int kScreenHeight{ 640 };
 constexpr int kScreenFps{ 60 };
