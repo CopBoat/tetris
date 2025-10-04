@@ -372,6 +372,7 @@ void toggleFullscreen() {
     const bool isFullscreen = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN) != 0;
     SDL_SetWindowFullscreen(gWindow, !isFullscreen);
     ApplyFullscreenCursorState();
+    fullscreenEnabled = !isFullscreen;
 
     // Disable aspect lock in fullscreen; re-enable in windowed
     // const float aspect = static_cast<float>(kScreenWidth) / static_cast<float>(kScreenHeight);
