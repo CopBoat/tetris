@@ -1684,6 +1684,73 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
         }
     }
 
+    if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+            moveInputOptionsMenuSelection(-1);
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
+            moveInputOptionsMenuSelection(1);
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) {
+            if (VideoOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 0;
+            } 
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) {
+            if (VideoOptionsMenuSelection == 0) { // Game tab
+                optionsTab = 1;
+            }
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_EAST) {
+            VideoOptionsMenuSelection = 0;
+            return 3;
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+            VideoOptionsMenuSelection = 0;
+            return 3; // Return the selected option
+        } 
+    }
+
+    // Analog stick up/down for menu
+    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
+        const int v = e.gaxis.value;
+        if (v <= -kAxisPress) {
+            if (!menuAxisUpHeld) {
+                moveInputOptionsMenuSelection(-1);
+                menuAxisUpHeld = true;
+                menuAxisDownHeld = false;
+            }
+        } else if (v >= kAxisPress) {
+            if (!menuAxisDownHeld) {
+                moveInputOptionsMenuSelection(1);
+                menuAxisDownHeld = true;
+                menuAxisUpHeld = false;
+            }
+        } else if (std::abs(v) < kAxisRelease) {
+            menuAxisUpHeld = false;
+            menuAxisDownHeld = false;
+        }
+    } 
+    
+    if (e.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && e.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX) {
+        const int v = e.gaxis.value;
+        if (v <= -kAxisPress) {
+            if (!pauseAxisLeftHeld) {
+                if (GameOptionsMenuSelection == 0) { // Game tab
+                    optionsTab = 1;
+                } 
+                pauseAxisLeftHeld = true;
+                pauseAxisRightHeld = false;
+            }
+        } else if (v >= kAxisPress) {
+            if (!pauseAxisRightHeld) {
+                if (GameOptionsMenuSelection == 0) { // Game tab
+                    optionsTab = 0;
+                }
+                pauseAxisRightHeld = true;
+                pauseAxisLeftHeld = false;
+            }
+        } else if (std::abs(v) < kAxisRelease) {
+            pauseAxisLeftHeld = false;
+            pauseAxisRightHeld = false;
+        }
+    }
+
     return -1;
 }
 
