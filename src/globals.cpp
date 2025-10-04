@@ -384,6 +384,8 @@ void close()
         }
     }
 
+    destroyMenuLogoTexture();
+
     //Destroy window
     SDL_DestroyRenderer( gRenderer );
     gRenderer = nullptr;
@@ -708,76 +710,170 @@ static inline void moveMenuSelection(int delta) {
     menuSelection = (menuSelection + delta + count) % count;
 }
 
-void renderMenu() {
-    // Clear screen
-    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(gRenderer);
 
-    // Use logical size for layout; renderer scales to window
-    const int winW = kScreenWidth;
-    const int winH = kScreenHeight;
-    int rightX = winW - 250;
-    int centerY = winH / 4;
+// ---- Menu background bouncing pieces ----
+struct MenuBouncePiece {
+    const Piece* piece;
+    float x, y;
+    float vx, vy;
+    float rot;       // (optional, not used for shape yet)
+    float alpha;
+    SDL_Color color;
+    float cellSize;
+};
 
-    // Load logo using SDL_image
-    SDL_Texture* logoTex = nullptr;
+static std::vector<MenuBouncePiece> gMenuPieces;
+static bool gMenuPiecesInit = false;
+static SDL_Texture* gMenuLogoTex = nullptr;
+
+static SDL_Color kMenuColors[] = {
+    {  80, 200, 255, 90},
+    { 255, 210,  60, 90},
+    { 200, 120, 255, 90},
+    { 255, 140, 140, 90},
+    { 140, 255, 160, 90},
+    { 255, 100, 200, 90},
+    { 120, 220, 120, 90},
+};
+
+static const Piece* kAllPiecesPtr[] = {
+    &iPiece,&oPiece,&tPiece,&lPiece,&jPiece,&sPiece,&zPiece
+};
+
+static void initMenuBackgroundPieces() {
+    gMenuPieces.clear();
+    int count = 14;
+    std::uniform_real_distribution<float> sx(30.f, kScreenWidth - 150.f);
+    std::uniform_real_distribution<float> sy(20.f, kScreenHeight - 200.f);
+    std::uniform_real_distribution<float> sv(-70.f, 70.f);
+    std::uniform_real_distribution<float> sc(18.f, 30.f);
+
+    for (int i = 0; i < count; ++i) {
+        const Piece* p = kAllPiecesPtr[i % 7];
+        MenuBouncePiece mb{
+            p,
+            sx(rng), sy(rng),
+            0.f, 0.f,
+            0.f,
+            1.f,
+            kMenuColors[i % 7],
+            sc(rng)
+        };
+        // ensure non-zero velocity
+        mb.vx = (sv(rng) >= 0 ? sv(rng) + 20.f : sv(rng) - 20.f);
+        mb.vy = (sv(rng) >= 0 ? sv(rng) + 20.f : sv(rng) - 20.f);
+        gMenuPieces.push_back(mb);
+    }
+    gMenuPiecesInit = true;
+}
+
+static void updateMenuBackgroundPieces(float dt) {
+    for (auto& m : gMenuPieces) {
+        m.x += m.vx * dt;
+        m.y += m.vy * dt;
+
+        float w = m.piece->width * m.cellSize;
+        float h = m.piece->height * m.cellSize;
+
+        if (m.x < 0.f) { m.x = 0.f; m.vx = -m.vx; }
+        if (m.x + w > kScreenWidth) { m.x = kScreenWidth - w; m.vx = -m.vx; }
+        if (m.y < 0.f) { m.y = 0.f; m.vy = -m.vy; }
+        if (m.y + h > kScreenHeight) { m.y = kScreenHeight - h; m.vy = -m.vy; }
+    }
+}
+
+static void renderMenuBackgroundPieces() {
+    for (auto& m : gMenuPieces) {
+        SDL_SetRenderDrawColor(gRenderer, m.color.r, m.color.g, m.color.b, m.color.a);
+        for (int yy = 0; yy < m.piece->height; ++yy) {
+            for (int xx = 0; xx < m.piece->width; ++xx) {
+                if (m.piece->shape[yy][xx]) {
+                    SDL_FRect r{
+                        m.x + xx * m.cellSize,
+                        m.y + yy * m.cellSize,
+                        m.cellSize - 2.f,
+                        m.cellSize - 2.f
+                    };
+                    SDL_RenderFillRect(gRenderer, &r);
+                }
+            }
+        }
+    }
+}
+
+// Lazy-load and cache logo texture (avoid per-frame load cost)
+static SDL_Texture* getMenuLogoTexture() {
+    if (gMenuLogoTex) return gMenuLogoTex;
     SDL_IOStream* io_stream = SDL_IOFromMem(assets_Logo_png, assets_Logo_png_len);
-    SDL_Surface* logoSurface = IMG_Load_IO(io_stream, 1); // 1 = auto free rw
-    if (logoSurface != nullptr) {
-        logoTex = SDL_CreateTextureFromSurface(gRenderer, logoSurface);
+    SDL_Surface* logoSurface = IMG_Load_IO(io_stream, 1);
+    if (logoSurface) {
+        gMenuLogoTex = SDL_CreateTextureFromSurface(gRenderer, logoSurface);
         SDL_DestroySurface(logoSurface);
     }
+    return gMenuLogoTex;
+}
 
-    if (!logoTex) {
-        SDL_Log("Menu logo failed to load: %s", SDL_GetError());
-        return;
+// Call when quitting app
+static void destroyMenuLogoTexture() {
+    if (gMenuLogoTex) {
+        SDL_DestroyTexture(gMenuLogoTex);
+        gMenuLogoTex = nullptr;
     }
+}
 
-    float texW = 0.0f, texH = 0.0f;
-    SDL_GetTextureSize(logoTex, &texW, &texH);
-    int logoW = static_cast<int>(texW);
-    int logoH = static_cast<int>(texH);
+void renderMenu() {
 
-    const float maxW = kScreenWidth * 0.6f;
-    const float maxH = kScreenHeight * 0.6f;
-    float scale = 1.0f;
-    if (logoW > 0 && logoH > 0) {
-        scale = std::min(maxW / logoW, maxH / logoH);
-        if (scale > 1.0f) scale = 1.0f;
-    }
-    int drawW = static_cast<int>(logoW * scale);
-    int drawH = static_cast<int>(logoH * scale);
-
-    SDL_FRect dstLogo = {
-        (kScreenWidth - drawW) * 0.5f,
-        (kScreenHeight - drawH) * 0.5f - 20.0f, // room for text
-        static_cast<float>(drawW),
-        static_cast<float>(drawH)
-    };
-
-    // Render
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
-    SDL_RenderTexture(gRenderer, logoTex, nullptr, &dstLogo);
 
-    // Prepare text first so widths/heights are valid
+    // static Uint64 lastTicks = SDL_GetTicksNS();
+    // Uint64 now = SDL_GetTicksNS();
+    // float dt = (now - lastTicks) / 1'000'000'000.0f;
+    // if (dt > 0.05f) dt = 0.05f;
+    // lastTicks = now;
+
+    // if (!gMenuPiecesInit) initMenuBackgroundPieces();
+
+    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    // SDL_RenderClear(gRenderer);
+
+    // updateMenuBackgroundPieces(dt);
+    // renderMenuBackgroundPieces();
+
+    SDL_Texture* logoTex = getMenuLogoTexture();
+    if (logoTex) {
+        float texW=0.f, texH=0.f;
+        SDL_GetTextureSize(logoTex, &texW, &texH);
+        float maxW = kScreenWidth * 0.55f;
+        float maxH = kScreenHeight * 0.35f;
+        float scale = std::min(maxW / texW, maxH / texH);
+        SDL_FRect dst{
+            (kScreenWidth - texW * scale) * 0.3f,
+            kScreenHeight * 0.12f,
+            texW * scale,
+            texH * scale
+        };
+        SDL_RenderTexture(gRenderer, logoTex, nullptr, &dst);
+    }
+
+    // Textures regenerated each frame (quick, but could be cached)
     titleTexture.loadFromRenderedText("TETRIS", {255,255,255,255});
     playTexture.loadFromRenderedText("Play", {255,255,255,255});
     optionsTexture.loadFromRenderedText("Options", {255,255,255,255});
     exitTexture.loadFromRenderedText("Exit", {255,255,255,255});
 
-    // Row positions
-    const int yPlay    = centerY + 60;
-    const int yOptions = centerY + 110;
-    const int yExit    = centerY + 160;
+    int rightX = kScreenWidth - 250;
+    int centerY = kScreenHeight / 2;
 
-    // X positions (kept similar to your existing offsets)
+    const int yPlay    = centerY - 10;
+    const int yOptions = centerY + 40;
+    const int yExit    = centerY + 90;
+
     const int xPlay    = rightX;
     const int xOptions = rightX - 15;
     const int xExit    = rightX - 5;
 
-    // Selection rectangle around the chosen option
     const LTexture* selTex = (menuSelection == 0) ? &playTexture
                            : (menuSelection == 1) ? &optionsTexture
                            : &exitTexture;
@@ -788,20 +884,15 @@ void renderMenu() {
                    : (menuSelection == 1) ? yOptions
                    : yExit;
 
-    const int padX = 18;
-    const int padY = 10;
-
-    SDL_SetRenderDrawColor(gRenderer, 49, 117, 73, 70);
+    SDL_SetRenderDrawColor(gRenderer, 49,117,73,95);
     SDL_FRect selectRect{
-        static_cast<float>(selX - padX),
-        static_cast<float>(selY - padY),
-        static_cast<float>(selTex->getWidth() + padX * 2 - 2),
-        static_cast<float>(selTex->getHeight() + padY * 2 - 2)
+        (float)(selX - 18),
+        (float)(selY - 10),
+        (float)(selTex->getWidth() + 36),
+        (float)(selTex->getHeight() + 20)
     };
     SDL_RenderFillRect(gRenderer, &selectRect);
 
-    // Draw
-    //titleTexture.render(rightX-250, centerY-100, nullptr, 160, 100);
     playTexture.render(xPlay, yPlay);
     optionsTexture.render(xOptions, yOptions);
     exitTexture.render(xExit, yExit);
@@ -878,8 +969,23 @@ static inline void moveGameOptionsMenuSelection(int delta) {
 }
 
 void renderGameOptions() {
+    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    // SDL_RenderClear(gRenderer);
+
+
+    static Uint64 lastTicks = SDL_GetTicksNS();
+    Uint64 now = SDL_GetTicksNS();
+    float dt = (now - lastTicks) / 1'000'000'000.0f;
+    if (dt > 0.05f) dt = 0.05f;
+    lastTicks = now;
+
+    if (!gMenuPiecesInit) initMenuBackgroundPieces();
+
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
+
+    updateMenuBackgroundPieces(dt);
+    renderMenuBackgroundPieces();
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
@@ -1134,8 +1240,23 @@ static inline void moveVideoOptionsMenuSelection(int delta) {
 }
 
 void renderVideoOptions() {
+    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    // SDL_RenderClear(gRenderer);
+
+
+    static Uint64 lastTicks = SDL_GetTicksNS();
+    Uint64 now = SDL_GetTicksNS();
+    float dt = (now - lastTicks) / 1'000'000'000.0f;
+    if (dt > 0.05f) dt = 0.05f;
+    lastTicks = now;
+
+    if (!gMenuPiecesInit) initMenuBackgroundPieces();
+
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
+
+    updateMenuBackgroundPieces(dt);
+    renderMenuBackgroundPieces();
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
@@ -1354,8 +1475,22 @@ static inline void moveInputOptionsMenuSelection(int delta) {
 }
 
 void renderInputOptions() {
+    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    // SDL_RenderClear(gRenderer);
+
+    static Uint64 lastTicks = SDL_GetTicksNS();
+    Uint64 now = SDL_GetTicksNS();
+    float dt = (now - lastTicks) / 1'000'000'000.0f;
+    if (dt > 0.05f) dt = 0.05f;
+    lastTicks = now;
+
+    if (!gMenuPiecesInit) initMenuBackgroundPieces();
+
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
+
+    updateMenuBackgroundPieces(dt);
+    renderMenuBackgroundPieces();
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
