@@ -434,6 +434,10 @@ void renderUI() {
     //draw line seperating the board and UI
     SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
     SDL_RenderLine( gRenderer, 480, 0, 480, kScreenHeight );
+
+    if (!gridLinesEnabled) {
+        SDL_RenderLine( gRenderer, 0, 0, 0, kScreenHeight );
+    }
 }
 
 void renderParticles() {
