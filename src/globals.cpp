@@ -1538,10 +1538,13 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
 
 int InputOptionsMenuSelection = 0;
 
+bool waitingForKeyRebind = false;
+int keyToRebind = -1; // 0 = direction, 1 = hard drop, 2 = hold, 3 = rotate CW, 4 = rotate CCW
+
 // Helper to move menu selection (0..5) with wrap-around
 static inline void moveInputOptionsMenuSelection(int delta) {
     const int count = 6; // tab, window-size, fullscreen, back
-    VideoOptionsMenuSelection = (VideoOptionsMenuSelection + delta + count) % count;
+    InputOptionsMenuSelection = (InputOptionsMenuSelection + delta + count) % count;
 }
 
 void renderInputOptions() {
@@ -1600,34 +1603,36 @@ void renderInputOptions() {
     const int xRCCW = rightX - 150;
     const int xBack = rightX - 150;
 
+    std::string bindMessage = "Press a key or button to rebind...";
+
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
     inputConfigKeyDirectionLabel.loadFromRenderedText("*Select an option below to change binding*", {255,255,255,255});
-    inputConfigHardDropLabel.loadFromRenderedText("Hard Drop: (A) <> (Space)", {255,255,255,255});
-    inputConfigHoldLabel.loadFromRenderedText("Hold: (Left Bumper) <> (H)", {255,255,255,255});
-    inputConfigRotateCWLabel.loadFromRenderedText("Rotate Clockwise: (X) <> (Up Arrow)", {255,255,255,255});
-    inputConfigRotateCCWLabel.loadFromRenderedText("Rotate Counter Clockwise: (B) <> Left CTRL", {255,255,255,255});
+    inputConfigHardDropLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 1 ) ? bindMessage : "Hard Drop: (A) <> (Space)", {255,255,255,255});
+    inputConfigHoldLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 2 ) ? bindMessage :"Hold: (Left Bumper) <> (H)", {255,255,255,255});
+    inputConfigRotateCWLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 3 ) ? bindMessage :"Rotate Clockwise: (X) <> (Up Arrow)", {255,255,255,255});
+    inputConfigRotateCCWLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 4 ) ? bindMessage :"Rotate Counter Clockwise: (B) <> Left CTRL", {255,255,255,255});
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
 
     // Selection rectangle around the chosen option
-    const LTexture* selTex = (VideoOptionsMenuSelection == 0) ? &optionsTitleTexture3
-                           : (VideoOptionsMenuSelection == 1) ? &inputConfigHardDropLabel
-                           : (VideoOptionsMenuSelection == 2) ? &inputConfigHoldLabel
-                           : (VideoOptionsMenuSelection == 3) ? &inputConfigRotateCWLabel
-                           : (VideoOptionsMenuSelection == 4) ? &inputConfigRotateCCWLabel
+    const LTexture* selTex = (InputOptionsMenuSelection == 0) ? &optionsTitleTexture3
+                           : (InputOptionsMenuSelection == 1) ? &inputConfigHardDropLabel
+                           : (InputOptionsMenuSelection == 2) ? &inputConfigHoldLabel
+                           : (InputOptionsMenuSelection == 3) ? &inputConfigRotateCWLabel
+                           : (InputOptionsMenuSelection == 4) ? &inputConfigRotateCCWLabel
                            : &backTexture;
-    const int selX = (VideoOptionsMenuSelection == 0) ? xInput
-                   : (VideoOptionsMenuSelection == 1) ? xHardDrop
-                   : (VideoOptionsMenuSelection == 2) ? xHold
-                   : (VideoOptionsMenuSelection == 3) ? xRCW
-                   : (VideoOptionsMenuSelection == 4) ? xRCCW
+    const int selX = (InputOptionsMenuSelection == 0) ? xInput
+                   : (InputOptionsMenuSelection == 1) ? xHardDrop
+                   : (InputOptionsMenuSelection == 2) ? xHold
+                   : (InputOptionsMenuSelection == 3) ? xRCW
+                   : (InputOptionsMenuSelection == 4) ? xRCCW
                    : xBack;
-    const int selY = (VideoOptionsMenuSelection == 0) ? yInput
-                   : (VideoOptionsMenuSelection == 1) ? yHardDrop
-                   : (VideoOptionsMenuSelection == 2) ? yHold
-                   : (VideoOptionsMenuSelection == 3) ? yRCW
-                   : (VideoOptionsMenuSelection == 4) ? yRCCW
+    const int selY = (InputOptionsMenuSelection == 0) ? yInput
+                   : (InputOptionsMenuSelection == 1) ? yHardDrop
+                   : (InputOptionsMenuSelection == 2) ? yHold
+                   : (InputOptionsMenuSelection == 3) ? yRCW
+                   : (InputOptionsMenuSelection == 4) ? yRCCW
                    : yBack;
 
     const int padX = 18;
@@ -1660,6 +1665,8 @@ void renderInputOptions() {
     backTexture.render(xBack, yBack);
 }
 
+
+
 int handleInputOptionsMenuEvent(const SDL_Event& e) {
     //handke keyboard input for menu navigation
     if (e.type == SDL_EVENT_KEY_DOWN) {
@@ -1668,19 +1675,26 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
         } else if (e.key.key == SDLK_DOWN) {
             moveInputOptionsMenuSelection(1);
         }else if (e.key.key == SDLK_LEFT) {
-            if (VideoOptionsMenuSelection == 0) { // Game tab
+            if (InputOptionsMenuSelection == 0) { // Game tab
                 optionsTab = 1;
             }
         } else if (e.key.key == SDLK_RIGHT) {
-            if (VideoOptionsMenuSelection == 0) { // Game tab
+            if (InputOptionsMenuSelection == 0) { // Game tab
                 optionsTab = 0;
             } 
         } else if (e.key.key == SDLK_ESCAPE) {
-            VideoOptionsMenuSelection = 0;
-            return 3; // Return to main menu
+            InputOptionsMenuSelection = 0;
+            return 5; // Return to main menu
         } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
-            VideoOptionsMenuSelection = 0;
-            return 3; // Return the selected option
+            if (InputOptionsMenuSelection == 5) {
+                InputOptionsMenuSelection = 0;
+                return 5; // Return to main menu
+            } else if (InputOptionsMenuSelection >= 1 && InputOptionsMenuSelection <=4) {
+                // Start rebind process
+                waitingForKeyRebind = true;
+                keyToRebind = InputOptionsMenuSelection;
+            }
+            
         }
     }
 
@@ -1690,18 +1704,18 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
             moveInputOptionsMenuSelection(1);
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) {
-            if (VideoOptionsMenuSelection == 0) { // Game tab
+            if (InputOptionsMenuSelection == 0) { // Game tab
                 optionsTab = 0;
             } 
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) {
-            if (VideoOptionsMenuSelection == 0) { // Game tab
+            if (InputOptionsMenuSelection == 0) { // Game tab
                 optionsTab = 1;
             }
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_EAST) {
-            VideoOptionsMenuSelection = 0;
+            InputOptionsMenuSelection = 0;
             return 3;
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
-            VideoOptionsMenuSelection = 0;
+            InputOptionsMenuSelection = 0;
             return 3; // Return the selected option
         } 
     }
@@ -1731,7 +1745,7 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
         const int v = e.gaxis.value;
         if (v <= -kAxisPress) {
             if (!pauseAxisLeftHeld) {
-                if (GameOptionsMenuSelection == 0) { // Game tab
+                if (InputOptionsMenuSelection == 0) { // Game tab
                     optionsTab = 1;
                 } 
                 pauseAxisLeftHeld = true;
@@ -1739,7 +1753,7 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
             }
         } else if (v >= kAxisPress) {
             if (!pauseAxisRightHeld) {
-                if (GameOptionsMenuSelection == 0) { // Game tab
+                if (InputOptionsMenuSelection == 0) { // Game tab
                     optionsTab = 0;
                 }
                 pauseAxisRightHeld = true;
