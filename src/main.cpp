@@ -115,7 +115,7 @@ int main( int argc, char* args[] )
                             break;
                         case 2: // Input
                                 switch (handleInputOptionsMenuEvent(e)){
-                                    case 3: //back
+                                    case 5: //back
                                         currentState = GameState::MENU;
                                         break;
                                     default:
