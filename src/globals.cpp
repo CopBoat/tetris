@@ -347,55 +347,7 @@ bool init(std::string title)
     return success;
 }
 
-void close()
-{
 
-    //Destroy window
-    SDL_DestroyRenderer( gRenderer );
-    gRenderer = nullptr;
-    SDL_DestroyWindow( gWindow );
-    gWindow = nullptr;
-
-    //Quit SDL subsystems
-    SDL_Quit();
-
-     //Clean up textures
-    scoreLabel.destroy();
-    levelLabel.destroy();
-    nextLabel.destroy();
-    holdLabel.destroy();
-    highScore.destroy();
-    score.destroy();
-    level.destroy();
-    highScore.destroy();
-    
-    
-    //Free font
-    TTF_CloseFont( gFont );
-    gFont = nullptr;
-
-    // Close gamepad if open
-    int gamePadCount = 0;
-    SDL_JoystickID *ids = SDL_GetGamepads(&gamePadCount);
-    for (int i = 0; i < gamePadCount; ++i) {
-        SDL_Gamepad* gamepad = SDL_OpenGamepad(ids[i]);
-        if (gamepad != nullptr) {
-            SDL_CloseGamepad(gamepad);
-        }
-    }
-
-    destroyMenuLogoTexture();
-
-    //Destroy window
-    SDL_DestroyRenderer( gRenderer );
-    gRenderer = nullptr;
-    SDL_DestroyWindow( gWindow );
-    gWindow = nullptr;
-
-    //Quit SDL subsystems
-    TTF_Quit();
-    SDL_Quit();
-}
 
 void capFrameRate(){
     Uint64 nsPerFrame = 1000000000 / kScreenFps;
@@ -813,7 +765,7 @@ static SDL_Texture* getMenuLogoTexture() {
     return gMenuLogoTex;
 }
 
-// Call when quitting app
+
 static void destroyMenuLogoTexture() {
     if (gMenuLogoTex) {
         SDL_DestroyTexture(gMenuLogoTex);
@@ -987,6 +939,16 @@ void renderGameOptions() {
     updateMenuBackgroundPieces(dt);
     renderMenuBackgroundPieces();
 
+    // --- dim overlay to darken background pieces ---
+    SDL_BlendMode prev;
+    SDL_GetRenderDrawBlendMode(gRenderer, &prev);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175); // raise alpha for stronger darkening
+    SDL_FRect dim{0.f, 0.f, (float)kScreenWidth, (float)kScreenHeight};
+    SDL_RenderFillRect(gRenderer, &dim);
+    SDL_SetRenderDrawBlendMode(gRenderer, prev);
+    // --- end dim overlay ---
+
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
     const int winH = kScreenHeight;
@@ -1079,7 +1041,7 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
             moveGameOptionsMenuSelection(1);
         }else if (e.key.key == SDLK_LEFT) {
             if (GameOptionsMenuSelection == 0) { // Game tab
-                optionsTab = 0;
+                optionsTab = 2;
             } else if (GameOptionsMenuSelection == 1) { // Grid lines
                 gridLinesEnabled = !gridLinesEnabled;
             } else if (GameOptionsMenuSelection == 2) { // Block gap
@@ -1127,7 +1089,7 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
             }
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) {
             if (GameOptionsMenuSelection == 0) { // Game tab
-                optionsTab = 0;
+                optionsTab = 2;
             } else if (GameOptionsMenuSelection == 1) { // Grid lines
                 gridLinesEnabled = !gridLinesEnabled;
             } else if (GameOptionsMenuSelection == 2) { // Block gap
@@ -1171,7 +1133,7 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
         if (v <= -kAxisPress) {
             if (!pauseAxisLeftHeld) {
                 if (GameOptionsMenuSelection == 0) { // Game tab
-                    optionsTab = 0;
+                    optionsTab = 2;
                 } else if (GameOptionsMenuSelection == 1) { // Grid lines
                     gridLinesEnabled = !gridLinesEnabled;
                 } else if (GameOptionsMenuSelection == 2) { // Block gap
@@ -1257,6 +1219,16 @@ void renderVideoOptions() {
 
     updateMenuBackgroundPieces(dt);
     renderMenuBackgroundPieces();
+
+    // --- dim overlay to darken background pieces ---
+    SDL_BlendMode prev;
+    SDL_GetRenderDrawBlendMode(gRenderer, &prev);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175); // raise alpha for stronger darkening
+    SDL_FRect dim{0.f, 0.f, (float)kScreenWidth, (float)kScreenHeight};
+    SDL_RenderFillRect(gRenderer, &dim);
+    SDL_SetRenderDrawBlendMode(gRenderer, prev);
+    // --- end dim overlay ---
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
@@ -1491,6 +1463,16 @@ void renderInputOptions() {
 
     updateMenuBackgroundPieces(dt);
     renderMenuBackgroundPieces();
+
+    // --- dim overlay to darken background pieces ---
+    SDL_BlendMode prev;
+    SDL_GetRenderDrawBlendMode(gRenderer, &prev);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175); // raise alpha for stronger darkening
+    SDL_FRect dim{0.f, 0.f, (float)kScreenWidth, (float)kScreenHeight};
+    SDL_RenderFillRect(gRenderer, &dim);
+    SDL_SetRenderDrawBlendMode(gRenderer, prev);
+    // --- end dim overlay ---
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
@@ -1746,4 +1728,54 @@ void renderWipeIntro(SDL_Renderer* renderer, int screenWidth, int screenHeight) 
         if (t >= 1.0f) done = true;
         SDL_Delay(16); // ~60 FPS
     }
+}
+
+void close()
+{
+
+    //Destroy window
+    SDL_DestroyRenderer( gRenderer );
+    gRenderer = nullptr;
+    SDL_DestroyWindow( gWindow );
+    gWindow = nullptr;
+
+    //Quit SDL subsystems
+    SDL_Quit();
+
+     //Clean up textures
+    scoreLabel.destroy();
+    levelLabel.destroy();
+    nextLabel.destroy();
+    holdLabel.destroy();
+    highScore.destroy();
+    score.destroy();
+    level.destroy();
+    highScore.destroy();
+    
+    
+    //Free font
+    TTF_CloseFont( gFont );
+    gFont = nullptr;
+
+    // Close gamepad if open
+    int gamePadCount = 0;
+    SDL_JoystickID *ids = SDL_GetGamepads(&gamePadCount);
+    for (int i = 0; i < gamePadCount; ++i) {
+        SDL_Gamepad* gamepad = SDL_OpenGamepad(ids[i]);
+        if (gamepad != nullptr) {
+            SDL_CloseGamepad(gamepad);
+        }
+    }
+
+    destroyMenuLogoTexture();
+
+    //Destroy window
+    SDL_DestroyRenderer( gRenderer );
+    gRenderer = nullptr;
+    SDL_DestroyWindow( gWindow );
+    gWindow = nullptr;
+
+    //Quit SDL subsystems
+    TTF_Quit();
+    SDL_Quit();
 }
