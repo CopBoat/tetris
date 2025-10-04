@@ -1204,9 +1204,18 @@ int handleGameOptionsMenuEvent(const SDL_Event& e) {
             GameOptionsMenuSelection = 0;
             return 4;
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+            if (GameOptionsMenuSelection == 4) { // Back
+                GameOptionsMenuSelection = 0;
+                return 4; // Return to main menu
+            } 
+            
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) {
             GameOptionsMenuSelection = 0;
-            return 4; // Return the selected option
-        } 
+            optionsTab = 2;
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) {
+            GameOptionsMenuSelection = 0;
+            optionsTab = 1;
+        }
     }
 
     // Analog stick up/down for menu
@@ -1475,9 +1484,17 @@ int handleVideoOptionsMenuEvent(const SDL_Event& e) {
             VideoOptionsMenuSelection = 0;
             return 3;
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+            if (VideoOptionsMenuSelection == 3) { // Back
+                VideoOptionsMenuSelection = 0;
+                return 3; // Return to main menu
+            }
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) {
             VideoOptionsMenuSelection = 0;
-            return 3; // Return the selected option
-        } 
+            optionsTab = 0;
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) {
+            VideoOptionsMenuSelection = 0;
+            optionsTab = 2;
+        }
     }
 
     // Analog stick up/down for menu
@@ -1717,11 +1734,23 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
             }
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_EAST) {
             InputOptionsMenuSelection = 0;
-            return 3;
+            return 5;
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH) {
+            if (InputOptionsMenuSelection == 5) { // Back
+                InputOptionsMenuSelection = 0;
+                return 5; // Return to main menu
+            } else if (InputOptionsMenuSelection >= 1 && InputOptionsMenuSelection <=4) {
+                // Start rebind process
+                waitingForKeyRebind = true;
+                keyToRebind = InputOptionsMenuSelection;
+            }
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) {
             InputOptionsMenuSelection = 0;
-            return 3; // Return the selected option
-        } 
+            optionsTab = 1;
+        } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) {
+            InputOptionsMenuSelection = 0;
+            optionsTab = 0;
+        }
     }
 
     // Analog stick up/down for menu
