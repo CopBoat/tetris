@@ -663,6 +663,8 @@ static inline void moveMenuSelection(int delta) {
 }
 
 
+
+
 // ---- Menu background bouncing pieces ----
 struct MenuBouncePiece {
     const Piece* piece;
@@ -765,6 +767,93 @@ static SDL_Texture* getMenuLogoTexture() {
     return gMenuLogoTex;
 }
 
+// ---- Falling menu background pieces (main menu only) ----
+struct MenuFallingPiece {
+    const Piece* piece;
+    float x, y;
+    float vy;
+    float drift;      // small horizontal drift
+    float cellSize;
+    SDL_Color color;
+    Uint8 alpha;
+};
+
+static std::vector<MenuFallingPiece> gMenuFallingPieces;
+static bool gMenuFallingInit = false;
+
+static void initMenuFallingPieces() {
+    gMenuFallingPieces.clear();
+    int count = 26; // denser field than options menu
+    std::uniform_real_distribution<float> sx(0.f, (float)kScreenWidth - 120.f);
+    std::uniform_real_distribution<float> sy(-600.f, (float)kScreenHeight);
+    std::uniform_real_distribution<float> sc(14.f, 28.f);
+    std::uniform_real_distribution<float> sv(40.f, 140.f);
+    std::uniform_real_distribution<float> sd(-10.f, 10.f);
+    std::uniform_int_distribution<int> ca(55, 95); // darker than before
+
+    for (int i = 0; i < count; ++i) {
+        const Piece* p = kAllPiecesPtr[i % 7];
+        gMenuFallingPieces.push_back(MenuFallingPiece{
+            p,
+            sx(rng),
+            sy(rng),
+            sv(rng),
+            sd(rng),
+            sc(rng),
+            kMenuColors[i % 7],
+            (Uint8)ca(rng)
+        });
+    }
+    gMenuFallingInit = true;
+}
+
+static void respawnFallingPiece(MenuFallingPiece& m) {
+    std::uniform_real_distribution<float> sx(0.f, (float)kScreenWidth - 100.f);
+    std::uniform_real_distribution<float> sc(14.f, 28.f);
+    std::uniform_real_distribution<float> sv(55.f, 150.f);
+    std::uniform_real_distribution<float> sd(-12.f, 12.f);
+    std::uniform_int_distribution<int> ca(55, 95);
+    m.cellSize = sc(rng);
+    float w = m.piece->width * m.cellSize;
+    m.x = std::min(std::max(0.f, sx(rng)), (float)kScreenWidth - w);
+    m.y = -m.piece->height * m.cellSize - (float)(rand()%120);
+    m.vy = sv(rng);
+    m.drift = sd(rng);
+    m.alpha = (Uint8)ca(rng);
+}
+
+static void updateMenuFallingPieces(float dt) {
+    for (auto& m : gMenuFallingPieces) {
+        m.y += m.vy * dt;
+        m.x += m.drift * dt;
+        float w = m.piece->width * m.cellSize;
+        if (m.x < 0) m.x = 0;
+        if (m.x + w > kScreenWidth) m.x = kScreenWidth - w;
+        if (m.y > kScreenHeight + 10.f) {
+            respawnFallingPiece(m);
+        }
+    }
+}
+
+static void renderMenuFallingPieces() {
+    for (auto& m : gMenuFallingPieces) {
+        SDL_SetRenderDrawColor(gRenderer, m.color.r, m.color.g, m.color.b, m.alpha);
+        for (int yy = 0; yy < m.piece->height; ++yy) {
+            for (int xx = 0; xx < m.piece->width; ++xx) {
+                if (m.piece->shape[yy][xx]) {
+                    SDL_FRect r{
+                        m.x + xx * m.cellSize,
+                        m.y + yy * m.cellSize,
+                        m.cellSize - 2.f,
+                        m.cellSize - 2.f
+                    };
+                    SDL_RenderFillRect(gRenderer, &r);
+                }
+            }
+        }
+    }
+}
+
 
 static void destroyMenuLogoTexture() {
     if (gMenuLogoTex) {
@@ -775,23 +864,32 @@ static void destroyMenuLogoTexture() {
 
 void renderMenu() {
 
-    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(gRenderer);
-
-
-    // static Uint64 lastTicks = SDL_GetTicksNS();
-    // Uint64 now = SDL_GetTicksNS();
-    // float dt = (now - lastTicks) / 1'000'000'000.0f;
-    // if (dt > 0.05f) dt = 0.05f;
-    // lastTicks = now;
-
-    // if (!gMenuPiecesInit) initMenuBackgroundPieces();
-
     // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     // SDL_RenderClear(gRenderer);
 
-    // updateMenuBackgroundPieces(dt);
-    // renderMenuBackgroundPieces();
+
+    static Uint64 lastTicks = SDL_GetTicksNS();
+    Uint64 now = SDL_GetTicksNS();
+    float dt = (now - lastTicks) / 1'000'000'000.0f;
+    if (dt > 0.05f) dt = 0.05f;
+    lastTicks = now;
+
+    if (!gMenuFallingInit) initMenuFallingPieces();
+
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(gRenderer);
+
+    updateMenuFallingPieces(dt);
+    renderMenuFallingPieces();
+
+    // Dim overlay for readability
+    SDL_BlendMode prev;
+    SDL_GetRenderDrawBlendMode(gRenderer, &prev);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175);
+    SDL_FRect dim{0.f,0.f,(float)kScreenWidth,(float)kScreenHeight};
+    SDL_RenderFillRect(gRenderer, &dim);
+    SDL_SetRenderDrawBlendMode(gRenderer, prev);
 
     SDL_Texture* logoTex = getMenuLogoTexture();
     if (logoTex) {
