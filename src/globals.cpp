@@ -28,6 +28,7 @@ static const char* buttonName(SDL_GamepadButton b) {
         case SDL_GAMEPAD_BUTTON_EAST:  return "B";
         case SDL_GAMEPAD_BUTTON_WEST:  return "X";
         case SDL_GAMEPAD_BUTTON_NORTH: return "Y";
+        case SDL_GAMEPAD_BUTTON_DPAD_UP: return "DPad Up";
         case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return "LB";
         case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return "RB";
         case SDL_GAMEPAD_BUTTON_LEFT_STICK: return "Left Stick";
