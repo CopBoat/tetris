@@ -22,6 +22,8 @@ SDL_GamepadButton holdControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPA
 SDL_GamepadButton rotateClockwiseControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPAD_BUTTON_WEST);
 SDL_GamepadButton rotateCounterClockwiseControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPAD_BUTTON_EAST);
 
+SDL_Gamepad* gActiveGamepad = nullptr;
+
 static const char* buttonName(SDL_GamepadButton b) {
     switch (b) {
         case SDL_GAMEPAD_BUTTON_SOUTH: return "A";
@@ -37,37 +39,26 @@ static const char* buttonName(SDL_GamepadButton b) {
     }
 }
 
+// Add helper to acquire first available gamepad
+void AcquireFirstGamepadIfNone() {
+    if (gActiveGamepad) return;
+    int count = 0;
+    SDL_JoystickID* ids = SDL_GetGamepads(&count);
+    for (int i = 0; i < count; ++i) {
+        SDL_Gamepad* pad = SDL_OpenGamepad(ids[i]);
+        if (pad) {
+            gActiveGamepad = pad;
+            SDL_Log("Gamepad connected: %s", SDL_GetGamepadName(pad));
+            break;
+        }
+    }
+}
+
 //define keyboard inputs
 SDL_Keycode hardDropKey = SDLK_SPACE;
 SDL_Keycode holdKey = SDLK_H;
 SDL_Keycode rotateClockwiseKey = SDLK_UP;
 SDL_Keycode rotateCounterClockwiseKey = SDLK_LCTRL;
-
-// static const char* keyName(SDL_Keycode k) {
-//     switch (k) {
-//         case SDLK_UP: return "Up Arrow";
-//         case SDLK_DOWN: return "Down Arrow";
-//         case SDLK_LEFT: return "Left Arrow";
-//         case SDLK_RIGHT: return "Right Arrow";
-//         case SDLK_z: return "Z";
-//         case SDLK_x: return "X";
-//         case SDLK_c: return "C";
-//         case SDLK_SPACE: return "Space";
-//         case SDLK_LSHIFT: return "Left Shift";
-//         case SDLK_RSHIFT: return "Right Shift";
-//         case SDLK_LCTRL: return "Left Ctrl";
-//         case SDLK_RCTRL: return "Right Ctrl";
-//         case SDLK_ESCAPE: return "Esc";
-//         case SDLK_RETURN: return "Enter";
-//         default:
-//             if (k >= SDLK_a && k <= SDLK_z) {
-//                 static char buf[2] = {0};
-//                 buf[0] = static_cast<char>('A' + (k - SDLK_a));
-//                 return buf;
-//             }
-//             return "?";
-//     }
-// }
 
 void showSplashScreen()
 {
@@ -388,6 +379,8 @@ bool init(std::string title)
                 }
             }
 
+            AcquireFirstGamepadIfNone();   // hot-plug safe initial grab
+
             // Optional: tweak double-click timeout (ms)
             SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "350");
             
@@ -400,7 +393,11 @@ bool init(std::string title)
     return success;
 }
 
-
+void pollForNewGamepad() {
+    if (!gActiveGamepad) {
+        AcquireFirstGamepadIfNone();
+    }
+}
 
 void capFrameRate(){
     Uint64 nsPerFrame = 1000000000 / kScreenFps;
@@ -2117,6 +2114,10 @@ void renderWipeIntro(SDL_Renderer* renderer, int screenWidth, int screenHeight) 
 
 void close()
 {
+    if (gActiveGamepad) {
+        SDL_CloseGamepad(gActiveGamepad);
+        gActiveGamepad = nullptr;
+    }
 
     //Destroy window
     SDL_DestroyRenderer( gRenderer );

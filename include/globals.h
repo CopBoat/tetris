@@ -18,6 +18,10 @@ extern SDL_Keycode holdKey;
 extern SDL_Keycode rotateClockwiseKey;
 extern SDL_Keycode rotateCounterClockwiseKey;
 
+extern SDL_Gamepad* gActiveGamepad;
+
+void AcquireFirstGamepadIfNone();
+
 void showSplashScreen();
 
 bool init(std::string title = "Tetris (CopBoat's Version)");
