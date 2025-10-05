@@ -206,17 +206,27 @@ int main( int argc, char* args[] )
                                     gpRight.pressedAt = gpRight.lastRepeatAt = SDL_GetTicks();
                                     activeH = HDir::Right;
                                 } break;
-                                case SDLK_UP: action = InputAction::RotateClockwise; break;
+                                //case SDLK_UP: action = InputAction::RotateClockwise; break;
                                 case SDLK_DOWN: {
                                     action = InputAction::SoftDrop;
                                     kbDownHeld = true;
                                     gpDown.held = true;
                                     gpDown.pressedAt = gpDown.lastRepeatAt = SDL_GetTicks();
                                 } break;
-                                case SDLK_H: action = InputAction::Hold; break;
-                                case SDLK_SPACE: action = InputAction::HardDrop; break;
+                                //case SDLK_H: action = InputAction::Hold; break;
+                                //case SDLK_SPACE: action = InputAction::HardDrop; break;
                                 case SDLK_ESCAPE: action = InputAction::Pause; break;
-                                default: break;
+                                default: 
+                                    if (e.key.key == hardDropKey) {
+                                        action = InputAction::HardDrop;
+                                    } else if (e.key.key == holdKey) {
+                                        action = InputAction::Hold;
+                                    } else if (e.key.key == rotateClockwiseKey) {
+                                        action = InputAction::RotateClockwise;
+                                    } else if (e.key.key == rotateCounterClockwiseKey) {
+                                        action = InputAction::RotateCounterClockwise;
+                                    }
+                                    break;
                             }
                         }
                     }
