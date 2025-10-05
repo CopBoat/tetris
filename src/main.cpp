@@ -279,8 +279,8 @@ int main( int argc, char* args[] )
                                 gpRight.pressedAt = gpRight.lastRepeatAt = SDL_GetTicks();
                                 activeH = HDir::Right;
                             } break;
-                            case SDL_GAMEPAD_BUTTON_WEST:          action = InputAction::RotateClockwise;        break;
-                            case SDL_GAMEPAD_BUTTON_EAST:          action = InputAction::RotateCounterClockwise; break;
+                            //case SDL_GAMEPAD_BUTTON_WEST:          action = InputAction::RotateClockwise;        break;
+                            //case SDL_GAMEPAD_BUTTON_EAST:          action = InputAction::RotateCounterClockwise; break;
                             case SDL_GAMEPAD_BUTTON_DPAD_DOWN: {
                                 action = InputAction::SoftDrop;
                                 gpDpadDownHeld = true;
@@ -288,10 +288,20 @@ int main( int argc, char* args[] )
                                 gpDown.held = true;
                                 gpDown.pressedAt = gpDown.lastRepeatAt = SDL_GetTicks();
                             } break;
-                            case SDL_GAMEPAD_BUTTON_SOUTH:         action = InputAction::HardDrop;               break;
-                            case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
+                            //case hardDropControllerBind:         action = InputAction::HardDrop;               break;
+                            //case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
                             case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
-                            default: break;
+                            default: 
+                                if (e.gbutton.button == hardDropControllerBind) {
+                                    action = InputAction::HardDrop;
+                                } else if (e.gbutton.button == holdControllerBind) {
+                                    action = InputAction::Hold;
+                                } else if (e.gbutton.button == rotateClockwiseControllerBind) {
+                                    action = InputAction::RotateClockwise;
+                                } else if (e.gbutton.button == rotateCounterClockwiseControllerBind) {
+                                    action = InputAction::RotateCounterClockwise;
+                                }
+                                break;
                         }
                     }
                     // Handle button releases to stop repeating and resolve LR conflict

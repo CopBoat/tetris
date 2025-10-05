@@ -16,6 +16,51 @@
 #include <array>
 #include <algorithm>
 
+//define controller inputs
+SDL_GamepadButton hardDropControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPAD_BUTTON_SOUTH);
+SDL_GamepadButton holdControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
+SDL_GamepadButton rotateClockwiseControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPAD_BUTTON_WEST);
+SDL_GamepadButton rotateCounterClockwiseControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPAD_BUTTON_EAST);
+
+static const char* buttonName(SDL_GamepadButton b) {
+    switch (b) {
+        case SDL_GAMEPAD_BUTTON_SOUTH: return "A";
+        case SDL_GAMEPAD_BUTTON_EAST:  return "B";
+        case SDL_GAMEPAD_BUTTON_WEST:  return "X";
+        case SDL_GAMEPAD_BUTTON_NORTH: return "Y";
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return "LB";
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return "RB";
+        default: return "?";
+    }
+}
+
+//define keyboard inputs
+// static const char* keyName(SDL_Keycode k) {
+//     switch (k) {
+//         case SDLK_UP: return "Up Arrow";
+//         case SDLK_DOWN: return "Down Arrow";
+//         case SDLK_LEFT: return "Left Arrow";
+//         case SDLK_RIGHT: return "Right Arrow";
+//         case SDLK_z: return "Z";
+//         case SDLK_x: return "X";
+//         case SDLK_c: return "C";
+//         case SDLK_SPACE: return "Space";
+//         case SDLK_LSHIFT: return "Left Shift";
+//         case SDLK_RSHIFT: return "Right Shift";
+//         case SDLK_LCTRL: return "Left Ctrl";
+//         case SDLK_RCTRL: return "Right Ctrl";
+//         case SDLK_ESCAPE: return "Esc";
+//         case SDLK_RETURN: return "Enter";
+//         default:
+//             if (k >= SDLK_a && k <= SDLK_z) {
+//                 static char buf[2] = {0};
+//                 buf[0] = static_cast<char>('A' + (k - SDLK_a));
+//                 return buf;
+//             }
+//             return "?";
+//     }
+// }
+
 void showSplashScreen()
 {
     //SDL_Log("Showing splash screen...");
@@ -1562,6 +1607,86 @@ int InputOptionsMenuSelection = 0;
 
 bool waitingForKeyRebind = false;
 int keyToRebind = -1; // 0 = direction, 1 = hard drop, 2 = hold, 3 = rotate CW, 4 = rotate CCW
+bool invalidRebindAttempt = false;
+
+static void applyRebind(const SDL_Event& e) {
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        SDL_Keycode k = e.key.key;
+        // if (keyToRebind == 1) hardDropKey  = k;
+        // else if (keyToRebind == 2) holdKey = k;
+        // else if (keyToRebind == 3) rotateCWKey = k;
+        // else if (keyToRebind == 4) rotateCCWKey = k;
+    } else if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        SDL_GamepadButton b = (SDL_GamepadButton)e.gbutton.button;
+        if (keyToRebind == 1) {
+            hardDropControllerBind = b;
+        } else if (keyToRebind == 2) {
+            holdControllerBind = b;
+        } else if (keyToRebind == 3) {
+            rotateClockwiseControllerBind = b;
+        } else if (keyToRebind == 4) {
+            rotateCounterClockwiseControllerBind = b;
+        }
+        // Extend for others if you later support controller binds for them
+    }
+}
+
+int validateKeyRebind(SDL_Event e) {
+    SDL_Log("Validating key rebind...");
+    // Prevent binding to keys already in use
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        SDL_Keycode newKey = e.key.key;
+        if (newKey == SDLK_LEFT || newKey == SDLK_RIGHT || newKey == SDLK_DOWN || newKey == SDLK_ESCAPE) {
+            return 0; // invalid
+        }
+        return 1; // valid
+    } else if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        SDL_GamepadButton newButton = static_cast<SDL_GamepadButton>(e.gbutton.button);
+        if (newButton == SDL_GAMEPAD_BUTTON_DPAD_LEFT|| newButton == SDL_GAMEPAD_BUTTON_DPAD_RIGHT|| newButton == SDL_GAMEPAD_BUTTON_DPAD_DOWN || newButton == SDL_GAMEPAD_BUTTON_START) {
+            return 0; // invalid
+        }
+        SDL_Log("Rebinding to button %d", newButton);
+        return 1; // valid
+    }
+
+    return -1; // invalid by default (not recognized)
+}
+
+static bool handleRebindCapture(const SDL_Event& e) {
+    // Cancel keys/buttons
+    bool cancel = (e.type == SDL_EVENT_KEY_DOWN  && e.key.key == SDLK_ESCAPE) ||
+                  (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && 
+                   (e.gbutton.button == SDL_GAMEPAD_BUTTON_START));
+    if (cancel) {
+        SDL_Log("Rebind cancelled");
+        waitingForKeyRebind = false;
+        keyToRebind = -1;
+        return true;
+    }
+
+    // Only accept first key/button press (ignore navigation inputs that are disallowed)
+    if (e.type == SDL_EVENT_KEY_DOWN || e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        if (validateKeyRebind(e) == 1) {
+            applyRebind(e);
+            waitingForKeyRebind = false;
+            keyToRebind = -1;
+            return true;
+        } else {
+            SDL_Log("Invalid rebind attempt");
+            invalidRebindAttempt = true;
+            waitingForKeyRebind = false;
+            keyToRebind = -1;
+            return false;
+        }
+    }
+
+    
+    return false;
+}
+
+
+
+
 
 // Helper to move menu selection (0..5) with wrap-around
 static inline void moveInputOptionsMenuSelection(int delta) {
@@ -1625,16 +1750,42 @@ void renderInputOptions() {
     const int xRCCW = rightX - 150;
     const int xBack = rightX - 150;
 
+    char hardDropLine[128];
+    snprintf(hardDropLine, sizeof(hardDropLine),
+             "Hard Drop: (%s) <> (%s)",
+             buttonName(hardDropControllerBind));
+             //SDL_GetKeyName(hardDropKey));
+
+    char holdLine[128];
+    snprintf(holdLine, sizeof(holdLine),
+             "Hold: (%s) <> (H)",
+             buttonName(holdControllerBind));
+             //SDL_GetKeyName(holdKey));
+    
+    char rotateCWLine[128];
+    snprintf(rotateCWLine, sizeof(rotateCWLine),
+             "Rotate Clockwise: (%s) <> (Up Arrow)",
+             buttonName(rotateClockwiseControllerBind));
+             //SDL_GetKeyName(rotateCWKey));
+
+    char rotateCCWLine[128];
+    snprintf(rotateCCWLine, sizeof(rotateCCWLine),
+             "Rotate Counter Clockwise: (%s) <> (Left CTRL)",
+             buttonName(rotateCounterClockwiseControllerBind));
+             //SDL_GetKeyName(rotateCounterClockwiseKey));
+
     std::string bindMessage = "Press a key or button to rebind...";
 
     optionsTitleTexture.loadFromRenderedText("Game", {255,255,255,255});
     optionsTitleTexture2.loadFromRenderedText("Video", {255,255,255,255});
     optionsTitleTexture3.loadFromRenderedText("Input", {255,255,255,255});
-    inputConfigKeyDirectionLabel.loadFromRenderedText("*Select an option below to change binding*", {255,255,255,255});
-    inputConfigHardDropLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 1 ) ? bindMessage : "Hard Drop: (A) <> (Space)", {255,255,255,255});
-    inputConfigHoldLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 2 ) ? bindMessage :"Hold: (Left Bumper) <> (H)", {255,255,255,255});
-    inputConfigRotateCWLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 3 ) ? bindMessage :"Rotate Clockwise: (X) <> (Up Arrow)", {255,255,255,255});
-    inputConfigRotateCCWLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 4 ) ? bindMessage :"Rotate Counter Clockwise: (B) <> Left CTRL", {255,255,255,255});
+    inputConfigKeyDirectionLabel.loadFromRenderedText((invalidRebindAttempt) ? "*key/button is reserved, try again*"
+                                                    : (waitingForKeyRebind) ? "*Press ESC or Start to Cancel*" 
+                                                    : "*Select an option below to change binding*", {255,255,255,255});
+    inputConfigHardDropLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 1 ) ? bindMessage : hardDropLine, {255,255,255,255});
+    inputConfigHoldLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 2 ) ? bindMessage : holdLine, {255,255,255,255});
+    inputConfigRotateCWLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 3 ) ? bindMessage : rotateCWLine, {255,255,255,255});
+    inputConfigRotateCCWLabel.loadFromRenderedText((waitingForKeyRebind && keyToRebind == 4 ) ? bindMessage : rotateCCWLine, {255,255,255,255});
     backTexture.loadFromRenderedText("Return", {255,255,255,255});
 
     // Selection rectangle around the chosen option
@@ -1690,6 +1841,13 @@ void renderInputOptions() {
 
 
 int handleInputOptionsMenuEvent(const SDL_Event& e) {
+
+    if (waitingForKeyRebind) {
+        invalidRebindAttempt = false;
+        handleRebindCapture(e);
+        return -1; // Stay on this screen
+    }
+
     //handke keyboard input for menu navigation
     if (e.type == SDL_EVENT_KEY_DOWN) {
         if (e.key.key == SDLK_UP) {
@@ -1713,8 +1871,10 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
                 return 5; // Return to main menu
             } else if (InputOptionsMenuSelection >= 1 && InputOptionsMenuSelection <=4) {
                 // Start rebind process
+                invalidRebindAttempt = false;
                 waitingForKeyRebind = true;
                 keyToRebind = InputOptionsMenuSelection;
+                
             }
             
         }
@@ -1742,13 +1902,16 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
                 return 5; // Return to main menu
             } else if (InputOptionsMenuSelection >= 1 && InputOptionsMenuSelection <=4) {
                 // Start rebind process
+                
                 waitingForKeyRebind = true;
                 keyToRebind = InputOptionsMenuSelection;
             }
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) {
+            invalidRebindAttempt = false;
             InputOptionsMenuSelection = 0;
             optionsTab = 1;
         } else if (e.gbutton.button == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) {
+            invalidRebindAttempt = false;
             InputOptionsMenuSelection = 0;
             optionsTab = 0;
         }
