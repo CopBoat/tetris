@@ -30,11 +30,18 @@ static const char* buttonName(SDL_GamepadButton b) {
         case SDL_GAMEPAD_BUTTON_NORTH: return "Y";
         case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return "LB";
         case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return "RB";
+        case SDL_GAMEPAD_BUTTON_LEFT_STICK: return "Left Stick";
+        case SDL_GAMEPAD_BUTTON_RIGHT_STICK: return "Right Stick";
         default: return "?";
     }
 }
 
 //define keyboard inputs
+SDL_Keycode hardDropKey = SDLK_SPACE;
+SDL_Keycode holdKey = SDLK_H;
+SDL_Keycode rotateClockwiseKey = SDLK_UP;
+SDL_Keycode rotateCounterClockwiseKey = SDLK_LCTRL;
+
 // static const char* keyName(SDL_Keycode k) {
 //     switch (k) {
 //         case SDLK_UP: return "Up Arrow";
@@ -1612,10 +1619,10 @@ bool invalidRebindAttempt = false;
 static void applyRebind(const SDL_Event& e) {
     if (e.type == SDL_EVENT_KEY_DOWN) {
         SDL_Keycode k = e.key.key;
-        // if (keyToRebind == 1) hardDropKey  = k;
-        // else if (keyToRebind == 2) holdKey = k;
-        // else if (keyToRebind == 3) rotateCWKey = k;
-        // else if (keyToRebind == 4) rotateCCWKey = k;
+        if (keyToRebind == 1) hardDropKey  = k;
+        else if (keyToRebind == 2) holdKey = k;
+        else if (keyToRebind == 3) rotateClockwiseKey = k;
+        else if (keyToRebind == 4) rotateCounterClockwiseKey = k;
     } else if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
         SDL_GamepadButton b = (SDL_GamepadButton)e.gbutton.button;
         if (keyToRebind == 1) {
@@ -1667,6 +1674,7 @@ static bool handleRebindCapture(const SDL_Event& e) {
     // Only accept first key/button press (ignore navigation inputs that are disallowed)
     if (e.type == SDL_EVENT_KEY_DOWN || e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
         if (validateKeyRebind(e) == 1) {
+            SDL_Log("Rebind valid, applying...");
             applyRebind(e);
             waitingForKeyRebind = false;
             keyToRebind = -1;
@@ -1680,7 +1688,7 @@ static bool handleRebindCapture(const SDL_Event& e) {
         }
     }
 
-    
+    //SDL_Log("Rebind capture received unhandled event type %d", e.type);
     return false;
 }
 
@@ -1753,26 +1761,26 @@ void renderInputOptions() {
     char hardDropLine[128];
     snprintf(hardDropLine, sizeof(hardDropLine),
              "Hard Drop: (%s) <> (%s)",
-             buttonName(hardDropControllerBind));
-             //SDL_GetKeyName(hardDropKey));
+             buttonName(hardDropControllerBind),
+             SDL_GetKeyName(hardDropKey));
 
     char holdLine[128];
     snprintf(holdLine, sizeof(holdLine),
-             "Hold: (%s) <> (H)",
-             buttonName(holdControllerBind));
-             //SDL_GetKeyName(holdKey));
+             "Hold: (%s) <> (%s)",
+             buttonName(holdControllerBind),
+             SDL_GetKeyName(holdKey));
     
     char rotateCWLine[128];
     snprintf(rotateCWLine, sizeof(rotateCWLine),
-             "Rotate Clockwise: (%s) <> (Up Arrow)",
-             buttonName(rotateClockwiseControllerBind));
-             //SDL_GetKeyName(rotateCWKey));
+             "Rotate Clockwise: (%s) <> (%s)",
+             buttonName(rotateClockwiseControllerBind),
+             SDL_GetKeyName(rotateClockwiseKey));
 
     char rotateCCWLine[128];
     snprintf(rotateCCWLine, sizeof(rotateCCWLine),
-             "Rotate Counter Clockwise: (%s) <> (Left CTRL)",
-             buttonName(rotateCounterClockwiseControllerBind));
-             //SDL_GetKeyName(rotateCounterClockwiseKey));
+             "Rotate Counter Clockwise: (%s) <> (%s)",
+             buttonName(rotateCounterClockwiseControllerBind),
+             SDL_GetKeyName(rotateCounterClockwiseKey));
 
     std::string bindMessage = "Press a key or button to rebind...";
 
@@ -1871,7 +1879,7 @@ int handleInputOptionsMenuEvent(const SDL_Event& e) {
                 return 5; // Return to main menu
             } else if (InputOptionsMenuSelection >= 1 && InputOptionsMenuSelection <=4) {
                 // Start rebind process
-                invalidRebindAttempt = false;
+                
                 waitingForKeyRebind = true;
                 keyToRebind = InputOptionsMenuSelection;
                 

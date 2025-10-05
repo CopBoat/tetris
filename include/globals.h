@@ -13,6 +13,11 @@ extern SDL_GamepadButton holdControllerBind;
 extern SDL_GamepadButton rotateClockwiseControllerBind;
 extern SDL_GamepadButton rotateCounterClockwiseControllerBind;
 
+extern SDL_Keycode hardDropKey;
+extern SDL_Keycode holdKey;
+extern SDL_Keycode rotateClockwiseKey;
+extern SDL_Keycode rotateCounterClockwiseKey;
+
 void showSplashScreen();
 
 bool init(std::string title = "Tetris (CopBoat's Version)");
