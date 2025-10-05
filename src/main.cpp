@@ -64,7 +64,30 @@ int main( int argc, char* args[] )
             {
                 if( e.type == SDL_EVENT_QUIT ) { quit = true; }
 
-              
+                //look for gamepad connection/disconnection
+                switch (e.type) {
+                    case SDL_EVENT_GAMEPAD_ADDED: {
+                        if (!gActiveGamepad) {
+                            SDL_Gamepad* pad = SDL_OpenGamepad(e.gdevice.which);
+                            if (pad) {
+                                gActiveGamepad = pad;
+                                SDL_Log("Gamepad added: %s", SDL_GetGamepadName(pad));
+                            }
+                        }
+                        break;
+                    }
+                    case SDL_EVENT_GAMEPAD_REMOVED: {
+                        if (gActiveGamepad && SDL_GetGamepadID(gActiveGamepad) == e.gdevice.which) {
+                            SDL_Log("Gamepad removed");
+                            SDL_CloseGamepad(gActiveGamepad);
+                            gActiveGamepad = nullptr;
+                            //immediately look for another one:
+                            AcquireFirstGamepadIfNone();
+                        }
+                        break;
+                    }
+                    // existing cases...
+                }
 
                 // Double-click anywhere in the client area to toggle fullscreen
                 if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN &&
