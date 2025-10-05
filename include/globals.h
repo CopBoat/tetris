@@ -8,6 +8,11 @@
 #include <string>
 #include <vector>
 
+extern SDL_GamepadButton hardDropControllerBind;
+extern SDL_GamepadButton holdControllerBind;
+extern SDL_GamepadButton rotateClockwiseControllerBind;
+extern SDL_GamepadButton rotateCounterClockwiseControllerBind;
+
 void showSplashScreen();
 
 bool init(std::string title = "Tetris (CopBoat's Version)");
