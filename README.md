@@ -5,7 +5,12 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
 
 ## Features
 - Implements the [Super Rotation System](https://tetris.wiki/Super_Rotation_System)
-- Lock Delay TBD
+- Lock Delay of 30 frames (0.5 seconds) with 10 resets allocated for horizontal movement and 5 resets allocated for rotations
+- Next imediate is piece displayed upon placement
+- The current piece may be swaped for the hold piece once per placement
+- Visual modification options for the board, pieces, and placement preivew
+- Fullscreen toggle, small, standard, and large presets, as well as conventional click and drag can be used to resize the game window 
+- Highscores and settings are preserved between play sessions (not yet implemented)
 - Controller support for Xinput gamepads
   (Other gamepads such as switch pro, daulshock, etc. will most likely work as well but are untested)
 

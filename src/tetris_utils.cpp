@@ -700,10 +700,13 @@ void autoDrop(bool canPlaceNextPiece){
 void handleLockDelay(bool canPlaceNextPiece) {
     if (!canPlaceNextPiece && !hardDropFlag)
     {
+        SDL_Log("Piece landed:" + pieceLanded ? "true" : "false");
+        
         if (!pieceLanded) {
             pieceLanded = true;
             lockDelayCounter = 0;
         } else {
+            SDL_Log("Lock delay count: %d", lockDelayCounter);
             lockDelayCounter++;
             if (lockDelayCounter >= lockDelayFrames) {
                 newPiece = true;
@@ -853,6 +856,10 @@ bool paused = false; // To track if the game is paused
 //piece state variables for lock delay
 int lockDelayFrames = 30; // Number of frames to allow after landing (adjust as desired)
 int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
+int lockDelayMovesUsed = 0; // Counts moves used during lock delay
+int lockDelayRotationsUsed = 0; // Counts rotations used during lock delay
+const int maxLockDelayMoves = 10; // Max moves allowed during lock delay
+const int maxLockDelayRotations = 5; // Max rotations allowed during lock delay
 bool pieceLanded = false; // True if just landed, false if still falling
 
 Board board; // The game board

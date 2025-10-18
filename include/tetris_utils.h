@@ -67,6 +67,10 @@ extern bool paused;
 
 extern int lockDelayFrames;
 extern int lockDelayCounter;
+extern int lockDelayMovesUsed;
+extern int lockDelayRotationsUsed;
+extern const int maxLockDelayMoves;
+extern const int maxLockDelayRotations;
 extern bool pieceLanded;
 
 extern Board board;
