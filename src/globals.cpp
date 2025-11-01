@@ -447,31 +447,94 @@ void renderUI() {
     holdLabel.render( 520, 380 );
     highScoreLabel.render( 520, 560 );
     highScore.render( 520, 600 );
-    SDL_SetRenderDrawColor( gRenderer, 128, 128, 128, 255 ); // Gray color for pieces
-    for (int sx = 0; sx < nextPiece.width; ++sx) { // render next piece in the UI
-            for (int sy = 0; sy < nextPiece.height; ++sy) {
-                if (nextPiece.shape[sy][sx] != 0) {
-                    int boardX = nextPiece.x + sx;
-                    int boardY = nextPiece.y + sy;
-                    SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 265.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
-                    SDL_RenderFillRect(gRenderer, &rect);
-                }
-            }
-        }
-    for (int sx = 0; sx < holdPiece.width; ++sx) { // render hold piece in the UI
-            for (int sy = 0; sy < holdPiece.height; ++sy) {
-                if (holdPiece.shape[sy][sx] != 0) {
-                    int boardX = holdPiece.x + sx;
-                    int boardY = holdPiece.y + sy;
-                    SDL_FRect rect{ 540.f + sx * blockSize/2 + spacing/2, 445.f + sy * blockSize/2 + spacing/2, blockSize/2-spacing, blockSize/2-spacing };
-                    SDL_RenderFillRect(gRenderer, &rect);
-                }
-            }
-        }
-    SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 ); // set render color to white
-    SDL_FRect nextFRect{ 510, 240, 100, 100 };
-    SDL_RenderRect( gRenderer, &nextFRect ); // Render a rectangle for the next piece
+
+    // Define rectangles for next/hold pieces (used for centering and frame rendering)
+    SDL_FRect nextFRect{ 510.f, 240.f, 100.f, 100.f };
     SDL_FRect holdFRect{ 510.f, 420.f, 100.f, 100.f };
+
+    SDL_SetRenderDrawColor( gRenderer, 128, 128, 128, 255 ); // Gray color for pieces
+
+    // ---- Render NEXT piece centered in nextFRect ----
+    {
+        // Compute bounding box of occupied cells
+        int minSX = nextPiece.width, maxSX = -1;
+        int minSY = nextPiece.height, maxSY = -1;
+        for (int sy = 0; sy < nextPiece.height; ++sy) {
+            for (int sx = 0; sx < nextPiece.width; ++sx) {
+                if (nextPiece.shape[sy][sx] != 0) {
+                    if (sx < minSX) minSX = sx;
+                    if (sx > maxSX) maxSX = sx;
+                    if (sy < minSY) minSY = sy;
+                    if (sy > maxSY) maxSY = sy;
+                }
+            }
+        }
+        // If piece is empty (shouldn't happen), skip drawing
+        if (maxSX >= minSX && maxSY >= minSY) {
+            const float step = blockSize / 2.0f;                 // cell-to-cell step
+            const float drawSize = step - spacing;               // size of each drawn block
+            const int cellsX = (maxSX - minSX + 1);
+            const int cellsY = (maxSY - minSY + 1);
+            const float pieceW = cellsX * step - spacing;        // total drawn width
+            const float pieceH = cellsY * step - spacing;        // total drawn height
+
+            const float baseX = nextFRect.x + (nextFRect.w - pieceW) / 2.0f;
+            const float baseY = nextFRect.y + (nextFRect.h - pieceH) / 2.0f;
+
+            for (int sy = 0; sy < nextPiece.height; ++sy) {
+                for (int sx = 0; sx < nextPiece.width; ++sx) {
+                    if (nextPiece.shape[sy][sx] != 0) {
+                        const float x = baseX + (sx - minSX) * step + spacing / 2.0f;
+                        const float y = baseY + (sy - minSY) * step + spacing / 2.0f;
+                        SDL_FRect rect{ x, y, drawSize, drawSize };
+                        SDL_RenderFillRect(gRenderer, &rect);
+                    }
+                }
+            }
+        }
+    }
+
+    // ---- Render HOLD piece centered in holdFRect ----
+    {
+        // Compute bounding box of occupied cells
+        int minSX = holdPiece.width, maxSX = -1;
+        int minSY = holdPiece.height, maxSY = -1;
+        for (int sy = 0; sy < holdPiece.height; ++sy) {
+            for (int sx = 0; sx < holdPiece.width; ++sx) {
+                if (holdPiece.shape[sy][sx] != 0) {
+                    if (sx < minSX) minSX = sx;
+                    if (sx > maxSX) maxSX = sx;
+                    if (sy < minSY) minSY = sy;
+                    if (sy > maxSY) maxSY = sy;
+                }
+            }
+        }
+        if (maxSX >= minSX && maxSY >= minSY) {
+            const float step = blockSize / 2.0f;
+            const float drawSize = step - spacing;
+            const int cellsX = (maxSX - minSX + 1);
+            const int cellsY = (maxSY - minSY + 1);
+            const float pieceW = cellsX * step - spacing;
+            const float pieceH = cellsY * step - spacing;
+
+            const float baseX = holdFRect.x + (holdFRect.w - pieceW) / 2.0f;
+            const float baseY = holdFRect.y + (holdFRect.h - pieceH) / 2.0f;
+
+            for (int sy = 0; sy < holdPiece.height; ++sy) {
+                for (int sx = 0; sx < holdPiece.width; ++sx) {
+                    if (holdPiece.shape[sy][sx] != 0) {
+                        const float x = baseX + (sx - minSX) * step + spacing / 2.0f;
+                        const float y = baseY + (sy - minSY) * step + spacing / 2.0f;
+                        SDL_FRect rect{ x, y, drawSize, drawSize };
+                        SDL_RenderFillRect(gRenderer, &rect);
+                    }
+                }
+            }
+        }
+    }
+
+    SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 ); // set render color to white
+    SDL_RenderRect( gRenderer, &nextFRect ); // Render a rectangle for the next piece
     SDL_RenderRect( gRenderer, &holdFRect ); // Render a rectangle for the hold piece
     
     if (gridLinesEnabled) { // Draw grid lines
