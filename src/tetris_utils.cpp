@@ -5,6 +5,54 @@
 #include <climits>
 #include <algorithm>
 
+namespace {
+    // Map from current rotation state to the SRS wall-kick table index
+    // CW: 0->R, R->2, 2->L, L->0
+    // CCW: 0->L, L->2, 2->R, R->0
+    constexpr int SRS_INDEX_CW[4]  = {0, 1, 2, 3};
+    constexpr int SRS_INDEX_CCW[4] = {4, 7, 6, 5};
+
+    // Find occupied horizontal bounds (min/max column) in a shape
+    std::pair<int,int> occupiedXBounds(const std::vector<std::vector<int>>& shape) {
+        int h = static_cast<int>(shape.size());
+        int w = h ? static_cast<int>(shape[0].size()) : 0;
+        int minCol = w, maxCol = -1;
+        for (int sy = 0; sy < h; ++sy) {
+            for (int sx = 0; sx < w; ++sx) {
+                if (shape[sy][sx] != 0) {
+                    if (sx < minCol) minCol = sx;
+                    if (sx > maxCol) maxCol = sx;
+                }
+            }
+        }
+        if (maxCol < 0) return {0, -1}; // empty
+        return {minCol, maxCol};
+    }
+
+    // Prioritize offsets to reduce sideways crawl when landed: prefer dx==0 first
+    std::vector<std::pair<int,int>> prioritizeOffsets(const std::vector<std::pair<int,int>>& in) {
+        if (!pieceLanded) return in; // keep original SRS order while falling
+        std::vector<std::pair<int,int>> zeros;
+        std::vector<std::pair<int,int>> nonzeros;
+        zeros.reserve(in.size());
+        nonzeros.reserve(in.size());
+        for (auto& o : in) {
+            if (o.first == 0) zeros.push_back(o); else nonzeros.push_back(o);
+        }
+        // Stable by |dx| to minimize crawl if we must move horizontally
+        std::stable_sort(nonzeros.begin(), nonzeros.end(), [](auto a, auto b){
+            int da = std::abs(a.first), db = std::abs(b.first);
+            if (da != db) return da < db;
+            return a.second < b.second; // small vertical first as tie-breaker
+        });
+        std::vector<std::pair<int,int>> out;
+        out.reserve(in.size());
+        out.insert(out.end(), zeros.begin(), zeros.end());
+        out.insert(out.end(), nonzeros.begin(), nonzeros.end());
+        return out;
+    }
+}
+
 bool checkPlacement(const Piece& piece, const Board& board, int newX, int newY) {
     bool placementValid = true;
     for (int sx = 0; sx < piece.width; ++sx) {
@@ -97,20 +145,65 @@ void rotateIPieceClockwise() {
         }
     }
 
-    for (const auto& offset: wallKickOffsetsI[rotatedPiece.rotation]) {
-        // Check if rotated piece fits at (newX, newY)
+    // Use correct SRS table for I piece (CW) based on current state
+    int idx = SRS_INDEX_CW[currentPiece.rotation];
+    SDL_Log("I CW from %d to %d using idx %d", currentPiece.rotation, rotatedPiece.rotation, idx);
+    auto tries = prioritizeOffsets(wallKickOffsetsI[idx]);
+    bool applied = false;
+    for (const auto& offset: tries) {
         if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-            // Apply rotation
             currentPiece.shape = newShape;
             std::swap(currentPiece.width, currentPiece.height);
             currentPiece.rotation = (currentPiece.rotation + 1) % 4;
 
             currentPiece.x = rotatedPiece.x + offset.first;
             currentPiece.y = rotatedPiece.y + offset.second;
-
-            
-            
+            SDL_Log("I CW kick applied: (%d,%d)", offset.first, offset.second);
+            applied = true;
             break;
+        }
+    }
+    if (!applied) {
+        // Edge assist: mirror dx when at a wall
+        auto [minCol, maxCol] = occupiedXBounds(newShape);
+        bool rightWall = (rotatedPiece.x + maxCol) >= boardWidth;
+        bool leftWall  = (rotatedPiece.x + minCol) < 0;
+        bool rotated = false;
+        if (rightWall || leftWall) {
+            for (const auto& o : tries) {
+                auto m = std::make_pair(-o.first, o.second);
+                if (checkPlacement(rotatedPiece, board, m.first, m.second)) {
+                    currentPiece.shape = newShape;
+                    std::swap(currentPiece.width, currentPiece.height);
+                    currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+                    currentPiece.x = rotatedPiece.x + m.first;
+                    currentPiece.y = rotatedPiece.y + m.second;
+                    SDL_Log("I CW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    rotated = true;
+                    break;
+                }
+            }
+        }
+        // Nudge-assist when grounded: try a small horizontal pre-shift then re-run kicks
+        if (!rotated && pieceLanded) {
+            int targetRot = (currentPiece.rotation + 1) % 4;
+            for (int nudge : {-1, 1}) {
+                for (const auto& o : tries) {
+                    int dx = nudge + o.first;
+                    int dy = o.second;
+                    if (checkPlacement(rotatedPiece, board, dx, dy)) {
+                        currentPiece.shape = newShape;
+                        std::swap(currentPiece.width, currentPiece.height);
+                        currentPiece.rotation = targetRot;
+                        currentPiece.x = rotatedPiece.x + dx;
+                        currentPiece.y = rotatedPiece.y + dy;
+                        SDL_Log("I CW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        rotated = true;
+                        break;
+                    }
+                }
+                if (rotated) break;
+            }
         }
     }
 }
@@ -129,18 +222,64 @@ void rotatePieceClockwise() {
     rotatedPiece.height = currentPiece.width;
     rotatedPiece.rotation = (currentPiece.rotation + 1) % 4;
     
-    for (const auto& offset : wallKickOffsets[rotatedPiece.rotation]) {
-        
-        // Check if rotated piece fits at (newX, newY)
+    // Use correct SRS table for JLSTZ (CW) based on current state
+    int idx = SRS_INDEX_CW[currentPiece.rotation];
+    SDL_Log("CW from %d to %d using idx %d", currentPiece.rotation, rotatedPiece.rotation, idx);
+    auto tries = prioritizeOffsets(wallKickOffsets[idx]);
+    bool applied = false;
+    for (const auto& offset : tries) {
         if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-            // Apply rotation and offset
             currentPiece.shape = newShape;
             std::swap(currentPiece.width, currentPiece.height);
             
-            currentPiece.x = currentPiece.x + offset.first;
-            currentPiece.y = currentPiece.y + offset.second;
+            currentPiece.x = rotatedPiece.x + offset.first;
+            currentPiece.y = rotatedPiece.y + offset.second;
             currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+
+            SDL_Log("CW kick applied: (%d,%d)", offset.first, offset.second);
+            applied = true;
             break;
+        }
+    }
+    if (!applied) {
+        auto [minCol, maxCol] = occupiedXBounds(newShape);
+        bool rightWall = (rotatedPiece.x + maxCol) >= boardWidth;
+        bool leftWall  = (rotatedPiece.x + minCol) < 0;
+        bool rotated = false;
+        if (rightWall || leftWall) {
+            for (const auto& o : tries) {
+                auto m = std::make_pair(-o.first, o.second);
+                if (checkPlacement(rotatedPiece, board, m.first, m.second)) {
+                    currentPiece.shape = newShape;
+                    std::swap(currentPiece.width, currentPiece.height);
+                    currentPiece.x = rotatedPiece.x + m.first;
+                    currentPiece.y = rotatedPiece.y + m.second;
+                    currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+                    SDL_Log("CW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    rotated = true;
+                    break;
+                }
+            }
+        }
+        if (!rotated && pieceLanded) {
+            int targetRot = (currentPiece.rotation + 1) % 4;
+            for (int nudge : {-1, 1}) {
+                for (const auto& o : tries) {
+                    int dx = nudge + o.first;
+                    int dy = o.second;
+                    if (checkPlacement(rotatedPiece, board, dx, dy)) {
+                        currentPiece.shape = newShape;
+                        std::swap(currentPiece.width, currentPiece.height);
+                        currentPiece.x = rotatedPiece.x + dx;
+                        currentPiece.y = rotatedPiece.y + dy;
+                        currentPiece.rotation = targetRot;
+                        SDL_Log("CW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        rotated = true;
+                        break;
+                    }
+                }
+                if (rotated) break;
+            }
         }
     }
 }
@@ -157,7 +296,7 @@ void rotateIPieceCounterClockwise() {
     rotatedPiece.shape = newShape;
     rotatedPiece.width = currentPiece.height;
     rotatedPiece.height = currentPiece.width;
-    rotatedPiece.rotation = (currentPiece.rotation + 3) % 4;
+    rotatedPiece.rotation = (currentPiece.rotation + 3) % 4; // CCW without negative modulo
 
     if (rotatedPiece.rotation % 4 == 1 || rotatedPiece.rotation % 4 == 3) 
     {
@@ -180,17 +319,63 @@ void rotateIPieceCounterClockwise() {
         }
     }
 
-    for (const auto& offset: wallKickOffsetsI[(rotatedPiece.rotation + 8) % 4]) {
-        // Check if rotated piece fits at (newX, newY)
+    // Use correct SRS table for I piece (CCW) based on current state
+    int idxCCW = SRS_INDEX_CCW[currentPiece.rotation];
+    SDL_Log("I CCW from %d to %d using idx %d", currentPiece.rotation, rotatedPiece.rotation, idxCCW);
+    auto tries = prioritizeOffsets(wallKickOffsetsI[idxCCW]);
+    bool applied = false;
+    for (const auto& offset: tries) {
         if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-            // Apply rotation
             currentPiece.shape = newShape;
             std::swap(currentPiece.width, currentPiece.height);
-            currentPiece.rotation = (currentPiece.rotation - 1) % 4;
+            currentPiece.rotation = (currentPiece.rotation + 3) % 4; // CCW safely
 
             currentPiece.x = rotatedPiece.x + offset.first;
             currentPiece.y = rotatedPiece.y + offset.second;
+            SDL_Log("I CCW kick applied: (%d,%d)", offset.first, offset.second);
+            applied = true;
             break;
+        }
+    }
+    if (!applied) {
+        auto [minCol, maxCol] = occupiedXBounds(newShape);
+        bool rightWall = (rotatedPiece.x + maxCol) >= boardWidth;
+        bool leftWall  = (rotatedPiece.x + minCol) < 0;
+        bool rotated = false;
+        if (rightWall || leftWall) {
+            for (const auto& o : tries) {
+                auto m = std::make_pair(-o.first, o.second);
+                if (checkPlacement(rotatedPiece, board, m.first, m.second)) {
+                    currentPiece.shape = newShape;
+                    std::swap(currentPiece.width, currentPiece.height);
+                    currentPiece.rotation = (currentPiece.rotation + 3) % 4; // CCW
+                    currentPiece.x = rotatedPiece.x + m.first;
+                    currentPiece.y = rotatedPiece.y + m.second;
+                    SDL_Log("I CCW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    rotated = true;
+                    break;
+                }
+            }
+        }
+        if (!rotated && pieceLanded) {
+            int targetRot = (currentPiece.rotation + 3) % 4;
+            for (int nudge : {-1, 1}) {
+                for (const auto& o : tries) {
+                    int dx = nudge + o.first;
+                    int dy = o.second;
+                    if (checkPlacement(rotatedPiece, board, dx, dy)) {
+                        currentPiece.shape = newShape;
+                        std::swap(currentPiece.width, currentPiece.height);
+                        currentPiece.rotation = targetRot;
+                        currentPiece.x = rotatedPiece.x + dx;
+                        currentPiece.y = rotatedPiece.y + dy;
+                        SDL_Log("I CCW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        rotated = true;
+                        break;
+                    }
+                }
+                if (rotated) break;
+            }
         }
     }
 }
@@ -207,20 +392,64 @@ void rotatePieceCounterClockwise() {
     rotatedPiece.shape = newShape;
     rotatedPiece.width = currentPiece.height;
     rotatedPiece.height = currentPiece.width;
-    rotatedPiece.rotation = (currentPiece.rotation - 1) % 4;
+    rotatedPiece.rotation = (currentPiece.rotation + 3) % 4; // CCW target state
     
-    for (const auto& offset : wallKickOffsets[(rotatedPiece.rotation + 8) % 4]) {
-        
-        // Check if rotated piece fits at (newX, newY)
+    int idx = SRS_INDEX_CCW[currentPiece.rotation];
+    SDL_Log("CCW from %d to %d using idx %d", currentPiece.rotation, rotatedPiece.rotation, idx);
+    auto tries = prioritizeOffsets(wallKickOffsets[idx]);
+    bool applied = false;
+    for (const auto& offset : tries) {
         if (checkPlacement(rotatedPiece, board, offset.first, offset.second)) {
-            // Apply rotation and offset
             currentPiece.shape = newShape;
             std::swap(currentPiece.width, currentPiece.height);
             
-            currentPiece.x = currentPiece.x + offset.first;
-            currentPiece.y = currentPiece.y + offset.second;
-            currentPiece.rotation = (currentPiece.rotation - 1) % 4;
+            currentPiece.x = rotatedPiece.x + offset.first;
+            currentPiece.y = rotatedPiece.y + offset.second;
+            currentPiece.rotation = (currentPiece.rotation + 3) % 4; // CCW safely
+            SDL_Log("CCW kick applied: (%d,%d)", offset.first, offset.second);
+            applied = true;
             break;
+        }
+    }
+    if (!applied) {
+        auto [minCol, maxCol] = occupiedXBounds(newShape);
+        bool rightWall = (rotatedPiece.x + maxCol) >= boardWidth;
+        bool leftWall  = (rotatedPiece.x + minCol) < 0;
+        bool rotated = false;
+        if (rightWall || leftWall) {
+            for (const auto& o : tries) {
+                auto m = std::make_pair(-o.first, o.second);
+                if (checkPlacement(rotatedPiece, board, m.first, m.second)) {
+                    currentPiece.shape = newShape;
+                    std::swap(currentPiece.width, currentPiece.height);
+                    currentPiece.x = rotatedPiece.x + m.first;
+                    currentPiece.y = rotatedPiece.y + m.second;
+                    currentPiece.rotation = (currentPiece.rotation + 3) % 4;
+                    SDL_Log("CCW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    rotated = true;
+                    break;
+                }
+            }
+        }
+        if (!rotated && pieceLanded) {
+            int targetRot = (currentPiece.rotation + 3) % 4;
+            for (int nudge : {-1, 1}) {
+                for (const auto& o : tries) {
+                    int dx = nudge + o.first;
+                    int dy = o.second;
+                    if (checkPlacement(rotatedPiece, board, dx, dy)) {
+                        currentPiece.shape = newShape;
+                        std::swap(currentPiece.width, currentPiece.height);
+                        currentPiece.x = rotatedPiece.x + dx;
+                        currentPiece.y = rotatedPiece.y + dy;
+                        currentPiece.rotation = targetRot;
+                        SDL_Log("CCW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        rotated = true;
+                        break;
+                    }
+                }
+                if (rotated) break;
+            }
         }
     }
 }
@@ -700,13 +929,13 @@ void autoDrop(bool canPlaceNextPiece){
 void handleLockDelay(bool canPlaceNextPiece) {
     if (!canPlaceNextPiece && !hardDropFlag)
     {
-        SDL_Log("Piece landed:" + pieceLanded ? "true" : "false");
+        //SDL_Log("Piece landed:" + pieceLanded ? "true" : "false");
         
         if (!pieceLanded) {
             pieceLanded = true;
             lockDelayCounter = 0;
         } else {
-            SDL_Log("Lock delay count: %d", lockDelayCounter);
+            //SDL_Log("Lock delay count: %d", lockDelayCounter);
             lockDelayCounter++;
             if (lockDelayCounter >= lockDelayFrames) {
                 newPiece = true;
@@ -859,7 +1088,7 @@ int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
 int lockDelayMovesUsed = 0; // Counts moves used during lock delay
 int lockDelayRotationsUsed = 0; // Counts rotations used during lock delay
 const int maxLockDelayMoves = 10; // Max moves allowed during lock delay
-const int maxLockDelayRotations = 5; // Max rotations allowed during lock delay
+const int maxLockDelayRotations = 20; // Max rotations allowed during lock delay
 bool pieceLanded = false; // True if just landed, false if still falling
 
 Board board; // The game board
