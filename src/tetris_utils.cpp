@@ -159,6 +159,13 @@ void rotateIPieceClockwise() {
             currentPiece.x = rotatedPiece.x + offset.first;
             currentPiece.y = rotatedPiece.y + offset.second;
             SDL_Log("I CW kick applied: (%d,%d)", offset.first, offset.second);
+            // Lock delay: count and reset only on successful rotation while grounded
+            if (pieceLandedOnce && pieceLanded) {
+                if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                    lockDelayRotationsUsed++;
+                    lockDelayCounter = 0;
+                }
+            }
             applied = true;
             break;
         }
@@ -179,6 +186,13 @@ void rotateIPieceClockwise() {
                     currentPiece.x = rotatedPiece.x + m.first;
                     currentPiece.y = rotatedPiece.y + m.second;
                     SDL_Log("I CW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    // Lock delay: count and reset only on successful rotation while grounded
+                    if (pieceLandedOnce && pieceLanded) {
+                        if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                            lockDelayRotationsUsed++;
+                            lockDelayCounter = 0;
+                        }
+                    }
                     rotated = true;
                     break;
                 }
@@ -198,6 +212,13 @@ void rotateIPieceClockwise() {
                         currentPiece.x = rotatedPiece.x + dx;
                         currentPiece.y = rotatedPiece.y + dy;
                         SDL_Log("I CW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        // Lock delay: count and reset only on successful rotation while grounded
+                        if (pieceLandedOnce && pieceLanded) {
+                            if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                                lockDelayRotationsUsed++;
+                                lockDelayCounter = 0;
+                            }
+                        }
                         rotated = true;
                         break;
                     }
@@ -237,6 +258,13 @@ void rotatePieceClockwise() {
             currentPiece.rotation = (currentPiece.rotation + 1) % 4;
 
             SDL_Log("CW kick applied: (%d,%d)", offset.first, offset.second);
+            // Lock delay: count and reset only on successful rotation while grounded
+            if (pieceLandedOnce && pieceLanded) {
+                if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                    lockDelayRotationsUsed++;
+                    lockDelayCounter = 0;
+                }
+            }
             applied = true;
             break;
         }
@@ -256,6 +284,13 @@ void rotatePieceClockwise() {
                     currentPiece.y = rotatedPiece.y + m.second;
                     currentPiece.rotation = (currentPiece.rotation + 1) % 4;
                     SDL_Log("CW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    // Lock delay: count and reset only on successful rotation while grounded
+                    if (pieceLandedOnce && pieceLanded) {
+                        if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                            lockDelayRotationsUsed++;
+                            lockDelayCounter = 0;
+                        }
+                    }
                     rotated = true;
                     break;
                 }
@@ -274,6 +309,13 @@ void rotatePieceClockwise() {
                         currentPiece.y = rotatedPiece.y + dy;
                         currentPiece.rotation = targetRot;
                         SDL_Log("CW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        // Lock delay: count and reset only on successful rotation while grounded
+                        if (pieceLandedOnce && pieceLanded) {
+                            if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                                lockDelayRotationsUsed++;
+                                lockDelayCounter = 0;
+                            }
+                        }
                         rotated = true;
                         break;
                     }
@@ -333,6 +375,13 @@ void rotateIPieceCounterClockwise() {
             currentPiece.x = rotatedPiece.x + offset.first;
             currentPiece.y = rotatedPiece.y + offset.second;
             SDL_Log("I CCW kick applied: (%d,%d)", offset.first, offset.second);
+            // Lock delay: count and reset only on successful rotation while grounded
+            if (pieceLandedOnce && pieceLanded) {
+                if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                    lockDelayRotationsUsed++;
+                    lockDelayCounter = 0;
+                }
+            }
             applied = true;
             break;
         }
@@ -352,6 +401,13 @@ void rotateIPieceCounterClockwise() {
                     currentPiece.x = rotatedPiece.x + m.first;
                     currentPiece.y = rotatedPiece.y + m.second;
                     SDL_Log("I CCW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    // Lock delay: count and reset only on successful rotation while grounded
+                    if (pieceLandedOnce && pieceLanded) {
+                        if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                            lockDelayRotationsUsed++;
+                            lockDelayCounter = 0;
+                        }
+                    }
                     rotated = true;
                     break;
                 }
@@ -370,6 +426,13 @@ void rotateIPieceCounterClockwise() {
                         currentPiece.x = rotatedPiece.x + dx;
                         currentPiece.y = rotatedPiece.y + dy;
                         SDL_Log("I CCW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        // Lock delay: count and reset only on successful rotation while grounded
+                        if (pieceLandedOnce && pieceLanded) {
+                            if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                                lockDelayRotationsUsed++;
+                                lockDelayCounter = 0;
+                            }
+                        }
                         rotated = true;
                         break;
                     }
@@ -407,6 +470,13 @@ void rotatePieceCounterClockwise() {
             currentPiece.y = rotatedPiece.y + offset.second;
             currentPiece.rotation = (currentPiece.rotation + 3) % 4; // CCW safely
             SDL_Log("CCW kick applied: (%d,%d)", offset.first, offset.second);
+            // Lock delay: count and reset only on successful rotation while grounded
+            if (pieceLandedOnce && pieceLanded) {
+                if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                    lockDelayRotationsUsed++;
+                    lockDelayCounter = 0;
+                }
+            }
             applied = true;
             break;
         }
@@ -426,6 +496,13 @@ void rotatePieceCounterClockwise() {
                     currentPiece.y = rotatedPiece.y + m.second;
                     currentPiece.rotation = (currentPiece.rotation + 3) % 4;
                     SDL_Log("CCW edge-assist kick applied: (%d,%d)", m.first, m.second);
+                    // Lock delay: count and reset only on successful rotation while grounded
+                    if (pieceLandedOnce && pieceLanded) {
+                        if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                            lockDelayRotationsUsed++;
+                            lockDelayCounter = 0;
+                        }
+                    }
                     rotated = true;
                     break;
                 }
@@ -444,6 +521,13 @@ void rotatePieceCounterClockwise() {
                         currentPiece.y = rotatedPiece.y + dy;
                         currentPiece.rotation = targetRot;
                         SDL_Log("CCW nudge-assist applied: base %d, kick (%d,%d)", nudge, o.first, o.second);
+                        // Lock delay: count and reset only on successful rotation while grounded
+                        if (pieceLandedOnce && pieceLanded) {
+                            if (lockDelayRotationsUsed < maxLockDelayRotations) {
+                                lockDelayRotationsUsed++;
+                                lockDelayCounter = 0;
+                            }
+                        }
                         rotated = true;
                         break;
                     }
@@ -918,6 +1002,8 @@ bool checkGameOver() {
     return gameOver;
 }
 
+bool pieceLandedOnce = false;
+
 void autoDrop(bool canPlaceNextPiece){
     Uint64 now = SDL_GetTicksNS();
     if (now - lastDropTime >= dropSpeed && canPlaceNextPiece) {
@@ -930,8 +1016,10 @@ void handleLockDelay(bool canPlaceNextPiece) {
     if (!canPlaceNextPiece && !hardDropFlag)
     {
         //SDL_Log("Piece landed:" + pieceLanded ? "true" : "false");
+
+        pieceLandedOnce = true;
         
-        if (!pieceLanded) {
+        if (!pieceLanded && (lockDelayMovesUsed < maxLockDelayMoves) && (lockDelayRotationsUsed < maxLockDelayRotations)) {
             pieceLanded = true;
             lockDelayCounter = 0;
         } else {
@@ -944,8 +1032,9 @@ void handleLockDelay(bool canPlaceNextPiece) {
             }
         }
     } else {
+        // Piece is airborne or hard dropped: clear landed flag but do not forcibly reset counter here.
         pieceLanded = false;
-        lockDelayCounter = 0;
+        // lockDelayCounter left unchanged; only successful moves/rotations while grounded reset it.
     }
 }
 
@@ -1047,6 +1136,13 @@ void handlePieceLanded() {
         newPiece = false;
         hardDropFlag = false;
         holdUsed = false; // Reset hold usage for the new piece
+
+        // Reset lock-delay state for the new piece
+        pieceLanded = false;
+        pieceLandedOnce = false;
+        lockDelayCounter = 0;
+        lockDelayMovesUsed = 0;
+        lockDelayRotationsUsed = 0;
     }
 }
 
@@ -1088,7 +1184,7 @@ int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
 int lockDelayMovesUsed = 0; // Counts moves used during lock delay
 int lockDelayRotationsUsed = 0; // Counts rotations used during lock delay
 const int maxLockDelayMoves = 10; // Max moves allowed during lock delay
-const int maxLockDelayRotations = 20; // Max rotations allowed during lock delay
+const int maxLockDelayRotations = 5; // Max rotations allowed during lock delay
 bool pieceLanded = false; // True if just landed, false if still falling
 
 Board board; // The game board
@@ -1097,6 +1193,13 @@ void moveLeft() {
     if (checkPlacement(currentPiece, board, -1, 0)){ //check if can move left
         pieceSet(currentPiece, board); //clear current position
         currentPiece.x -= 1; //move left
+        // Lock delay: count and reset only on successful horizontal move while grounded
+        if (pieceLandedOnce && pieceLanded) {
+            if (lockDelayMovesUsed < maxLockDelayMoves) {
+                lockDelayMovesUsed++;
+                lockDelayCounter = 0;
+            }
+        }
     }
 }
 
@@ -1104,10 +1207,22 @@ void moveRight() {
     if (checkPlacement(currentPiece, board, 1, 0)){ //check if can move right
         pieceSet(currentPiece, board); //clear current position
         currentPiece.x += 1; //move right
+        // Lock delay: count and reset only on successful horizontal move while grounded
+        if (pieceLandedOnce && pieceLanded) {
+            if (lockDelayMovesUsed < maxLockDelayMoves) {
+                lockDelayMovesUsed++;
+                lockDelayCounter = 0;
+            }
+        }
     }
 }
 
 void rotateClockwise() {
+    // Hard guard: prevent further rotations on ground if rotation budget is exhausted
+    if (pieceLandedOnce && pieceLanded && lockDelayRotationsUsed >= maxLockDelayRotations) {
+        SDL_Log("Rotation CW blocked: rotation budget exhausted during lock delay");
+        return;
+    }
     if (currentPiece.width == currentPiece.height) { // Dont perform rotation if O piece
         return;
     }
@@ -1121,6 +1236,11 @@ void rotateClockwise() {
 }
 
 void rotateCounterClockwise() {
+    // Hard guard: prevent further rotations on ground if rotation budget is exhausted
+    if (pieceLandedOnce && pieceLanded && lockDelayRotationsUsed >= maxLockDelayRotations) {
+        SDL_Log("Rotation CCW blocked: rotation budget exhausted during lock delay");
+        return;
+    }
     if (currentPiece.width == currentPiece.height) { // Dont perform rotation if O piece
         return;
     }

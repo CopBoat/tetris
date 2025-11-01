@@ -558,21 +558,6 @@ int main( int argc, char* args[] )
                 }
             }
 
-            //only allow rotation and x movement to reset lockDelayCounter
-            if (pieceLanded && (action == InputAction::MoveLeft || action == InputAction::MoveRight || repeatedHorizontalThisFrame)) {
-                if (lockDelayMovesUsed < maxLockDelayMoves) {
-                    lockDelayMovesUsed++;
-                    lockDelayCounter = 0;
-                }
-            }
-
-            if (pieceLanded && (action == InputAction::RotateClockwise || action == InputAction::RotateCounterClockwise)) {
-                if (lockDelayRotationsUsed < maxLockDelayRotations) {
-                    lockDelayRotationsUsed++;
-                    lockDelayCounter = 0;
-                }
-            }
-
             renderUI();
 
             // if (paused) // todo add paused as a game state

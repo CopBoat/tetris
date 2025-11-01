@@ -72,6 +72,7 @@ extern int lockDelayRotationsUsed;
 extern const int maxLockDelayMoves;
 extern const int maxLockDelayRotations;
 extern bool pieceLanded;
+extern bool pieceLandedOnce;
 
 extern Board board;
 
