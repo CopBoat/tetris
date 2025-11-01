@@ -904,6 +904,30 @@ void animateGameOverFill(int cellDelayMs /*=12*/) {
     clearingRows = savedClearing;
 }
 
+// --- Flash overlay for Tetris (4-line clear) ---
+static bool tetrisFlashActive = false;
+static Uint64 tetrisFlashStart = 0;
+static constexpr Uint64 tetrisFlashDuration = 220000000; // ~0.22s in ns
+
+static inline void renderTetrisFlash(Uint64 nowNs) {
+    if (!tetrisFlashActive) return;
+    Uint64 elapsed = nowNs - tetrisFlashStart;
+    if ((Sint64)elapsed <= 0) return;
+    if (elapsed >= tetrisFlashDuration) { tetrisFlashActive = false; return; }
+
+    float t = static_cast<float>(elapsed) / static_cast<float>(tetrisFlashDuration); // 0..1
+    float alphaF = (1.0f - t);
+    Uint8 a = static_cast<Uint8>(std::clamp(alphaF, 0.0f, 1.0f) * 200.0f); // fade from 200->0
+
+    SDL_BlendMode oldMode;
+    SDL_GetRenderDrawBlendMode(gRenderer, &oldMode);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, a);
+    SDL_FRect full{0.f, 0.f, static_cast<float>(kScreenWidth), static_cast<float>(kScreenHeight)};
+    SDL_RenderFillRect(gRenderer, &full);
+    SDL_SetRenderDrawBlendMode(gRenderer, oldMode);
+}
+
 void animateRowClear() {
     Uint64 now = SDL_GetTicksNS();
     int animFrame = ((now - clearAnimStart) * clearAnimSteps) / clearAnimDuration;
@@ -932,6 +956,9 @@ void animateRowClear() {
     renderBoardBlocksDuringAnimation();
 
     renderParticles();
+
+    // Draw white flash overlay (only active for 4-line clears)
+    renderTetrisFlash(now);
 
     SDL_RenderPresent(gRenderer);
 
@@ -1085,6 +1112,11 @@ void handlePieceLanded() {
             rowsToClear.clear();
             for (int i = 0; i < boardHeight; ++i) {
                 if (fullRows[i] == 1) rowsToClear.push_back(i);
+            }
+            // Trigger a brief white flash when clearing 4 rows (Tetris)
+            if (clearedRows == 4) {
+                tetrisFlashActive = true;
+                tetrisFlashStart = clearAnimStart; // align flash with animation start
             }
             // Play a sound here?
         }
