@@ -657,7 +657,7 @@ float spacing = 2.0f; // Amount of spacing between blocks
 
 LTimer capTimer; //frames per second timer
 Uint64 lastDropTime = SDL_GetTicksNS(); //
-Uint64 dropSpeed{ 700000000 }; // Milliseconds between drops
+Uint64 dropSpeed{ 900000000 }; // Milliseconds between drops
 
 // Wall kick offset vectors (J, L, S, T, Z pieces)
 //state names: 0 = spawn state, R = 1 clockwise rotation from spawn, L = 1 counterclockwise rotation from spawn, 2 = 2 rotations from spawn in either direction

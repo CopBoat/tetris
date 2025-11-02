@@ -1189,18 +1189,23 @@ void handlePieceLanded() {
             int calculatedLevel = rowsCleared / 10;
             if (calculatedLevel > levelValue) {
                 levelValue = calculatedLevel;
+                dropSpeed = std::max(50000000, 900000000 - (levelValue * 70000000)); // Cap at 0.05s drop speed
             }
-            level.loadFromRenderedText( std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF } );
+            //level.loadFromRenderedText( std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF } );
 
-            if (levelValue > levelIncrease) {
-                if (levelValue < 5) {
-                    dropSpeed -= 200000000; // Increase speed- may cause crash after level 4
-                } else if (levelValue == 5) {
-                    dropSpeed -= 20000000; // Increase speed- may cause crash after level 4
-                    level.loadFromRenderedText( "MAX", { 0xFF, 0xFF, 0xFF, 0xFF } );
-                }
-                levelIncrease = levelValue;
-            }
+            // if (levelValue > levelIncrease) {
+            //     if (levelValue < 5) {
+            //         dropSpeed -= 200000000; // Increase speed- may cause crash after level 4
+            //     } else if (levelValue == 5) {
+            //         dropSpeed -= 20000000; // Increase speed- may cause crash after level 4
+            //         level.loadFromRenderedText( "MAX", { 0xFF, 0xFF, 0xFF, 0xFF } );
+            //     }
+            //     levelIncrease = levelValue;
+            // }
+
+            //dropSpeed = std::max(100000000, 900000000 - (levelValue * 80000000)); // Cap at 0.1s drop speed
+            //dropSpeed = 50000000;
+            
 
         currentPiece.y = 0; // Reset for next falling piece
         currentPiece.x = boardWidth / 2; // Reset horizontal position to center
@@ -1361,5 +1366,7 @@ void pauseGame() {
 void increaseLevel() {
     if (levelValue < maxLevelAchieved) {
         levelValue++;
+        rowsCleared += 10; // Ensure level corresponds to rows cleared
+        dropSpeed = std::max(50000000, 900000000 - (levelValue * 70000000)); // Cap at 0.05s drop speed
     }
 }
