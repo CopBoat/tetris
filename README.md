@@ -27,6 +27,20 @@ Non-directional inputs can be rebound in the options menu
 | Hard Drop | Spacebar | A Button |
 | Hold | h | LB Button |
 | Pause | Escape | Start Button |
+| Increase Level | L | Select Button |
+
+## Game Saves
+Progress is saved to the file tetris_save.dat in the same directory as the executable. If the file does not exist when the game attempts to save, one will be created.
+
+### Saving Game Progress
+- High Score is saved and displayed in the bottom right corner during gameplay. 
+- Highest Level reached is saved and pressing the L key or the Select button during gameplay will increase the level you are currently on. You may increase the level until it reaches the highest level reached in your save file. 
+- The game writes to tetris_save.dat when you return to the main menu or get a game over. 
+
+### Saving Settings
+- 
+
+You may reset your progress at any time by deleting tetris_save.dat, or moving it to another directory. 
 
 ## Installation
 ~~Grab one of the releases or compile it yourself with the instructions below!~~

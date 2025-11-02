@@ -442,6 +442,7 @@ void renderUI() {
     scoreLabel.render( 520, 40);
     score.render( 520, 80 );
     levelLabel.render( 520, 120 );
+    level.loadFromRenderedText( std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF } );
     level.render( 520, 160 );
     nextLabel.render( 520, 200 );
     holdLabel.render( 520, 380 );

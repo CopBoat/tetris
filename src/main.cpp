@@ -104,6 +104,7 @@ int main( int argc, char* args[] )
                     
                     switch (handleMenuEvent(e)) {
                         case 0: // Start Game
+                            readSaveData();
                             currentState = GameState::PLAYING;
                             renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight);
                             continue;
@@ -242,6 +243,7 @@ int main( int argc, char* args[] )
                                 //case SDLK_H: action = InputAction::Hold; break;
                                 //case SDLK_SPACE: action = InputAction::HardDrop; break;
                                 case SDLK_ESCAPE: action = InputAction::Pause; break;
+                                case SDLK_L: action = InputAction::IncreaseLevel; break;
                                 default: 
                                     if (e.key.key == hardDropKey) {
                                         action = InputAction::HardDrop;
@@ -327,6 +329,7 @@ int main( int argc, char* args[] )
                             //case hardDropControllerBind:         action = InputAction::HardDrop;               break;
                             //case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
                             case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
+                            case SDL_GAMEPAD_BUTTON_BACK:       action = InputAction::IncreaseLevel;             break; // Ignore select button
                             default: 
                                 if (e.gbutton.button == hardDropControllerBind) {
                                     action = InputAction::HardDrop;
@@ -531,6 +534,7 @@ int main( int argc, char* args[] )
                 case InputAction::HardDrop: { hardDrop(); break; }
                 case InputAction::Hold: { hold(); break; }
                 case InputAction::Pause: { currentState = GameState::PUASE; break; }
+                case InputAction::IncreaseLevel: { increaseLevel(); break; }
                 default: break;
             }
 

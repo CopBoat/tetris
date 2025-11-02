@@ -88,7 +88,8 @@ enum class InputAction {
     SoftDrop,
     HardDrop,
     Hold,
-    Pause
+    Pause,
+    IncreaseLevel
 };
 
 void moveLeft();
@@ -98,6 +99,7 @@ void rotateCounterClockwise();
 void softDrop();
 void hardDrop();
 void hold();
+void increaseLevel();
 void pauseGame();
 
 #endif

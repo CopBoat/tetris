@@ -1186,8 +1186,10 @@ void handlePieceLanded() {
 
             rowsCleared += clearedRows;
 
-            
-            levelValue = rowsCleared / 10;
+            int calculatedLevel = rowsCleared / 10;
+            if (calculatedLevel > levelValue) {
+                levelValue = calculatedLevel;
+            }
             level.loadFromRenderedText( std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF } );
 
             if (levelValue > levelIncrease) {
@@ -1354,4 +1356,10 @@ void hold() {
 
 void pauseGame() {
     paused = !paused;
+}
+
+void increaseLevel() {
+    if (levelValue < maxLevelAchieved) {
+        levelValue++;
+    }
 }
