@@ -35,6 +35,9 @@ void animateRowClear();
 
 bool checkGameOver();
 
+void readSaveData();
+void writeSaveData();
+
 void autoDrop(bool canPlaceNextPiece);
 
 void handleLockDelay(bool canPlaceNextPiece);

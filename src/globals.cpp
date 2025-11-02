@@ -592,6 +592,7 @@ LTexture highScore;
 
 int scoreValue = 0;
 int levelValue = 0;
+int maxLevelAchieved = 0;
 int highScoreValue = 0;
 
 // Define Tetris pieces
@@ -2119,6 +2120,9 @@ void renderPauseMenu() {
 }
 
 void quitToMenu() {
+
+    writeSaveData();
+
     // Reset game state
     currentState = GameState::MENU;
     scoreValue = 0;

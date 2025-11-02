@@ -4,6 +4,7 @@
 #include <math.h>
 #include <climits>
 #include <algorithm>
+#include <fstream>
 
 namespace {
     // Map from current rotation state to the SRS wall-kick table index
@@ -1025,8 +1026,47 @@ bool checkGameOver() {
         level.loadFromRenderedText(std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF });
         newPiece = false;
         
+        //write save data
+        writeSaveData();
+
     }
     return gameOver;
+}
+
+void readSaveData() {
+    std::ifstream saveFile("tetris_save.dat", std::ios::binary);
+    if (saveFile.is_open()) {
+        int savedHighScore = 0;
+        int savedLevel = 0;
+        saveFile.read(reinterpret_cast<char*>(&savedHighScore), sizeof(savedHighScore));
+        saveFile.read(reinterpret_cast<char*>(&savedLevel), sizeof(savedLevel));
+        saveFile.close();
+        if (savedHighScore > highScoreValue) highScoreValue = savedHighScore;
+        if (savedLevel > maxLevelAchieved) maxLevelAchieved = savedLevel;
+    }
+}
+
+void writeSaveData() {
+    // Read previous values
+    int savedHighScore = 0;
+    int savedLevel = 0;
+    std::ifstream inFile("tetris_save.dat", std::ios::binary);
+    if (inFile.is_open()) {
+        inFile.read(reinterpret_cast<char*>(&savedHighScore), sizeof(savedHighScore));
+        inFile.read(reinterpret_cast<char*>(&savedLevel), sizeof(savedLevel));
+        inFile.close();
+    }
+    // Only update if new values are higher
+    int outHighScore = std::max(highScoreValue, savedHighScore);
+    int outLevel = std::max(levelValue, savedLevel);
+    std::ofstream saveFile("tetris_save.dat", std::ios::binary);
+    if (saveFile.is_open()) {
+        saveFile.write(reinterpret_cast<const char*>(&outHighScore), sizeof(outHighScore));
+        saveFile.write(reinterpret_cast<const char*>(&outLevel), sizeof(outLevel));
+        saveFile.close();
+    } else {
+        SDL_Log("Failed to open save file for writing.");
+    }
 }
 
 bool pieceLandedOnce = false;

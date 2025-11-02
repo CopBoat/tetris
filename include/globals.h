@@ -79,6 +79,7 @@ extern LTexture quitTexture;
 
 extern int scoreValue;
 extern int levelValue;
+extern int maxLevelAchieved;
 extern int highScoreValue;
 
 extern Piece iPiece;

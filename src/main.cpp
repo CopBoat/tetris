@@ -26,6 +26,9 @@ int main( int argc, char* args[] )
 
     bool playing = false;
 
+    //load save
+    readSaveData();
+
     //Initialize
     if( init(chooseWindowTitle()) == false ) //initialize SDL Components
     {
