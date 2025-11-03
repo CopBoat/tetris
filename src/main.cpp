@@ -46,7 +46,7 @@ int main( int argc, char* args[] )
     else //if everything initialized fine
     {
 
-        applyWindowSize(WindowSizeMenuSelection);
+        applyWindowSize(WindowSizeMenuSelection, true); //apply saved window size at startup
 
         if (fullscreenEnabled) {SDL_SetWindowFullscreen(gWindow, true);}
 

@@ -1406,15 +1406,12 @@ int WindowSizeMenuSelection = 0;
 
 bool fullscreenEnabled = false;
 
-void applyWindowSize(int selection) {
+void applyWindowSize(int selection, bool startup) {
 
-    if (fullscreenEnabled) {
+    if (fullscreenEnabled && !startup) {
         toggleFullscreen();
         fullscreenEnabled = false; 
     }
-
-    // Center the window on screen after resizing
-    //SDL_SetWindowPosition(gWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     if (WindowSizeMenuSelection == 0) { // Standard
         SDL_SetWindowSize(gWindow, kScreenWidthStandard, kScreenHeightStandard);

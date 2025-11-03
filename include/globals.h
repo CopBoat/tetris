@@ -209,7 +209,7 @@ int handleGameOptionsMenuEvent(const SDL_Event&);
 extern int VideoOptionsMenuSelection;
 extern bool fullscreenEnabled;
 extern int WindowSizeMenuSelection;
-void applyWindowSize(int);
+void applyWindowSize(int, bool startup = false);
 void renderVideoOptions();
 static inline void moveVideoOptionsMenuSelection(int);
 int handleVideoOptionsMenuEvent(const SDL_Event&);
