@@ -106,7 +106,6 @@ int main( int argc, char* args[] )
                     
                     switch (handleMenuEvent(e)) {
                         case 0: // Start Game
-                            writeSaveData();
                             currentState = GameState::PLAYING;
                             renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight);
                             continue;
@@ -126,6 +125,7 @@ int main( int argc, char* args[] )
                         case 0: { // Game 
                                     switch (handleGameOptionsMenuEvent(e)) {
                                         case 4: // Back
+                                            writeSaveData();
                                             currentState = GameState::MENU;
                                             break;
                                         default:
@@ -136,6 +136,7 @@ int main( int argc, char* args[] )
                         case 1: // Video
                                 switch (handleVideoOptionsMenuEvent(e)){
                                     case 3: //back
+                                        writeSaveData();
                                         currentState = GameState::MENU;
                                         break;
                                     default:
@@ -145,6 +146,7 @@ int main( int argc, char* args[] )
                         case 2: // Input
                                 switch (handleInputOptionsMenuEvent(e)){
                                     case 5: //back
+                                        writeSaveData();
                                         currentState = GameState::MENU;
                                         break;
                                     default:
