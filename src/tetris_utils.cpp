@@ -1034,33 +1034,64 @@ bool checkGameOver() {
 }
 
 void readSaveData() {
+
     std::ifstream saveFile("tetris_save.dat", std::ios::binary);
     if (saveFile.is_open()) {
+        bool fs = false;
+        int wsms = 0;
+        bool glenabled = true;
+        int bg = 0;
+        int pps = 0;
         int savedHighScore = 0;
         int savedLevel = 0;
+        saveFile.read(reinterpret_cast<char*>(&fs), sizeof(fs));
+        saveFile.read(reinterpret_cast<char*>(&wsms), sizeof(wsms));
+        saveFile.read(reinterpret_cast<char*>(&glenabled), sizeof(glenabled));
+        saveFile.read(reinterpret_cast<char*>(&bg), sizeof(bg));
+        saveFile.read(reinterpret_cast<char*>(&pps), sizeof(pps));
         saveFile.read(reinterpret_cast<char*>(&savedHighScore), sizeof(savedHighScore));
         saveFile.read(reinterpret_cast<char*>(&savedLevel), sizeof(savedLevel));
         saveFile.close();
+        fullscreenEnabled = fs;
+        WindowSizeMenuSelection = wsms;
+        //if (!fullscreenEnabled) { applyWindowSize(WindowSizeMenuSelection); }
+        gridLinesEnabled = glenabled;
+        blockGapSelection = bg;
+        placementPreviewSelection = pps;
+        spacing = blockGapValues[blockGapSelection];
         if (savedHighScore > highScoreValue) highScoreValue = savedHighScore;
         if (savedLevel > maxLevelAchieved) maxLevelAchieved = savedLevel;
     }
 }
 
 void writeSaveData() {
-    // Read previous values
+    bool fs = fullscreenEnabled;
+    int wsms = WindowSizeMenuSelection;
+    bool glenabled = gridLinesEnabled;
+    int bg = blockGapSelection;
+    int pps = placementPreviewSelection;
     int savedHighScore = 0;
     int savedLevel = 0;
+    // Read previous values
     std::ifstream inFile("tetris_save.dat", std::ios::binary);
     if (inFile.is_open()) {
+        // inFile.read(reinterpret_cast<char*>(&fs), sizeof(fs)); // Read previous fullscreen (not strictly needed)
+        // inFile.read(reinterpret_cast<char*>(&glenabled), sizeof(glenabled)); // Read previous grid lines setting
+        // inFile.read(reinterpret_cast<char*>(&bg), sizeof(bg)); // Read previous block gap setting
+        // inFile.read(reinterpret_cast<char*>(&pps), sizeof(pps)); // Read previous placement preview setting
         inFile.read(reinterpret_cast<char*>(&savedHighScore), sizeof(savedHighScore));
         inFile.read(reinterpret_cast<char*>(&savedLevel), sizeof(savedLevel));
         inFile.close();
     }
-    // Only update if new values are higher
     int outHighScore = std::max(highScoreValue, savedHighScore);
     int outLevel = std::max(levelValue, savedLevel);
     std::ofstream saveFile("tetris_save.dat", std::ios::binary);
     if (saveFile.is_open()) {
+        saveFile.write(reinterpret_cast<const char*>(&fs), sizeof(fs));
+        saveFile.write(reinterpret_cast<const char*>(&wsms), sizeof(wsms));
+        saveFile.write(reinterpret_cast<const char*>(&glenabled), sizeof(glenabled));
+        saveFile.write(reinterpret_cast<const char*>(&bg), sizeof(bg));
+        saveFile.write(reinterpret_cast<const char*>(&pps), sizeof(pps));
         saveFile.write(reinterpret_cast<const char*>(&outHighScore), sizeof(outHighScore));
         saveFile.write(reinterpret_cast<const char*>(&outLevel), sizeof(outLevel));
         saveFile.close();

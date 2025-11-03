@@ -381,6 +381,10 @@ bool init(std::string title)
 
             AcquireFirstGamepadIfNone();   // hot-plug safe initial grab
 
+            //set window to preset size
+            // SDL_Log("Applying saved window size settings... %d", WindowSizeMenuSelection);
+            // applyWindowSize(WindowSizeMenuSelection);
+
             // Optional: tweak double-click timeout (ms)
             SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "350");
             

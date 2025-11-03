@@ -46,6 +46,8 @@ int main( int argc, char* args[] )
     else //if everything initialized fine
     {
 
+        applyWindowSize(WindowSizeMenuSelection);
+
         if (fullscreenEnabled) {SDL_SetWindowFullscreen(gWindow, true);}
 
         // Show splash screen (logo first, then text)
@@ -104,7 +106,7 @@ int main( int argc, char* args[] )
                     
                     switch (handleMenuEvent(e)) {
                         case 0: // Start Game
-                            readSaveData();
+                            writeSaveData();
                             currentState = GameState::PLAYING;
                             renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight);
                             continue;

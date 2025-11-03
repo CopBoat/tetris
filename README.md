@@ -10,7 +10,7 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
 - The current piece may be swaped for the hold piece once per placement
 - Visual modification options for the board, pieces, and placement preivew
 - Fullscreen toggle, small, standard, and large presets, as well as conventional click and drag can be used to resize the game window 
-- Highscores and settings are preserved between play sessions (not yet implemented)
+- Highscores and settings are preserved between play sessions
 - Controller support for Xinput gamepads
   (Other gamepads such as switch pro, daulshock, etc. will most likely work as well but are untested)
 
@@ -25,20 +25,21 @@ Non-directional inputs can be rebound in the options menu
 | Rotate Clockwise | Up Arrow | X Button |
 | Rotate Counter Clockwise | Left  CTRL | B Button |
 | Hard Drop | Spacebar | A Button |
-| Hold | h | LB Button |
+| Hold | H Key | LB Button |
 | Pause | Escape | Start Button |
-| Increase Level | L | Select Button |
+| Increase Level | L Key | Select Button |
 
-## Game Saves
+## Save Data
 Progress is saved to the file tetris_save.dat in the same directory as the executable. If the file does not exist when the game attempts to save, one will be created.
 
 ### Saving Game Progress
 - High Score is saved and displayed in the bottom right corner during gameplay. 
-- Highest Level reached is saved and pressing the L key or the Select button during gameplay will increase the level you are currently on. You may increase the level until it reaches the highest level reached in your save file. 
+- Highest Level reached is saved and pressing the L key or the Select button during gameplay will increase the level you are currently on. You may increase the level until it reaches the highest level recorded in your save file. 
 - The game writes to tetris_save.dat when you return to the main menu or get a game over. 
 
 ### Saving Settings
-- 
+- Game, Video, and Input options are all saved between sessions.
+- The game writes your settings to tetris_save.dat when you exit the options menu.
 
 You may reset your progress at any time by deleting tetris_save.dat, or moving it to another directory. 
 

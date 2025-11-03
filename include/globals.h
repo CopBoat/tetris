@@ -197,6 +197,8 @@ int handleMenuEvent(const SDL_Event&);
 
 extern int optionsTab;
 extern bool gridLinesEnabled;
+extern int blockGapSelection;
+extern float blockGapValues[4];
 extern int placementPreviewSelection;
 
 extern int GameOptionsMenuSelection;
@@ -206,6 +208,8 @@ int handleGameOptionsMenuEvent(const SDL_Event&);
 
 extern int VideoOptionsMenuSelection;
 extern bool fullscreenEnabled;
+extern int WindowSizeMenuSelection;
+void applyWindowSize(int);
 void renderVideoOptions();
 static inline void moveVideoOptionsMenuSelection(int);
 int handleVideoOptionsMenuEvent(const SDL_Event&);
