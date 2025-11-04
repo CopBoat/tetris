@@ -1084,6 +1084,7 @@ void readSaveData() {
         spacing = blockGapValues[blockGapSelection];
         if (savedHighScore > highScoreValue) highScoreValue = savedHighScore;
         if (savedLevel > maxLevelAchieved) maxLevelAchieved = savedLevel;
+        SDL_Log("Loaded save data: High Score=%d, Max Level=%d", highScoreValue, maxLevelAchieved);
     }
 }
 
@@ -1106,16 +1107,27 @@ void writeSaveData() {
     // Read previous values
     std::ifstream inFile("tetris_save.dat", std::ios::binary);
     if (inFile.is_open()) {
-        // inFile.read(reinterpret_cast<char*>(&fs), sizeof(fs)); // Read previous fullscreen (not strictly needed)
-        // inFile.read(reinterpret_cast<char*>(&glenabled), sizeof(glenabled)); // Read previous grid lines setting
-        // inFile.read(reinterpret_cast<char*>(&bg), sizeof(bg)); // Read previous block gap setting
-        // inFile.read(reinterpret_cast<char*>(&pps), sizeof(pps)); // Read previous placement preview setting
+        inFile.read(reinterpret_cast<char*>(&fs), sizeof(fs)); // Read previous fullscreen (not strictly needed)
+        inFile.read(reinterpret_cast<char*>(&wsms), sizeof(wsms)); // Read previous window size setting
+        inFile.read(reinterpret_cast<char*>(&glenabled), sizeof(glenabled)); // Read previous grid lines setting
+        inFile.read(reinterpret_cast<char*>(&bg), sizeof(bg)); // Read previous block gap setting
+        inFile.read(reinterpret_cast<char*>(&pps), sizeof(pps)); // Read previous placement preview setting
+        inFile.read(reinterpret_cast<char*>(&hdk), sizeof(hdk));
+        inFile.read(reinterpret_cast<char*>(&hk), sizeof(hk));
+        inFile.read(reinterpret_cast<char*>(&rck), sizeof(rck));
+        inFile.read(reinterpret_cast<char*>(&rcck), sizeof(rcck));
+        inFile.read(reinterpret_cast<char*>(&hdcb), sizeof(hdcb));
+        inFile.read(reinterpret_cast<char*>(&hcb), sizeof(hcb));
+        inFile.read(reinterpret_cast<char*>(&rccb), sizeof(rccb));
+        inFile.read(reinterpret_cast<char*>(&rcccb), sizeof(rcccb));
         inFile.read(reinterpret_cast<char*>(&savedHighScore), sizeof(savedHighScore));
         inFile.read(reinterpret_cast<char*>(&savedLevel), sizeof(savedLevel));
         inFile.close();
     }
     int outHighScore = std::max(highScoreValue, savedHighScore);
     int outLevel = std::max(levelValue, savedLevel);
+    SDL_Log("levelValue: %d, savedLevel: %d, outLevel: %d", levelValue, savedLevel, outLevel);
+    SDL_Log("Saving data: High Score=%d, Max Level=%d", outHighScore, outLevel);
     std::ofstream saveFile("tetris_save.dat", std::ios::binary);
     if (saveFile.is_open()) {
         saveFile.write(reinterpret_cast<const char*>(&fs), sizeof(fs));
