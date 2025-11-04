@@ -2124,6 +2124,7 @@ void renderPauseMenu() {
 void quitToMenu() {
 
     writeSaveData();
+    maxLevelAchieved = std::max(levelValue, maxLevelAchieved);
 
     // Reset game state
     currentState = GameState::MENU;

@@ -1005,6 +1005,10 @@ bool checkGameOver() {
         // Render "Game Over" animation
         animateGameOverFill(12);
 
+        //write save data
+        writeSaveData();
+        maxLevelAchieved = std::max(levelValue, maxLevelAchieved);
+
         // Reset game state instead of restarting main
         scoreValue = 0;
         levelValue = 0;
@@ -1025,10 +1029,6 @@ bool checkGameOver() {
         score.loadFromRenderedText(std::to_string(scoreValue), { 0xFF, 0xFF, 0xFF, 0xFF });
         level.loadFromRenderedText(std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF });
         newPiece = false;
-        
-        //write save data
-        writeSaveData();
-
     }
     return gameOver;
 }
