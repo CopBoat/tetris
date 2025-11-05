@@ -52,6 +52,7 @@ void AcquireFirstGamepadIfNone() {
             break;
         }
     }
+    if (ids) SDL_free(ids);
 }
 
 //define keyboard inputs
@@ -378,6 +379,7 @@ bool init(std::string title)
                     SDL_CloseGamepad(gamepd);
                 }
             }
+            if (ids) SDL_free(ids);
 
             AcquireFirstGamepadIfNone();   // hot-plug safe initial grab
 
@@ -2184,54 +2186,59 @@ void renderWipeIntro(SDL_Renderer* renderer, int screenWidth, int screenHeight) 
 
 void close()
 {
+    // Close active gamepad if open
     if (gActiveGamepad) {
         SDL_CloseGamepad(gActiveGamepad);
         gActiveGamepad = nullptr;
     }
 
-    //Destroy window
-    SDL_DestroyRenderer( gRenderer );
-    gRenderer = nullptr;
-    SDL_DestroyWindow( gWindow );
-    gWindow = nullptr;
-
-    //Quit SDL subsystems
-    SDL_Quit();
-
-     //Clean up textures
+    // Destroy textures
     scoreLabel.destroy();
     levelLabel.destroy();
     nextLabel.destroy();
     holdLabel.destroy();
-    highScore.destroy();
+    highScoreLabel.destroy();
+    gameOverLabel.destroy();
+    resumeTexture.destroy();
+    quitTexture.destroy();
     score.destroy();
     level.destroy();
     highScore.destroy();
-    
-    
-    //Free font
-    TTF_CloseFont( gFont );
-    gFont = nullptr;
 
-    // Close gamepad if open
-    int gamePadCount = 0;
-    SDL_JoystickID *ids = SDL_GetGamepads(&gamePadCount);
-    for (int i = 0; i < gamePadCount; ++i) {
-        SDL_Gamepad* gamepad = SDL_OpenGamepad(ids[i]);
-        if (gamepad != nullptr) {
-            SDL_CloseGamepad(gamepad);
-        }
-    }
+    // Menu / options textures
+    titleTexture.destroy();
+    playTexture.destroy();
+    optionsTexture.destroy();
+    backTexture.destroy();
 
+    optionsTitleTexture.destroy();
+    optionsGridLabel.destroy();
+    optionsBlockGapLabel.destroy();
+    optionsPlacementPreviewLabel.destroy();
+
+    optionsTitleTexture2.destroy();
+    windowSizeLabel.destroy();
+    fullscreenLabel.destroy();
+    fullscreenTipLabel.destroy();
+
+    optionsTitleTexture3.destroy();
+    inputConfigHardDropLabel.destroy();
+    inputConfigHoldLabel.destroy();
+    inputConfigRotateCWLabel.destroy();
+    inputConfigRotateCCWLabel.destroy();
+    inputConfigKeyDirectionLabel.destroy();
+
+    // Destroy cached menu logo texture
     destroyMenuLogoTexture();
 
-    //Destroy window
-    SDL_DestroyRenderer( gRenderer );
-    gRenderer = nullptr;
-    SDL_DestroyWindow( gWindow );
-    gWindow = nullptr;
-
-    //Quit SDL subsystems
+    // Close font and quit TTF
+    if (gFont) { TTF_CloseFont( gFont ); gFont = nullptr; }
     TTF_Quit();
+
+    // Destroy renderer and window once
+    if (gRenderer) { SDL_DestroyRenderer( gRenderer ); gRenderer = nullptr; }
+    if (gWindow)   { SDL_DestroyWindow( gWindow );   gWindow = nullptr; }
+
+    // Quit SDL subsystems
     SDL_Quit();
 }
