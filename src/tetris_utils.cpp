@@ -1034,7 +1034,6 @@ bool checkGameOver() {
 }
 
 void readSaveData() {
-
     std::ifstream saveFile("tetris_save.dat", std::ios::binary);
     if (saveFile.is_open()) {
         bool fs = false;
@@ -1107,22 +1106,39 @@ void writeSaveData() {
     // Read previous values
     std::ifstream inFile("tetris_save.dat", std::ios::binary);
     if (inFile.is_open()) {
-        inFile.read(reinterpret_cast<char*>(&fs), sizeof(fs)); // Read previous fullscreen (not strictly needed)
-        inFile.read(reinterpret_cast<char*>(&wsms), sizeof(wsms)); // Read previous window size setting
-        inFile.read(reinterpret_cast<char*>(&glenabled), sizeof(glenabled)); // Read previous grid lines setting
-        inFile.read(reinterpret_cast<char*>(&bg), sizeof(bg)); // Read previous block gap setting
-        inFile.read(reinterpret_cast<char*>(&pps), sizeof(pps)); // Read previous placement preview setting
-        inFile.read(reinterpret_cast<char*>(&hdk), sizeof(hdk));
-        inFile.read(reinterpret_cast<char*>(&hk), sizeof(hk));
-        inFile.read(reinterpret_cast<char*>(&rck), sizeof(rck));
-        inFile.read(reinterpret_cast<char*>(&rcck), sizeof(rcck));
-        inFile.read(reinterpret_cast<char*>(&hdcb), sizeof(hdcb));
-        inFile.read(reinterpret_cast<char*>(&hcb), sizeof(hcb));
-        inFile.read(reinterpret_cast<char*>(&rccb), sizeof(rccb));
-        inFile.read(reinterpret_cast<char*>(&rcccb), sizeof(rcccb));
-        inFile.read(reinterpret_cast<char*>(&savedHighScore), sizeof(savedHighScore));
-        inFile.read(reinterpret_cast<char*>(&savedLevel), sizeof(savedLevel));
+        bool prev_fs = false;
+        int prev_wsms = 0;
+        bool prev_glenabled = true;
+        int prev_bg = 0;
+        int prev_pps = 0;
+        int prev_hdk = SDLK_SPACE;
+        int prev_hk = SDLK_H;
+        int prev_rck = SDLK_UP;
+        int prev_rcck = SDLK_LCTRL;
+        int prev_hdcb = static_cast<int>(SDL_GAMEPAD_BUTTON_SOUTH);
+        int prev_hcb = static_cast<int>(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
+        int prev_rccb = static_cast<int>(SDL_GAMEPAD_BUTTON_WEST);
+        int prev_rcccb = static_cast<int>(SDL_GAMEPAD_BUTTON_EAST);
+        int prevHighScore = 0;
+        int prevLevel = 0;
+        inFile.read(reinterpret_cast<char*>(&prev_fs), sizeof(prev_fs));
+        inFile.read(reinterpret_cast<char*>(&prev_wsms), sizeof(prev_wsms));
+        inFile.read(reinterpret_cast<char*>(&prev_glenabled), sizeof(prev_glenabled));
+        inFile.read(reinterpret_cast<char*>(&prev_bg), sizeof(prev_bg));
+        inFile.read(reinterpret_cast<char*>(&prev_pps), sizeof(prev_pps));
+        inFile.read(reinterpret_cast<char*>(&prev_hdk), sizeof(prev_hdk));
+        inFile.read(reinterpret_cast<char*>(&prev_hk), sizeof(prev_hk));
+        inFile.read(reinterpret_cast<char*>(&prev_rck), sizeof(prev_rck));
+        inFile.read(reinterpret_cast<char*>(&prev_rcck), sizeof(prev_rcck));
+        inFile.read(reinterpret_cast<char*>(&prev_hdcb), sizeof(prev_hdcb));
+        inFile.read(reinterpret_cast<char*>(&prev_hcb), sizeof(prev_hcb));
+        inFile.read(reinterpret_cast<char*>(&prev_rccb), sizeof(prev_rccb));
+        inFile.read(reinterpret_cast<char*>(&prev_rcccb), sizeof(prev_rcccb));
+        inFile.read(reinterpret_cast<char*>(&prevHighScore), sizeof(prevHighScore));
+        inFile.read(reinterpret_cast<char*>(&prevLevel), sizeof(prevLevel));
         inFile.close();
+        savedHighScore = prevHighScore;
+        savedLevel = prevLevel;
     }
     int outHighScore = std::max(highScoreValue, savedHighScore);
     int outLevel = std::max(levelValue, savedLevel);
