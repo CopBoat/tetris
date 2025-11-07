@@ -101,7 +101,6 @@ void showSplashScreen()
         static_cast<float>(drawH)
     };
 
-    // Text (created after small delay so logo shows first)
     const char* splashText = "CopBoat's Version";
     SDL_Texture* textTex = nullptr;
     int textW = 0, textH = 0;
@@ -203,16 +202,10 @@ void showSplashScreen()
 
 bool loadMedia()
 {
-    //File loading flag
     bool success{ true };
-
-    //Load scene font
-    // std::string fontPath{ "assets/Pixeboy.ttf" };
-    // gFont = TTF_OpenFont( 24 ); 
 
     SDL_IOStream* io_stream = SDL_IOFromMem(assets_Pixeboy_ttf, assets_Pixeboy_ttf_len);
     gFont = TTF_OpenFontIO(io_stream, 1, 24); // 1 = auto free rw
-
 
     if( gFont == nullptr )
     {
@@ -310,11 +303,6 @@ bool init(std::string title)
 {
     bool success{ true };
 
-    // if (SDL_INIT_GAMEPAD == false) {
-    //     SDL_Log("SDL Gamepad subsystem could not initialize! SDL error: %s\n");
-    //     success = false;
-    // }
-
     if (SDL_Init( SDL_INIT_VIDEO) == false )
     {
         SDL_Log( "SDL could not initialize! SDL error: %s\n", SDL_GetError() );
@@ -326,29 +314,21 @@ bool init(std::string title)
     }
     else
     {
-
-        
-
         if( SDL_CreateWindowAndRenderer( title.c_str(), kScreenWidth, kScreenHeight, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer ) == false )
         {
             SDL_Log( "Window could not be created! SDL error: %s\n", SDL_GetError() );
             success = false;
         } else
         {
-            // Make rendering use a fixed logical size and scale to the window
-            // 3-arg variant (SDL3 older API) + set scale mode separately
             if (!SDL_SetRenderLogicalPresentation(gRenderer, kScreenWidth, kScreenHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
                 SDL_Log("Failed to set logical presentation: %s", SDL_GetError());
             }
-            //SDL_SetRenderScaleMode(gRenderer, SDL_SCALEMODE_NEAREST);
-
             const float aspect = static_cast<float>(kScreenWidth) / static_cast<float>(kScreenHeight);
             if (!SDL_SetWindowAspectRatio(gWindow, aspect, aspect)) {
                 SDL_Log("Could not set window aspect ratio: %s", SDL_GetError());
             }
 
-            // Add this block to set the window icon
-            //SDL_Surface* iconSurface = IMG_Load("assets/tPieceIcon.png"); // Use your icon file path
+            // Set window icon
             SDL_IOStream* io_stream = SDL_IOFromMem(assets_tPieceIcon_png, assets_tPieceIcon_png_len);
             SDL_Surface* iconSurface = IMG_Load_IO(io_stream, 1); // 1 = auto free rw
             if (iconSurface != nullptr) {
@@ -383,11 +363,6 @@ bool init(std::string title)
 
             AcquireFirstGamepadIfNone();   // hot-plug safe initial grab
 
-            //set window to preset size
-            // SDL_Log("Applying saved window size settings... %d", WindowSizeMenuSelection);
-            // applyWindowSize(WindowSizeMenuSelection);
-
-            // Optional: tweak double-click timeout (ms)
             SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "350");
             
         }
@@ -429,14 +404,6 @@ void toggleFullscreen() {
     SDL_SetWindowFullscreen(gWindow, !isFullscreen);
     ApplyFullscreenCursorState();
     fullscreenEnabled = !isFullscreen;
-
-    // Disable aspect lock in fullscreen; re-enable in windowed
-    // const float aspect = static_cast<float>(kScreenWidth) / static_cast<float>(kScreenHeight);
-    // if (isFullscreen) {
-    //     SDL_SetWindowAspectRatio(gWindow, 0.0f, 0.0f); // no constraint
-    // } else {
-    //     SDL_SetWindowAspectRatio(gWindow, aspect, aspect); // lock ratio
-    // }
 }
 
 void renderUI() {
@@ -455,7 +422,7 @@ void renderUI() {
     highScoreLabel.render( 520, 560 );
     highScore.render( 520, 600 );
 
-    // Define rectangles for next/hold pieces (used for centering and frame rendering)
+    // Define rectangles for next/hold pieces
     SDL_FRect nextFRect{ 510.f, 240.f, 100.f, 100.f };
     SDL_FRect holdFRect{ 510.f, 420.f, 100.f, 100.f };
 
@@ -662,7 +629,7 @@ Piece zPiece = {
 float spacing = 2.0f; // Amount of spacing between blocks
 
 LTimer capTimer; //frames per second timer
-Uint64 lastDropTime = SDL_GetTicksNS(); //
+Uint64 lastDropTime = SDL_GetTicksNS();
 Uint64 dropSpeed{ 900000000 }; // Milliseconds between drops
 
 // Wall kick offset vectors (J, L, S, T, Z pieces)
@@ -734,7 +701,7 @@ Uint64 kSoftDrop_ARR_MS = 42;  // auto-repeat rate (soft drop)
 RepeatState gpLeft{}, gpRight{}, gpDown{};
 HDir activeH{ HDir::None };
 
-// Analog stick thresholds with hysteresis
+// Analog stick thresholds
 int kAxisPress   = 16000; // press when beyond this magnitude
 int kAxisRelease = 12000; // release when within this magnitude
 
@@ -751,7 +718,7 @@ void recomputeGamepadHeld() {
     gpDownHeld  = gpDpadDownHeld  || gpAxisDownHeld;
 }
 
-// Menu/pause analog navigation hysteresis flags
+// Menu/pause analog navigation flags
 bool menuAxisUpHeld{false}, menuAxisDownHeld{false};
 bool pauseAxisLeftHeld{false}, pauseAxisRightHeld{false};
 
@@ -771,14 +738,12 @@ LTexture windowSizeLabel;
 LTexture fullscreenLabel;
 LTexture fullscreenTipLabel;
 
-
 LTexture optionsTitleTexture3;
 LTexture inputConfigHardDropLabel;
 LTexture inputConfigHoldLabel;
 LTexture inputConfigRotateCWLabel;
 LTexture inputConfigRotateCCWLabel;
 LTexture inputConfigKeyDirectionLabel;
-
 
 int menuSelection = 0;
 
@@ -788,15 +753,12 @@ static inline void moveMenuSelection(int delta) {
     menuSelection = (menuSelection + delta + count) % count;
 }
 
-
-
-
 // ---- Menu background bouncing pieces ----
 struct MenuBouncePiece {
     const Piece* piece;
     float x, y;
     float vx, vy;
-    float rot;       // (optional, not used for shape yet)
+    float rot;
     float alpha;
     SDL_Color color;
     float cellSize;
@@ -909,13 +871,13 @@ static bool gMenuFallingInit = false;
 
 static void initMenuFallingPieces() {
     gMenuFallingPieces.clear();
-    int count = 26; // denser field than options menu
+    int count = 26;
     std::uniform_real_distribution<float> sx(0.f, (float)kScreenWidth - 120.f);
     std::uniform_real_distribution<float> sy(-600.f, (float)kScreenHeight);
     std::uniform_real_distribution<float> sc(14.f, 28.f);
     std::uniform_real_distribution<float> sv(40.f, 140.f);
     std::uniform_real_distribution<float> sd(-10.f, 10.f);
-    std::uniform_int_distribution<int> ca(55, 95); // darker than before
+    std::uniform_int_distribution<int> ca(55, 95);
 
     for (int i = 0; i < count; ++i) {
         const Piece* p = kAllPiecesPtr[i % 7];
@@ -980,7 +942,6 @@ static void renderMenuFallingPieces() {
     }
 }
 
-
 static void destroyMenuLogoTexture() {
     if (gMenuLogoTex) {
         SDL_DestroyTexture(gMenuLogoTex);
@@ -989,10 +950,6 @@ static void destroyMenuLogoTexture() {
 }
 
 void renderMenu() {
-
-    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-    // SDL_RenderClear(gRenderer);
-
 
     static Uint64 lastTicks = SDL_GetTicksNS();
     Uint64 now = SDL_GetTicksNS();
@@ -1145,9 +1102,6 @@ static inline void moveGameOptionsMenuSelection(int delta) {
 }
 
 void renderGameOptions() {
-    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-    // SDL_RenderClear(gRenderer);
-
 
     static Uint64 lastTicks = SDL_GetTicksNS();
     Uint64 now = SDL_GetTicksNS();
@@ -1167,11 +1121,10 @@ void renderGameOptions() {
     SDL_BlendMode prev;
     SDL_GetRenderDrawBlendMode(gRenderer, &prev);
     SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175); // raise alpha for stronger darkening
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175);
     SDL_FRect dim{0.f, 0.f, (float)kScreenWidth, (float)kScreenHeight};
     SDL_RenderFillRect(gRenderer, &dim);
     SDL_SetRenderDrawBlendMode(gRenderer, prev);
-    // --- end dim overlay ---
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
@@ -1432,9 +1385,6 @@ static inline void moveVideoOptionsMenuSelection(int delta) {
 }
 
 void renderVideoOptions() {
-    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-    // SDL_RenderClear(gRenderer);
-
 
     static Uint64 lastTicks = SDL_GetTicksNS();
     Uint64 now = SDL_GetTicksNS();
@@ -1454,11 +1404,10 @@ void renderVideoOptions() {
     SDL_BlendMode prev;
     SDL_GetRenderDrawBlendMode(gRenderer, &prev);
     SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175); // raise alpha for stronger darkening
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175);
     SDL_FRect dim{0.f, 0.f, (float)kScreenWidth, (float)kScreenHeight};
     SDL_RenderFillRect(gRenderer, &dim);
     SDL_SetRenderDrawBlendMode(gRenderer, prev);
-    // --- end dim overlay ---
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
@@ -1512,7 +1461,6 @@ void renderVideoOptions() {
     const int padX = 18;
     const int padY = 10;
     
-
     //rect to show current tab
     SDL_SetRenderDrawColor(gRenderer, 128, 128, 128, 70); 
     SDL_FRect tabRect{302, 10, 89, 32};
@@ -1526,7 +1474,6 @@ void renderVideoOptions() {
         static_cast<float>(selTex->getHeight() + padY * 2 - 2)
     };
     SDL_RenderFillRect(gRenderer, &selectRect); 
-
 
     //draw text
     optionsTitleTexture.render(xGame, yGame);
@@ -1700,7 +1647,6 @@ static void applyRebind(const SDL_Event& e) {
         } else if (keyToRebind == 4) {
             rotateCounterClockwiseControllerBind = b;
         }
-        // Extend for others if you later support controller binds for them
     }
 }
 
@@ -1758,10 +1704,6 @@ static bool handleRebindCapture(const SDL_Event& e) {
     return false;
 }
 
-
-
-
-
 // Helper to move menu selection (0..5) with wrap-around
 static inline void moveInputOptionsMenuSelection(int delta) {
     const int count = 6; // tab, window-size, fullscreen, back
@@ -1769,8 +1711,6 @@ static inline void moveInputOptionsMenuSelection(int delta) {
 }
 
 void renderInputOptions() {
-    // SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-    // SDL_RenderClear(gRenderer);
 
     static Uint64 lastTicks = SDL_GetTicksNS();
     Uint64 now = SDL_GetTicksNS();
@@ -1790,11 +1730,10 @@ void renderInputOptions() {
     SDL_BlendMode prev;
     SDL_GetRenderDrawBlendMode(gRenderer, &prev);
     SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175); // raise alpha for stronger darkening
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 175);
     SDL_FRect dim{0.f, 0.f, (float)kScreenWidth, (float)kScreenHeight};
     SDL_RenderFillRect(gRenderer, &dim);
     SDL_SetRenderDrawBlendMode(gRenderer, prev);
-    // --- end dim overlay ---
 
     // Use logical size for layout; renderer scales to window
     const int winW = kScreenWidth;
@@ -1885,7 +1824,6 @@ void renderInputOptions() {
     const int padX = 18;
     const int padY = 10;
     
-
     //rect to show current tab
     SDL_SetRenderDrawColor(gRenderer, 128, 128, 128, 70); 
     SDL_FRect tabRect{482, 10, 89, 32};
@@ -1911,8 +1849,6 @@ void renderInputOptions() {
     inputConfigRotateCCWLabel.render(xRCCW, yRCCW);
     backTexture.render(xBack, yBack);
 }
-
-
 
 int handleInputOptionsMenuEvent(const SDL_Event& e) {
 
@@ -2170,7 +2106,6 @@ void renderWipeIntro(SDL_Renderer* renderer, int screenWidth, int screenHeight) 
         renderBoardBlocks();
         renderUI();
         renderParticles();
-        //SDL_RenderPresent(gRenderer);
 
         // Draw overlay
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

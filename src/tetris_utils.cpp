@@ -678,7 +678,7 @@ static SDL_Color colorFromValue(int val) {
         case 1: return SDL_Color{0, 255, 255, 255};   // cyan (I)
         case 2: return SDL_Color{255, 255, 0, 255};   // yellow (O)
         case 3: return SDL_Color{128, 0, 128, 255};   // purple (T)
-        case 4: return SDL_Color{255, 0, 0, 255};     // blue (J)    NOTE: your palette labels seem swapped
+        case 4: return SDL_Color{255, 0, 0, 255};     // blue (J)
         case 5: return SDL_Color{0, 0, 255, 255};     // orange (L)
         case 6: return SDL_Color{0, 255, 0, 255};     // green (S)
         case 7: return SDL_Color{255, 0, 0, 255};     // red (Z)
@@ -689,9 +689,6 @@ static SDL_Color colorFromValue(int val) {
 // Render a hollow, translucent ghost piece at the landing position and highlight grid cells in-between
 void renderGhostPiece() {
     if (clearingRows) return; // skip during clear animation
-
-    // No ghost for O piece if you prefer; removing this keeps ghost for all
-    // if (currentPiece.width == currentPiece.height) return;
 
     int gy = computeGhostY(currentPiece, board);
     if (gy < currentPiece.y) return; // nothing to show
@@ -722,19 +719,15 @@ void renderGhostPiece() {
             };
 
             SDL_SetRenderDrawColor(gRenderer, c.r, c.g, c.b, ghostAlpha);
-// #if SDL_VERSION_ATLEAST(2,0,10)
-//             SDL_RenderDrawRectF(gRenderer, &rect);
-// #else
             SDL_FRect ir{ static_cast<int>(rect.x), static_cast<int>(rect.y),
                          static_cast<int>(rect.w), static_cast<int>(rect.h) };
             SDL_RenderRect(gRenderer, &ir);
-//#endif
         }
     }
 
     if (placementPreviewSelection == 0 ) { // Highlight grid cells between current piece and ghost along the same columns
         if (gy > currentPiece.y) {
-            const Uint8 gridAlpha = 10; // lighter, less pronounced
+            const Uint8 gridAlpha = 10; 
             SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, gridAlpha);
 
             for (int sx = 0; sx < currentPiece.width; ++sx) {
@@ -766,7 +759,6 @@ void renderGhostPiece() {
             }
         }
     }
-    
 
     // Restore previous blend mode
     SDL_SetRenderDrawBlendMode(gRenderer, oldMode);
@@ -876,8 +868,6 @@ void renderBoardBlocksDuringAnimation() {
 // Game Over animation: fill the entire board with grey blocks row-by-row, left-to-right
 void animateGameOverFill(int cellDelayMs /*=12*/) {
     const int greyVal = 8; // any non-zero value that maps to grey by default in the renderer
-
-    // Suppress ghost during this sequence (renderBoardBlocksDuringAnimation doesn't draw it anyway)
     bool savedClearing = clearingRows;
     clearingRows = true;
 
@@ -889,7 +879,7 @@ void animateGameOverFill(int cellDelayMs /*=12*/) {
             renderUI();
             renderBoardBlocksDuringAnimation();
 
-            // Optional: overlay "GAME OVER" text
+            //overlay "GAME OVER" text
             SDL_Color textColor{ 0xFF, 0x00, 0x00, 0xFF };
             gameOverLabel.loadFromRenderedText("GAME OVER", textColor);
             gameOverLabel.render(200, 300);
@@ -1197,15 +1187,12 @@ void handleLockDelay(bool canPlaceNextPiece) {
             }
         }
     } else {
-        // Piece is airborne or hard dropped: clear landed flag but do not forcibly reset counter here.
         pieceLanded = false;
-        // lockDelayCounter left unchanged; only successful moves/rotations while grounded reset it.
     }
 }
 
 void handlePieceLanded() {
     if (newPiece || hardDropFlag) { 
-                    
         for (int sx = 0; sx < currentPiece.width; ++sx) {
             for (int sy = 0; sy < currentPiece.height; ++sy) {
                 if (currentPiece.shape[sy][sx] != 0) {
@@ -1256,7 +1243,6 @@ void handlePieceLanded() {
                 tetrisFlashActive = true;
                 tetrisFlashStart = clearAnimStart; // align flash with animation start
             }
-            // Play a sound here?
         }
 
         switch (clearedRows)
@@ -1289,21 +1275,6 @@ void handlePieceLanded() {
                 levelValue = calculatedLevel;
                 dropSpeed = std::max(50000000, 900000000 - (levelValue * 70000000)); // Cap at 0.05s drop speed
             }
-            //level.loadFromRenderedText( std::to_string(levelValue+1), { 0xFF, 0xFF, 0xFF, 0xFF } );
-
-            // if (levelValue > levelIncrease) {
-            //     if (levelValue < 5) {
-            //         dropSpeed -= 200000000; // Increase speed- may cause crash after level 4
-            //     } else if (levelValue == 5) {
-            //         dropSpeed -= 20000000; // Increase speed- may cause crash after level 4
-            //         level.loadFromRenderedText( "MAX", { 0xFF, 0xFF, 0xFF, 0xFF } );
-            //     }
-            //     levelIncrease = levelValue;
-            // }
-
-            //dropSpeed = std::max(100000000, 900000000 - (levelValue * 80000000)); // Cap at 0.1s drop speed
-            //dropSpeed = 50000000;
-            
 
         currentPiece.y = 0; // Reset for next falling piece
         currentPiece.x = boardWidth / 2; // Reset horizontal position to center
@@ -1356,7 +1327,7 @@ bool alternateIPieceRotationOffset = false; // To alternate I piece rotation off
 bool paused = false; // To track if the game is paused
 
 //piece state variables for lock delay
-int lockDelayFrames = 30; // Number of frames to allow after landing (adjust as desired)
+int lockDelayFrames = 30; // Number of frames to allow after landing
 int lockDelayCounter = 0; // Counts frames since landing (reset on move/rotate)
 int lockDelayMovesUsed = 0; // Counts moves used during lock delay
 int lockDelayRotationsUsed = 0; // Counts rotations used during lock delay
