@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 
+//credit to lazyfoo.net for this class
 class LTimer
 {
     public:
