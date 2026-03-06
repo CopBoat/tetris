@@ -1023,6 +1023,66 @@ bool checkGameOver() {
     return gameOver;
 }
 
+void resetGameplayStateForNewGame() {
+    pieceTypes[0] = iPiece;
+    pieceTypes[1] = oPiece;
+    pieceTypes[2] = tPiece;
+    pieceTypes[3] = lPiece;
+    pieceTypes[4] = jPiece;
+    pieceTypes[5] = sPiece;
+    pieceTypes[6] = zPiece;
+
+    scoreValue = 0;
+    levelValue = 0;
+    rowsCleared = 0;
+    levelIncrease = 0;
+    dropSpeed = 900000000;
+
+    holdPiece = Piece();
+    holdUsed = false;
+    newPiece = false;
+    hardDropFlag = false;
+
+    clearingRows = false;
+    rowsToClear.clear();
+    clearAnimStart = 0;
+    clearAnimStep = 0;
+
+    lockDelayCounter = 0;
+    lockDelayMovesUsed = 0;
+    lockDelayRotationsUsed = 0;
+    pieceLanded = false;
+    pieceLandedOnce = false;
+
+    for (int x = 0; x < boardWidth; ++x) {
+        for (int y = 0; y < boardHeight; ++y) {
+            board.current[x][y] = 0;
+        }
+    }
+
+    pickPiece = drawPieceIndex();
+    nextPickPiece = drawPieceIndex();
+
+    if (pickPiece < 0 || pickPiece > 6) pickPiece = 0;
+    if (nextPickPiece < 0 || nextPickPiece > 6) nextPickPiece = 1;
+
+    currentPiece = pieceTypes[pickPiece];
+    nextPiece = pieceTypes[nextPickPiece];
+
+    if (currentPiece.width <= 0 || currentPiece.height <= 0 || currentPiece.shape.empty()) {
+        currentPiece = iPiece;
+    }
+    if (nextPiece.width <= 0 || nextPiece.height <= 0 || nextPiece.shape.empty()) {
+        nextPiece = oPiece;
+    }
+
+    currentPiece.x = boardWidth / 2;
+    currentPiece.y = 0;
+
+    score.loadFromRenderedText(std::to_string(scoreValue), { 0xFF, 0xFF, 0xFF, 0xFF });
+    level.loadFromRenderedText(std::to_string(levelValue + 1), { 0xFF, 0xFF, 0xFF, 0xFF });
+}
+
 void readSaveData() {
     std::ifstream saveFile("tetris_save.dat", std::ios::binary);
     if (saveFile.is_open()) {

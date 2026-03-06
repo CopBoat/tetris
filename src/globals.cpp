@@ -6,7 +6,6 @@
 #include "splashLogo.h"
 #include "Logo.h"
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <iostream>
@@ -15,6 +14,7 @@
 #include <random>
 #include <array>
 #include <algorithm>
+#include <chrono>
 
 //define controller inputs
 SDL_GamepadButton hardDropControllerBind = static_cast<SDL_GamepadButton>(SDL_GAMEPAD_BUTTON_SOUTH);
@@ -308,10 +308,6 @@ bool init(std::string title)
         SDL_Log( "SDL could not initialize! SDL error: %s\n", SDL_GetError() );
         success = false;
     }
-    else if (SDL_InitSubSystem( SDL_INIT_GAMEPAD ) == false) {
-        SDL_Log("SDL Gamepad subsystem could not initialize! SDL error: %s\n", SDL_GetError());
-        success = false;
-    }
     else
     {
         if( SDL_CreateWindowAndRenderer( title.c_str(), kScreenWidth, kScreenHeight, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer ) == false )
@@ -320,6 +316,10 @@ bool init(std::string title)
             success = false;
         } else
         {
+            SDL_SetWindowPosition(gWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+            SDL_ShowWindow(gWindow);
+            SDL_RaiseWindow(gWindow);
+
             if (!SDL_SetRenderLogicalPresentation(gRenderer, kScreenWidth, kScreenHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
                 SDL_Log("Failed to set logical presentation: %s", SDL_GetError());
             }
@@ -344,24 +344,14 @@ bool init(std::string title)
                 success = false;
             }
 
-            //initialize gamepad
-            int gamePadCount = 0;
-            SDL_JoystickID *ids = SDL_GetGamepads(&gamePadCount);
-            SDL_Gamepad* gamepad = nullptr;
-            for (int i = 0; i < gamePadCount; ++i) {
-                SDL_Gamepad* gamepd = SDL_OpenGamepad(ids[i]);
-                if (gamepad == NULL) {
-                    gamepad = gamepd;
-                }
-                //std::cout << "Gamepad connected: " << SDL_GetGamepadName(gamepd) << "\n";
-                // Close the other gamepads
-                if(i > 0) {
-                    SDL_CloseGamepad(gamepd);
-                }
+            if (SDL_InitSubSystem(SDL_INIT_GAMEPAD) == false)
+            {
+                SDL_Log("SDL gamepad subsystem could not initialize: %s", SDL_GetError());
             }
-            if (ids) SDL_free(ids);
-
-            AcquireFirstGamepadIfNone();   // hot-plug safe initial grab
+            else
+            {
+                AcquireFirstGamepadIfNone();
+            }
 
             SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "350");
             
@@ -673,22 +663,37 @@ std::vector<std::pair<int, int>> wallKickOffsetsI0L = {{0, 0}, {-1, 0}, {2, 0}, 
 
 std::vector<std::pair<int, int>> wallKickOffsetsI[8] = {wallKickOffsetsI0R, wallKickOffsetsIR2, wallKickOffsetsI2L, wallKickOffsetsIL0, wallKickOffsetsI0L, wallKickOffsetsIL2, wallKickOffsetsI2R, wallKickOffsetsIR0};
 
-// 7-bag RNG (seeded once, no dependency on main())
-static std::mt19937 rng([]{
-    std::random_device rd;
-    return std::mt19937(rd());
-}());
-static std::array<int, 7> pieceBag{};
-static size_t bagIdx = pieceBag.size();
+// 7-bag RNG (safe for cross-translation-unit use)
+static std::mt19937& pieceRng() {
+    static std::mt19937 rng([] {
+        const auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        return std::mt19937(static_cast<unsigned int>(now));
+    }());
+    return rng;
+}
+
+static std::array<int, 7>& pieceBag() {
+    static std::array<int, 7> bag{};
+    return bag;
+}
+
+static size_t& pieceBagIndex() {
+    static size_t index = pieceBag().size();
+    return index;
+}
 
 static void refillBag() {
-    for (int i = 0; i < 7; ++i) pieceBag[i] = i;
-    std::shuffle(pieceBag.begin(), pieceBag.end(), rng);
-    bagIdx = 0;
+    auto& bag = pieceBag();
+    for (int i = 0; i < 7; ++i) bag[i] = i;
+    std::shuffle(bag.begin(), bag.end(), pieceRng());
+    pieceBagIndex() = 0;
 }
+
 int drawPieceIndex() {
-    if (bagIdx >= pieceBag.size()) refillBag();
-    return pieceBag[bagIdx++];
+    auto& bag = pieceBag();
+    auto& index = pieceBagIndex();
+    if (index >= bag.size()) refillBag();
+    return bag[index++];
 }
 
 GameState currentState = GameState::MENU;
@@ -794,16 +799,16 @@ static void initMenuBackgroundPieces() {
         const Piece* p = kAllPiecesPtr[i % 7];
         MenuBouncePiece mb{
             p,
-            sx(rng), sy(rng),
+            sx(pieceRng()), sy(pieceRng()),
             0.f, 0.f,
             0.f,
             1.f,
             kMenuColors[i % 7],
-            sc(rng)
+            sc(pieceRng())
         };
         // ensure non-zero velocity
-        mb.vx = (sv(rng) >= 0 ? sv(rng) + 20.f : sv(rng) - 20.f);
-        mb.vy = (sv(rng) >= 0 ? sv(rng) + 20.f : sv(rng) - 20.f);
+        mb.vx = (sv(pieceRng()) >= 0 ? sv(pieceRng()) + 20.f : sv(pieceRng()) - 20.f);
+        mb.vy = (sv(pieceRng()) >= 0 ? sv(pieceRng()) + 20.f : sv(pieceRng()) - 20.f);
         gMenuPieces.push_back(mb);
     }
     gMenuPiecesInit = true;
@@ -883,13 +888,13 @@ static void initMenuFallingPieces() {
         const Piece* p = kAllPiecesPtr[i % 7];
         gMenuFallingPieces.push_back(MenuFallingPiece{
             p,
-            sx(rng),
-            sy(rng),
-            sv(rng),
-            sd(rng),
-            sc(rng),
+            sx(pieceRng()),
+            sy(pieceRng()),
+            sv(pieceRng()),
+            sd(pieceRng()),
+            sc(pieceRng()),
             kMenuColors[i % 7],
-            (Uint8)ca(rng)
+            (Uint8)ca(pieceRng())
         });
     }
     gMenuFallingInit = true;
@@ -901,13 +906,13 @@ static void respawnFallingPiece(MenuFallingPiece& m) {
     std::uniform_real_distribution<float> sv(55.f, 150.f);
     std::uniform_real_distribution<float> sd(-12.f, 12.f);
     std::uniform_int_distribution<int> ca(55, 95);
-    m.cellSize = sc(rng);
+    m.cellSize = sc(pieceRng());
     float w = m.piece->width * m.cellSize;
-    m.x = std::min(std::max(0.f, sx(rng)), (float)kScreenWidth - w);
+    m.x = std::min(std::max(0.f, sx(pieceRng())), (float)kScreenWidth - w);
     m.y = -m.piece->height * m.cellSize - (float)(rand()%120);
-    m.vy = sv(rng);
-    m.drift = sd(rng);
-    m.alpha = (Uint8)ca(rng);
+    m.vy = sv(pieceRng());
+    m.drift = sd(pieceRng());
+    m.alpha = (Uint8)ca(pieceRng());
 }
 
 static void updateMenuFallingPieces(float dt) {

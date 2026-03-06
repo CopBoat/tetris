@@ -50,6 +50,8 @@ int main( int argc, char* args[] )
 
         if (fullscreenEnabled) {SDL_SetWindowFullscreen(gWindow, true);}
 
+        AcquireFirstGamepadIfNone();
+
         // Show splash screen (logo first, then text)
         showSplashScreen();
         
@@ -62,6 +64,10 @@ int main( int argc, char* args[] )
         while( quit == false ) //The main loop
         {
             capTimer.start();
+
+            if (!gActiveGamepad) {
+                AcquireFirstGamepadIfNone();
+            }
 
             InputAction action = InputAction::None;
 
@@ -106,6 +112,7 @@ int main( int argc, char* args[] )
                     
                     switch (handleMenuEvent(e)) {
                         case 0: // Start Game
+                            resetGameplayStateForNewGame();
                             currentState = GameState::PLAYING;
                             renderWipeIntro(gRenderer, kScreenWidth, kScreenHeight);
                             continue;

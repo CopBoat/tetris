@@ -26,7 +26,11 @@ else()
     find_package(SDL3_ttf REQUIRED)
 endif()
 
-add_executable(tetris ${SOURCES})
+if(WIN32)
+    add_executable(tetris WIN32 ${SOURCES})
+else()
+    add_executable(tetris ${SOURCES})
+endif()
 
 # Link SDL3 libraries
 target_link_libraries(tetris

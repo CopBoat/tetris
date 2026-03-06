@@ -44,6 +44,8 @@ void handleLockDelay(bool canPlaceNextPiece);
 
 void handlePieceLanded();
 
+void resetGameplayStateForNewGame();
+
 std::string chooseWindowTitle();
 
 extern Piece pieceTypes[7];
