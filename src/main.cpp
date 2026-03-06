@@ -69,7 +69,7 @@ int main( int argc, char* args[] )
                 AcquireFirstGamepadIfNone();
             }
 
-            InputAction action = InputAction::None;
+            std::vector<InputAction> actions;
 
             while( SDL_PollEvent( &e ) == true ) //While there are events to handle
             {
@@ -231,14 +231,14 @@ int main( int argc, char* args[] )
                             switch (e.key.key)
                             {
                                 case SDLK_LEFT: {
-                                    action = InputAction::MoveLeft;
+                                    actions.push_back(InputAction::MoveLeft);
                                     kbLeftHeld = true;
                                     gpLeft.held = true;
                                     gpLeft.pressedAt = gpLeft.lastRepeatAt = SDL_GetTicks();
                                     activeH = HDir::Left;
                                 } break;
                                 case SDLK_RIGHT: {
-                                    action = InputAction::MoveRight;
+                                    actions.push_back(InputAction::MoveRight);
                                     kbRightHeld = true;
                                     gpRight.held = true;
                                     gpRight.pressedAt = gpRight.lastRepeatAt = SDL_GetTicks();
@@ -246,24 +246,24 @@ int main( int argc, char* args[] )
                                 } break;
                                 //case SDLK_UP: action = InputAction::RotateClockwise; break;
                                 case SDLK_DOWN: {
-                                    action = InputAction::SoftDrop;
+                                    actions.push_back(InputAction::SoftDrop);
                                     kbDownHeld = true;
                                     gpDown.held = true;
                                     gpDown.pressedAt = gpDown.lastRepeatAt = SDL_GetTicks();
                                 } break;
                                 //case SDLK_H: action = InputAction::Hold; break;
                                 //case SDLK_SPACE: action = InputAction::HardDrop; break;
-                                case SDLK_ESCAPE: action = InputAction::Pause; break;
-                                case SDLK_L: action = InputAction::IncreaseLevel; break;
+                                case SDLK_ESCAPE: actions.push_back(InputAction::Pause); break;
+                                case SDLK_L: actions.push_back(InputAction::IncreaseLevel); break;
                                 default: 
                                     if (e.key.key == hardDropKey) {
-                                        action = InputAction::HardDrop;
+                                        actions.push_back(InputAction::HardDrop);
                                     } else if (e.key.key == holdKey) {
-                                        action = InputAction::Hold;
+                                        actions.push_back(InputAction::Hold);
                                     } else if (e.key.key == rotateClockwiseKey) {
-                                        action = InputAction::RotateClockwise;
+                                        actions.push_back(InputAction::RotateClockwise);
                                     } else if (e.key.key == rotateCounterClockwiseKey) {
-                                        action = InputAction::RotateCounterClockwise;
+                                        actions.push_back(InputAction::RotateCounterClockwise);
                                     }
                                     break;
                             }
@@ -313,7 +313,7 @@ int main( int argc, char* args[] )
                     if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
                         switch (e.gbutton.button) {
                             case SDL_GAMEPAD_BUTTON_DPAD_LEFT: {
-                                action = InputAction::MoveLeft;
+                                actions.push_back(InputAction::MoveLeft);
                                 gpDpadLeftHeld = true;
                                 recomputeGamepadHeld();
                                 gpLeft.held = true;
@@ -321,7 +321,7 @@ int main( int argc, char* args[] )
                                 activeH = HDir::Left;
                             } break;
                             case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: {
-                                action = InputAction::MoveRight;
+                                actions.push_back(InputAction::MoveRight);
                                 gpDpadRightHeld = true;
                                 recomputeGamepadHeld();
                                 gpRight.held = true;
@@ -331,7 +331,7 @@ int main( int argc, char* args[] )
                             //case SDL_GAMEPAD_BUTTON_WEST:          action = InputAction::RotateClockwise;        break;
                             //case SDL_GAMEPAD_BUTTON_EAST:          action = InputAction::RotateCounterClockwise; break;
                             case SDL_GAMEPAD_BUTTON_DPAD_DOWN: {
-                                action = InputAction::SoftDrop;
+                                actions.push_back(InputAction::SoftDrop);
                                 gpDpadDownHeld = true;
                                 recomputeGamepadHeld();
                                 gpDown.held = true;
@@ -339,17 +339,17 @@ int main( int argc, char* args[] )
                             } break;
                             //case hardDropControllerBind:         action = InputAction::HardDrop;               break;
                             //case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: action = InputAction::Hold;                   break;
-                            case SDL_GAMEPAD_BUTTON_START:         action = InputAction::Pause;                  break;
-                            case SDL_GAMEPAD_BUTTON_BACK:       action = InputAction::IncreaseLevel;             break; // Ignore select button
+                            case SDL_GAMEPAD_BUTTON_START:         actions.push_back(InputAction::Pause);                  break;
+                            case SDL_GAMEPAD_BUTTON_BACK:       actions.push_back(InputAction::IncreaseLevel);             break; // Ignore select button
                             default: 
                                 if (e.gbutton.button == hardDropControllerBind) {
-                                    action = InputAction::HardDrop;
+                                    actions.push_back(InputAction::HardDrop);
                                 } else if (e.gbutton.button == holdControllerBind) {
-                                    action = InputAction::Hold;
+                                    actions.push_back(InputAction::Hold);
                                 } else if (e.gbutton.button == rotateClockwiseControllerBind) {
-                                    action = InputAction::RotateClockwise;
+                                    actions.push_back(InputAction::RotateClockwise);
                                 } else if (e.gbutton.button == rotateCounterClockwiseControllerBind) {
-                                    action = InputAction::RotateCounterClockwise;
+                                    actions.push_back(InputAction::RotateCounterClockwise);
                                 }
                                 break;
                         }
@@ -416,7 +416,7 @@ int main( int argc, char* args[] )
                                     gpAxisLeftHeld = true;
                                     recomputeGamepadHeld();
 
-                                    action = InputAction::MoveLeft;
+                                    actions.push_back(InputAction::MoveLeft);
                                     gpLeft.held = true;
                                     gpLeft.pressedAt = gpLeft.lastRepeatAt = now;
                                     activeH = HDir::Left;
@@ -433,7 +433,7 @@ int main( int argc, char* args[] )
                                     gpAxisRightHeld = true;
                                     recomputeGamepadHeld();
 
-                                    action = InputAction::MoveRight;
+                                    actions.push_back(InputAction::MoveRight);
                                     gpRight.held = true;
                                     gpRight.pressedAt = gpRight.lastRepeatAt = now;
                                     activeH = HDir::Right;
@@ -480,7 +480,7 @@ int main( int argc, char* args[] )
                                     gpAxisDownHeld = true;
                                     recomputeGamepadHeld();
 
-                                    action = InputAction::SoftDrop;
+                                    actions.push_back(InputAction::SoftDrop);
                                     gpDown.held = true;
                                     gpDown.pressedAt = gpDown.lastRepeatAt = now;
                                 }
@@ -535,18 +535,27 @@ int main( int argc, char* args[] )
 
             if (!playing) continue; // Skip the rest of the loop if not playing
 
-            // One-shot action from this frame's events
-            switch (action) { //handle input actions
-                case InputAction::MoveLeft: { moveLeft(); break; }
-                case InputAction::MoveRight: { moveRight(); break; }
-                case InputAction::RotateClockwise: { rotateClockwise(); break; }
-                case InputAction::RotateCounterClockwise: { rotateCounterClockwise(); break; }
-                case InputAction::SoftDrop: { softDrop(); break; }
-                case InputAction::HardDrop: { hardDrop(); break; }
-                case InputAction::Hold: { hold(); break; }
-                case InputAction::Pause: { currentState = GameState::PUASE; break; }
-                case InputAction::IncreaseLevel: { increaseLevel(); break; }
-                default: break;
+            // One-shot actions from this frame's events
+            for (InputAction action : actions) { // handle input actions
+                switch (action) {
+                    case InputAction::MoveLeft: { moveLeft(); break; }
+                    case InputAction::MoveRight: { moveRight(); break; }
+                    case InputAction::RotateClockwise: { rotateClockwise(); break; }
+                    case InputAction::RotateCounterClockwise: { rotateCounterClockwise(); break; }
+                    case InputAction::SoftDrop: { softDrop(); break; }
+                    case InputAction::HardDrop: { hardDrop(); break; }
+                    case InputAction::Hold: { hold(); break; }
+                    case InputAction::Pause: {
+                        currentState = GameState::PUASE;
+                        break;
+                    }
+                    case InputAction::IncreaseLevel: { increaseLevel(); break; }
+                    default: break;
+                }
+
+                if (currentState != GameState::PLAYING) {
+                    break;
+                }
             }
 
             // Inject auto-repeat moves for held D-pad buttons (DAS/ARR)
