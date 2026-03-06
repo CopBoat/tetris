@@ -74,6 +74,36 @@ cd tetris
 
 ### 4. Enjoy your executable! All assets are embedded, so you can move the executable wherever you like 😁
 
+## Windows Release Build (for fresh Windows installs)
+Build a distributable folder that contains `tetris.exe` and all required SDL/MSVC runtime DLLs:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+cmake --install build --config Release --prefix dist
+```
+
+After this, share the contents of the `dist` folder (or zip it). A user can extract and run `tetris.exe` directly.
+
+### Single-EXE mode on Windows (default)
+This project now defaults to static SDL linking on Windows (`-DTETRIS_STATIC_SDL=ON`), so the install output can be a single `tetris.exe` file:
+
+```bash
+cmake -S . -B build-static -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=C:/msys64/mingw64 -DTETRIS_STATIC_SDL=ON
+cmake --build build-static
+cmake --install build-static --config Release --prefix dist-static
+```
+
+The taskbar/executable icon is embedded from `assets/Logo.png` (converted to `assets/logo.ico` for Windows resources).
+
+Optional: create a zip automatically with CPack:
+
+```bash
+cmake --build build --config Release --target package
+```
+
+This generates a release zip in the `build` directory.
+
 ## Resources
 - [The Tetris Wiki](https://tetris.wiki/Tetris.wiki): Guidlines and general information
 - [Lazy Foo' Productions SDL3 Tutorial Series](https://lazyfoo.net/tutorials/SDL3/index.php): A great series of lessons, to which he suggested creating tetris after completing. This project utilizes the LTexture and LTimer classes from his true type/animation lessons.
