@@ -1,11 +1,11 @@
-# tetris (CopBoat's Version)
+<h1 align="center">tetris (CopBoat's Version)</h1>
 
 <p align="center">
 Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2.2-1)
 </p>
 
 <p align="center">
-  <img src="assets/previewGameplay.gif" alt="Gameplay preview" width="900"/>
+  <img src="assets/previewGameplay.gif" alt="Gameplay preview" width="75%"/>
 </p>
 
 <p align="center">
