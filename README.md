@@ -46,6 +46,7 @@ You may reset your progress at any time by deleting tetris_save.dat, or moving i
 Grab one of the releases or compile it yourself with the instructions on Compilation.md!
 
 | Download |
+| -------- |
 | [Windows](https://github.com/username/repo/releases/latest/download/file.zip) |
 | Linux |
 
@@ -54,3 +55,32 @@ All the dependancies are embeded in the executable 😎
 ## Resources
 - [The Tetris Wiki](https://tetris.wiki/Tetris.wiki): Guidlines and general information
 - [Lazy Foo' Productions SDL3 Tutorial Series](https://lazyfoo.net/tutorials/SDL3/index.php): A great series of lessons, to which he suggested creating tetris after completing. This project utilizes the LTexture and LTimer classes from his true type/animation lessons.
+
+## Compilation
+### 1. Clone the repository and navigate to the cloned folder:
+```bash
+git clone https://github.com/CopBoat/tetris.git
+cd tetris
+```
+
+### 2. **For Arch/Manjaro or Ubuntu/Debian users**, simply run the automated build script:
+```bash
+./build.sh
+```
+### 3. **For other Linux distributions or Windows users** (via WSL/MSYS2):
+- In the project root, create a build folder:
+  ```bash
+  mkdir build
+  cd build
+  ```
+
+- Use CMake to generate the build system for your platform (Linux, Windows, etc.):
+  ```bash
+  cmake ..
+   ```
+- Compile the project using the generated build system:
+  ```bash
+  cmake --build .
+  ```
+
+### 4. Enjoy your executable! All assets and libs are embedded, so you can move the executable wherever you like 😁
