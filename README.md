@@ -8,17 +8,13 @@ Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2
   <img src="assets/previewGameplay.gif" alt="Gameplay preview" width="75%"/>
 </p>
 
-<p align="center">
-  <a href="assets/previewGameplay.gif">Gameplay preview (direct file)</a>
-</p>
-
 ## Features
 - Implements the [Super Rotation System](https://tetris.wiki/Super_Rotation_System)
 - Lock Delay of 30 frames (0.5 seconds) with 10 resets allocated for horizontal movement and 5 resets allocated for rotations
 - Next imediate piece is displayed upon placement
 - The current piece may be swaped for the hold piece once per placement
-- Visual modification options for the board, pieces, and placement preivew
-- Fullscreen toggle, small, standard, and large presets, as well as conventional click and drag can be used to resize the game window 
+- Visual options for the board, pieces, and placement preivew
+- Small, standard, and large window presets, click and drag to resize, and double click to toggle fullscreen
 - Highscores and settings are preserved between play sessions
 - Controller support (Tested with Xbox controller)
 
@@ -78,7 +74,7 @@ Grab one of the releases or compile it yourself with the instructions below!
 
 ## Resources
 - [The Tetris Wiki](https://tetris.wiki/Tetris.wiki): Guidlines and general information
-- [Lazy Foo' Productions SDL3 Tutorial Series](https://lazyfoo.net/tutorials/SDL3/index.php): A great series of lessons, to which he suggested creating tetris after completing. This project utilizes the LTexture and LTimer classes from his true type/animation lessons.
+- [Lazy Foo' Productions SDL3 Tutorial Series](https://lazyfoo.net/tutorials/SDL3/index.php): A very helpful series of lessons! This project utilizes the LTexture and LTimer classes from his true type/animation lessons.
 
 ## Compilation
 ### 1. Clone the repository and navigate to the cloned folder:
