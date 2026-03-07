@@ -51,7 +51,7 @@ Grab one of the releases or compile it yourself with the instructions below!
   <tr>
     <td align="center" width="260">
       <img src="assets/windows-icon.svg" alt="Windows" width="24"/><br/>
-      <strong><a href="https://github.com/username/repo/releases/latest/download/file.zip">Tetris for Windows</a></strong><br/>
+      <strong><a href="https://github.com/CopBoat/tetris/releases/download/latest/tetris-windows.zip">Tetris for Windows</a></strong><br/>
       <sub>Standalone .exe release</sub>
     </td>
     <td align="center" width="260">
