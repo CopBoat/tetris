@@ -1,5 +1,11 @@
 # tetris (CopBoat's Version)
-(Place holder for gif)
+<p align="center">
+  <video src="assets/previewGameplay.webm" controls muted loop width="900"></video>
+</p>
+
+<p align="center">
+  <a href="assets/previewGameplay.webm">Gameplay preview (direct file)</a>
+</p>
 
 Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2.2-1)
 
