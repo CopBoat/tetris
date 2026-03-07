@@ -43,14 +43,24 @@ Progress is saved to the file tetris_save.dat in the same directory as the execu
 You may reset your progress at any time by deleting tetris_save.dat, or moving it to another directory. 
 
 ## Installation
-Grab one of the releases or compile it yourself with the instructions on Compilation.md!
+Grab one of the releases or compile it yourself with the instructions below!
 
-| Download |
-| -------- |
-| <img src="assets/windows-icon.svg" alt="Windows" width="16"/> [tetris for Windows](https://github.com/username/repo/releases/latest/download/file.zip) |
-| <img src="assets/linux-icon.png" alt="Linux" width="16"/> tetris for Linux |
+<h3 align="center">Download</h3>
 
-All the dependancies are embeded in the executable 😎
+<table align="center">
+  <tr>
+    <td align="center" width="260">
+      <img src="assets/windows-icon.svg" alt="Windows" width="24"/><br/>
+      <strong><a href="https://github.com/username/repo/releases/latest/download/file.zip">Tetris for Windows</a></strong><br/>
+      <sub>Standalone .exe release</sub>
+    </td>
+    <td align="center" width="260">
+      <img src="assets/linux-icon.png" alt="Linux" width="24"/><br/>
+      <strong>Tetris for Linux</strong><br/>
+      <sub>Coming soon</sub>
+    </td>
+  </tr>
+</table>
 
 ## Resources
 - [The Tetris Wiki](https://tetris.wiki/Tetris.wiki): Guidlines and general information
@@ -112,4 +122,4 @@ Then in the project root, create a build folder:
   cmake --build .
   ```
 
-### 4. Enjoy your executable! All assets and libs are embedded, so you can move the executable wherever you like 😁
+### 4. Enjoy your executable! All dependancies are embedded, so you can move the executable wherever you like 😁
