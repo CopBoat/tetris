@@ -47,8 +47,8 @@ Grab one of the releases or compile it yourself with the instructions on Compila
 
 | Download |
 | -------- |
-| [Windows](https://github.com/username/repo/releases/latest/download/file.zip) |
-| Linux |
+| <img src="assets/windows-icon.svg" alt="Windows" width="16"/> [tetris for Windows](https://github.com/username/repo/releases/latest/download/file.zip) |
+| <img src="assets/linux-icon.png" alt="Linux" width="16"/> tetris for Linux |
 
 All the dependancies are embeded in the executable 😎
 
@@ -68,7 +68,36 @@ cd tetris
 ./build.sh
 ```
 ### 3. **For other Linux distributions or Windows users** (via WSL/MSYS2):
-- In the project root, create a build folder:
+Install dependencies first:
+
+Windows (MSYS2 MinGW64 shell):
+
+```bash
+pacman -S --needed \
+  mingw-w64-x86_64-toolchain \
+  mingw-w64-x86_64-cmake \
+  mingw-w64-x86_64-ninja \
+  mingw-w64-x86_64-pkgconf \
+  mingw-w64-x86_64-SDL3 \
+  mingw-w64-x86_64-SDL3_image \
+  mingw-w64-x86_64-SDL3_ttf
+```
+
+Other Linux distributions (install equivalent package names from your distro):
+
+```bash
+cmake
+g++
+ninja (or make)
+pkg-config
+SDL3
+SDL3_image
+SDL3_ttf
+freetype
+harfbuzz
+```
+
+Then in the project root, create a build folder:
   ```bash
   mkdir build
   cd build
