@@ -1,13 +1,16 @@
 # tetris (CopBoat's Version)
-<p align="center">
-  <video src="assets/previewGameplay.webm" controls muted loop width="900"></video>
-</p>
 
 <p align="center">
-  <a href="assets/previewGameplay.webm">Gameplay preview (direct file)</a>
-</p>
-
 Tetris built with C++ and SDL3! (sdl3 3.2.20-1, sdl3_image 3.2.4-1, sdl3_ttf 3.2.2-1)
+</p>
+
+<p align="center">
+  <img src="assets/previewGameplay.gif" alt="Gameplay preview" width="900"/>
+</p>
+
+<p align="center">
+  <a href="assets/previewGameplay.gif">Gameplay preview (direct file)</a>
+</p>
 
 ## Features
 - Implements the [Super Rotation System](https://tetris.wiki/Super_Rotation_System)
