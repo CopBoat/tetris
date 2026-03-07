@@ -49,15 +49,20 @@ Grab one of the releases or compile it yourself with the instructions below!
 
 <table align="center">
   <tr>
-    <td align="center" width="260">
+    <td align="center" width="220">
       <img src="assets/windows-icon.svg" alt="Windows" width="24"/><br/>
-      <strong><a href="https://github.com/CopBoat/tetris/releases/latest/download/tetris-windows.zip">Tetris for Windows</a></strong><br/>
-      <sub>Standalone .exe release</sub>
+      <strong><a href="https://github.com/CopBoat/tetris/releases/latest/download/tetris-windows.zip">tetris for Windows</a></strong><br/>
+      <sub>.exe release</sub>
     </td>
-    <td align="center" width="260">
+    <td align="center" width="220">
       <img src="assets/linux-icon.png" alt="Linux" width="24"/><br/>
-      <strong>Tetris for Linux</strong><br/>
-      <sub>Coming soon</sub>
+      <strong>tetris for Linux</strong><br/>
+      <sub>AppImage release</sub>
+    </td>
+    <td align="center" width="220">
+      <img src="assets/steam-icon.png" alt="Steam" width="24"/><br/>
+      <strong><a href="#">Steam Art Assets</a></strong><br/>
+      <sub>Logo, Cover, Background</sub>
     </td>
   </tr>
 </table>
