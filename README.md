@@ -61,8 +61,8 @@ Grab one of the releases or compile it yourself with the instructions below!
     </td>
     <td align="center" width="220">
       <img src="assets/linux-icon.png" alt="Linux" width="24"/><br/>
-      <strong><a href="https://github.com/CopBoat/tetris/releases/latest/download/tetris-linux.zip">tetris for Linux</strong><br/>
-      <sub>AppImage release</sub>
+      <strong><a href="https://github.com/CopBoat/tetris/releases/latest/download/tetris-linux.tar.gz">tetris for Linux</strong><br/>
+      <sub>.AppImage release</sub>
     </td>
     <td align="center" width="220">
       <img src="assets/steam-icon.png" alt="Steam" width="24"/><br/>
